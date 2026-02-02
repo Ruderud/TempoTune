@@ -27,17 +27,16 @@
   "author": "",
   "license": "MIT",
   "engines": {
-    "node": ">=24.0.0",
+    "node": "^24.0.0",
     "pnpm": ">=10.0.0"
   },
   "devDependencies": {
-    "@nx/js": "^22.4.0",
-    "@nx/next": "^22.4.0",
-    "@nx/react-native": "^22.4.0",
     "@nx/workspace": "^22.4.0",
     "@types/node": "^24.0.0",
     "nx": "^22.4.0",
     "prettier": "^3.0.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "eslint": "^9.0.0",
+    "@nx/eslint": "^22.4.0"
   }
 }
