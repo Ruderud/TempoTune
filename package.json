@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "메트로놈과 기타/베이스 튜너 기능을 제공하는 하이브리드 모바일 앱",
   "private": true,
-  "packageManager": "pnpm@10.0.0",
+  "packageManager": "pnpm@10.28.2",
   "scripts": {
     "dev": "nx run-many --target=serve --all --parallel",
     "build": "nx run-many --target=build --all",
@@ -31,12 +31,12 @@
     "pnpm": ">=10.0.0"
   },
   "devDependencies": {
+    "@nx/eslint": "^22.4.0",
     "@nx/workspace": "^22.4.0",
     "@types/node": "^24.0.0",
+    "eslint": "^9.0.0",
     "nx": "^22.4.0",
     "prettier": "^3.0.0",
-    "typescript": "^5.9.3",
-    "eslint": "^9.0.0",
-    "@nx/eslint": "^22.4.0"
+    "typescript": "^5.9.3"
   }
 }
