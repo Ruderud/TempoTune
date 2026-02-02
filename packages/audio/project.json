@@ -1,0 +1,23 @@
+{
+  "name": "audio",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/audio/src",
+  "projectType": "library",
+  "tags": ["type:lib", "scope:audio"],
+  "targets": {
+    "type-check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter @tempo-tune/audio type-check",
+        "cwd": "packages/audio"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter @tempo-tune/audio lint",
+        "cwd": "packages/audio"
+      }
+    }
+  }
+}
