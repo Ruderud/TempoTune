@@ -87,3 +87,7 @@ DerivedData
 *.ipa
 *.xcuserstate
 project.xcworkspace
+
+# Claude Code & OMC
+.claude/
+.omc/
