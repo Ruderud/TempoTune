@@ -1,27 +1,26 @@
-import React from 'react';
+import React, {useRef, useEffect} from 'react';
 import {Platform, SafeAreaView, StyleSheet} from 'react-native';
-import {WebView} from 'react-native-webview';
+import WebView from 'react-native-webview';
+import type {WebViewMessageEvent} from 'react-native-webview';
+import {
+  BridgeHandler,
+  handleRequestMicPermission,
+  handleStartListening,
+  handleStopListening,
+  handlePlayClick,
+  handleVibrate,
+} from './bridge';
 
-// iOS 시뮬레이터: localhost
-// Android 에뮬레이터: 10.0.2.2
-// 실제 디바이스: 개발 머신의 IP 주소
-// 실제 디바이스에서 사용 시 아래 IP를 개발 머신의 실제 IP로 변경하세요
-const DEV_MACHINE_IP = '172.30.1.55'; // 개발 머신의 로컬 IP 주소
+const DEV_MACHINE_IP = '172.30.1.55';
 
-// 실제 디바이스인지 확인 (시뮬레이터는 localhost를 사용)
 const getWebUrl = (): string => {
   if (!__DEV__) {
     return 'https://your-production-url.com';
   }
 
   if (Platform.OS === 'ios') {
-    // iOS의 경우, 실제 디바이스에서는 개발 머신의 IP를 사용
-    // 시뮬레이터에서는 localhost 사용
-    // 실제 디바이스에서 실행 시 아래 주석을 해제하세요
-    return `http://${DEV_MACHINE_IP}:3000`; // 실제 디바이스용
-    // return 'http://localhost:3000'; // 시뮬레이터용
+    return `http://${DEV_MACHINE_IP}:3000`;
   } else {
-    // Android 에뮬레이터
     return 'http://10.0.2.2:3000';
   }
 };
@@ -29,20 +28,37 @@ const getWebUrl = (): string => {
 const WEB_URL = getWebUrl();
 
 function App(): React.JSX.Element {
-  const handleMessage = (event: any) => {
-    console.log('!!DEBUG [App.handleMessage] message:', event.nativeEvent.data);
-    // Bridge API 메시지 처리
+  const webViewRef = useRef<WebView | null>(null);
+  const bridgeRef = useRef<BridgeHandler | null>(null);
+
+  useEffect(() => {
+    const bridge = new BridgeHandler(webViewRef);
+    bridge.registerHandler('REQUEST_MIC_PERMISSION', handleRequestMicPermission);
+    bridge.registerHandler('START_LISTENING', handleStartListening);
+    bridge.registerHandler('STOP_LISTENING', handleStopListening);
+    bridge.registerHandler('PLAY_CLICK', handlePlayClick);
+    bridge.registerHandler('VIBRATE', handleVibrate);
+    bridgeRef.current = bridge;
+
+    return () => {
+      bridge.dispose();
+    };
+  }, []);
+
+  const handleMessage = (event: WebViewMessageEvent) => {
+    bridgeRef.current?.handleMessage(event.nativeEvent.data);
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <WebView
+        ref={webViewRef}
         source={{uri: WEB_URL}}
         onMessage={handleMessage}
         style={styles.webview}
-        injectedJavaScript={`
-          window.ReactNativeWebView = window.ReactNativeWebView || {};
-        `}
+        allowsInlineMediaPlayback
+        mediaPlaybackRequiresUserAction={false}
+        javaScriptEnabled
       />
     </SafeAreaView>
   );
