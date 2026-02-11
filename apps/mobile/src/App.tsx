@@ -5,11 +5,10 @@ import type { WebViewMessageEvent } from 'react-native-webview';
 import {
   BridgeHandler,
   handleRequestMicPermission,
-  handleStartListening,
-  handleStopListening,
   handlePlayClick,
   handleVibrate,
 } from './bridge';
+import { nativeAudioService } from './services/native-audio.service';
 import {
   DEV_MACHINE_IP,
   DEV_SERVER_PORT,
@@ -41,13 +40,38 @@ function App(): React.JSX.Element {
       'REQUEST_MIC_PERMISSION',
       handleRequestMicPermission
     );
-    bridge.registerHandler('START_LISTENING', handleStartListening);
-    bridge.registerHandler('STOP_LISTENING', handleStopListening);
+    bridge.registerHandler('START_LISTENING', async () => {
+      nativeAudioService.start(
+        (pitchData) => {
+          bridge.sendToWebView({
+            type: 'PITCH_DETECTED',
+            data: {
+              frequency: pitchData.frequency,
+              name: pitchData.name,
+              octave: pitchData.octave,
+              cents: pitchData.cents,
+            },
+          });
+        },
+        (error) => {
+          bridge.sendToWebView({
+            type: 'ERROR',
+            error,
+          });
+        },
+      );
+      return { success: true };
+    });
+    bridge.registerHandler('STOP_LISTENING', async () => {
+      nativeAudioService.stop();
+      return { success: true };
+    });
     bridge.registerHandler('PLAY_CLICK', handlePlayClick);
     bridge.registerHandler('VIBRATE', handleVibrate);
     bridgeRef.current = bridge;
 
     return () => {
+      nativeAudioService.stop();
       bridge.dispose();
     };
   }, []);
@@ -66,6 +90,7 @@ function App(): React.JSX.Element {
         style={styles.webview}
         allowsInlineMediaPlayback
         mediaPlaybackRequiresUserAction={false}
+        mediaCapturePermissionGrantType="grantIfSameHostElsePrompt"
         javaScriptEnabled
       />
     </SafeAreaView>
