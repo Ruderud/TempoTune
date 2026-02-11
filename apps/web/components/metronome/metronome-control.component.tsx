@@ -1,6 +1,6 @@
 'use client';
 
-import { COMMON_TIME_SIGNATURES, MAX_BPM, MIN_BPM } from '@tempo-tune/domain/constants';
+import { COMMON_TIME_SIGNATURES, MAX_BPM, MIN_BPM } from '@tempo-tune/shared/constants';
 
 type MetronomeControlProps = {
   bpm: number;

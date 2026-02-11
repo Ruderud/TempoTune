@@ -1,7 +1,7 @@
 'use client';
 
 import type { TuningPreset } from '@tempo-tune/shared/types';
-import { ALL_TUNING_PRESETS } from '@tempo-tune/domain/constants';
+import { ALL_TUNING_PRESETS } from '@tempo-tune/shared/constants';
 
 type TunerControlProps = {
   currentPreset: TuningPreset;
