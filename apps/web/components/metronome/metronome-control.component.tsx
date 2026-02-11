@@ -36,35 +36,56 @@ export function MetronomeControl({
   };
 
   return (
-    <div className="flex flex-col items-center space-y-8 pb-8">
-      {/* BPM Controls */}
-      <div className="w-full max-w-sm space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <button
-            onClick={() => handleBpmChange(bpm - 1)}
-            className="w-12 h-12 rounded-full bg-gray-800 hover:bg-gray-700 active:bg-gray-600 transition-colors flex items-center justify-center text-2xl font-bold"
-          >
-            −
-          </button>
+    <div className="flex flex-col items-center space-y-6">
+      {/* BPM Slider */}
+      <div className="w-full max-w-sm">
+        <div className="bg-gray-900/50 rounded-2xl p-4 border border-gray-800">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => handleBpmChange(bpm - 1)}
+              disabled={isPlaying}
+              className={`
+                w-11 h-11 shrink-0 rounded-xl font-bold text-lg transition-all duration-150
+                ${isPlaying
+                  ? 'bg-gray-800/40 text-gray-600 cursor-not-allowed'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700 active:scale-95 shadow-sm'
+                }
+              `}
+            >
+              −
+            </button>
 
-          <input
-            type="range"
-            min={MIN_BPM}
-            max={MAX_BPM}
-            value={bpm}
-            onChange={(e) => handleBpmChange(Number(e.target.value))}
-            className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-          />
+            <input
+              type="range"
+              min={MIN_BPM}
+              max={MAX_BPM}
+              value={bpm}
+              onChange={(e) => handleBpmChange(Number(e.target.value))}
+              className="flex-1 min-w-0 h-2 bg-gray-800 rounded-full appearance-none cursor-pointer slider"
+            />
 
-          <button
-            onClick={() => handleBpmChange(bpm + 1)}
-            className="w-12 h-12 rounded-full bg-gray-800 hover:bg-gray-700 active:bg-gray-600 transition-colors flex items-center justify-center text-2xl font-bold"
-          >
-            +
-          </button>
+            <button
+              onClick={() => handleBpmChange(bpm + 1)}
+              disabled={isPlaying}
+              className={`
+                w-11 h-11 shrink-0 rounded-xl font-bold text-lg transition-all duration-150
+                ${isPlaying
+                  ? 'bg-gray-800/40 text-gray-600 cursor-not-allowed'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700 active:scale-95 shadow-sm'
+                }
+              `}
+            >
+              +
+            </button>
+          </div>
         </div>
+      </div>
 
-        {/* Time Signature Buttons */}
+      {/* Time Signature Buttons */}
+      <div className="w-full max-w-sm">
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 text-center">
+          박자
+        </div>
         <div className="flex gap-2 justify-center">
           {COMMON_TIME_SIGNATURES.map((ts) => {
             const [beats, noteValue] = ts;
@@ -74,11 +95,15 @@ export function MetronomeControl({
               <button
                 key={`${beats}/${noteValue}`}
                 onClick={() => onTimeSignatureChange(ts)}
-                className={`px-6 py-3 rounded-lg font-medium transition-colors ${
-                  isActive
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-800 text-gray-300 hover:bg-gray-700 active:bg-gray-600'
-                }`}
+                disabled={isPlaying}
+                className={`
+                  px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200
+                  ${isActive
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/40 scale-[1.02]'
+                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-800 hover:text-gray-300 active:scale-95'
+                  }
+                  ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                `}
               >
                 {beats}/{noteValue}
               </button>
@@ -88,21 +113,39 @@ export function MetronomeControl({
       </div>
 
       {/* Play/Stop Button */}
-      <button
-        onClick={isPlaying ? onStop : onStart}
-        className={`w-24 h-24 rounded-full font-bold text-xl transition-all ${
-          isPlaying
-            ? 'bg-red-600 hover:bg-red-500 active:bg-red-700 shadow-lg shadow-red-600/50'
-            : 'bg-green-600 hover:bg-green-500 active:bg-green-700 shadow-lg shadow-green-600/50'
-        }`}
-      >
-        {isPlaying ? '정지' : '시작'}
-      </button>
+      <div className="flex flex-col items-center gap-3">
+        <button
+          onClick={isPlaying ? onStop : onStart}
+          className={`
+            relative w-28 h-28 rounded-full font-bold text-lg transition-all duration-300
+            ${isPlaying
+              ? 'bg-gradient-to-br from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 active:scale-95 shadow-xl shadow-red-600/40'
+              : 'bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 active:scale-95 shadow-xl shadow-green-600/40'
+            }
+          `}
+        >
+          <div className="absolute inset-0 rounded-full bg-white/10 opacity-0 hover:opacity-100 transition-opacity duration-200" />
+          <span className="relative z-10 text-white drop-shadow-lg">
+            {isPlaying ? '정지' : '시작'}
+          </span>
+        </button>
+
+        <div className="flex items-center gap-2">
+          <div
+            className={`w-2 h-2 rounded-full transition-all duration-300 ${
+              isPlaying ? 'bg-green-500 animate-pulse shadow-lg shadow-green-500/50' : 'bg-gray-700'
+            }`}
+          />
+          <span className="text-xs text-gray-500 font-medium">
+            {isPlaying ? '재생 중...' : '대기 중'}
+          </span>
+        </div>
+      </div>
 
       {/* Custom Sound Upload */}
       {onLoadCustomSound && (
         <div className="flex gap-2">
-          <label className="px-4 py-2 text-sm bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg cursor-pointer transition-colors">
+          <label className="px-4 py-2 text-xs font-medium bg-gray-800/60 hover:bg-gray-800 active:scale-95 rounded-xl cursor-pointer transition-all duration-150 text-gray-400 hover:text-gray-300">
             강세음
             <input
               type="file"
@@ -111,7 +154,7 @@ export function MetronomeControl({
               className="hidden"
             />
           </label>
-          <label className="px-4 py-2 text-sm bg-gray-800 hover:bg-gray-700 active:bg-gray-600 rounded-lg cursor-pointer transition-colors">
+          <label className="px-4 py-2 text-xs font-medium bg-gray-800/60 hover:bg-gray-800 active:scale-95 rounded-xl cursor-pointer transition-all duration-150 text-gray-400 hover:text-gray-300">
             일반음
             <input
               type="file"

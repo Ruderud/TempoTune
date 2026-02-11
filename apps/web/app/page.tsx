@@ -14,13 +14,16 @@ export default function Home() {
   const tuner = useTuner();
 
   return (
-    <main className="flex flex-col h-screen overflow-hidden">
+    <main className="flex flex-col h-screen overflow-hidden bg-gray-950">
       <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-md mx-auto px-4">
+      <div className="flex-1 overflow-y-auto flex items-center">
+        <div className="w-full max-w-md mx-auto px-4 py-8">
           {activeTab === 'metronome' ? (
-            <>
+            <div
+              key="metronome"
+              className="animate-[fadeIn_0.3s_ease-out]"
+            >
               <MetronomeDisplay
                 bpm={metronome.bpm}
                 currentBeat={metronome.currentBeat}
@@ -37,9 +40,12 @@ export default function Home() {
                 onStop={metronome.stop}
                 onLoadCustomSound={metronome.loadCustomSound}
               />
-            </>
+            </div>
           ) : (
-            <>
+            <div
+              key="tuner"
+              className="animate-[fadeIn_0.3s_ease-out]"
+            >
               <TunerDisplay
                 detectedNote={tuner.detectedNote}
                 closestString={tuner.closestString}
@@ -59,7 +65,7 @@ export default function Home() {
                 onStart={tuner.start}
                 onStop={tuner.stop}
               />
-            </>
+            </div>
           )}
         </div>
       </div>
