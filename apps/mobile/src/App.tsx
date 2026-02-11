@@ -1,7 +1,7 @@
-import React, {useRef, useEffect} from 'react';
-import {Platform, SafeAreaView, StyleSheet} from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { Platform, SafeAreaView, StyleSheet } from 'react-native';
 import WebView from 'react-native-webview';
-import type {WebViewMessageEvent} from 'react-native-webview';
+import type { WebViewMessageEvent } from 'react-native-webview';
 import {
   BridgeHandler,
   handleRequestMicPermission,
@@ -10,18 +10,22 @@ import {
   handlePlayClick,
   handleVibrate,
 } from './bridge';
-
-const DEV_MACHINE_IP = '172.30.1.55';
+import {
+  DEV_MACHINE_IP,
+  DEV_SERVER_PORT,
+  PROD_WEB_URL,
+  ANDROID_EMULATOR_HOST,
+} from './config.generated';
 
 const getWebUrl = (): string => {
   if (!__DEV__) {
-    return 'https://your-production-url.com';
+    return PROD_WEB_URL;
   }
 
   if (Platform.OS === 'ios') {
-    return `http://${DEV_MACHINE_IP}:3000`;
+    return `http://${DEV_MACHINE_IP}:${DEV_SERVER_PORT}`;
   } else {
-    return 'http://10.0.2.2:3000';
+    return `http://${ANDROID_EMULATOR_HOST}:${DEV_SERVER_PORT}`;
   }
 };
 
@@ -33,7 +37,10 @@ function App(): React.JSX.Element {
 
   useEffect(() => {
     const bridge = new BridgeHandler(webViewRef);
-    bridge.registerHandler('REQUEST_MIC_PERMISSION', handleRequestMicPermission);
+    bridge.registerHandler(
+      'REQUEST_MIC_PERMISSION',
+      handleRequestMicPermission
+    );
     bridge.registerHandler('START_LISTENING', handleStartListening);
     bridge.registerHandler('STOP_LISTENING', handleStopListening);
     bridge.registerHandler('PLAY_CLICK', handlePlayClick);
@@ -51,9 +58,10 @@ function App(): React.JSX.Element {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* @ts-expect-error react-native-webview types incompatible with React 19 */}
       <WebView
         ref={webViewRef}
-        source={{uri: WEB_URL}}
+        source={{ uri: WEB_URL }}
         onMessage={handleMessage}
         style={styles.webview}
         allowsInlineMediaPlayback

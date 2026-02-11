@@ -3,11 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prestart": "bash scripts/generate-dev-config.sh",
     "start": "react-native start",
-    "android": "react-native run-android",
-    "ios": "react-native run-ios",
-    "ios:device": "react-native run-ios --device",
-    "ios:device:udid": "react-native run-ios --device --udid",
+    "android": "bash scripts/generate-dev-config.sh && react-native run-android",
+    "ios": "bash scripts/generate-dev-config.sh && react-native run-ios",
+    "ios:device": "bash scripts/generate-dev-config.sh && react-native run-ios --device",
+    "ios:device:udid": "bash scripts/generate-dev-config.sh && react-native run-ios --device --udid",
     "lint": "eslint .",
     "type-check": "tsc --noEmit"
   },
