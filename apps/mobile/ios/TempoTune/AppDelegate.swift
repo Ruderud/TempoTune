@@ -1,4 +1,5 @@
 import UIKit
+import AVFoundation
 import React
 import React_RCTAppDelegate
 import ReactAppDependencyProvider
@@ -28,6 +29,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       in: window,
       launchOptions: launchOptions
     )
+
+    // Request microphone permission on first launch for tuner WebView
+    AVAudioSession.sharedInstance().requestRecordPermission { _ in }
 
     return true
   }
