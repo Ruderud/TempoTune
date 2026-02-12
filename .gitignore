@@ -88,6 +88,9 @@ DerivedData
 *.xcuserstate
 project.xcworkspace
 
+# Generated version files
+version.generated.ts
+
 # Claude Code & OMC
 .claude/
 .omc/

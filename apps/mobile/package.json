@@ -10,7 +10,9 @@
     "ios:device": "bash scripts/generate-dev-config.sh && react-native run-ios --device",
     "ios:device:udid": "bash scripts/generate-dev-config.sh && react-native run-ios --device --udid",
     "lint": "eslint .",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "version:update": "node scripts/update-app-version.js",
+    "version:inject": "node scripts/inject-version.js"
   },
   "dependencies": {
     "react": "^19.1.0",

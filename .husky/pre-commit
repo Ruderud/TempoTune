@@ -1,3 +1,8 @@
 pnpm type-check
 pnpm --filter @tempo-tune/web lint
-cd packages/audio && pnpm exec vitest run
+(cd packages/audio && pnpm exec vitest run)
+
+# Auto-bump web patch version on main branch
+if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
+  node apps/web/scripts/bump-patch.js
+fi

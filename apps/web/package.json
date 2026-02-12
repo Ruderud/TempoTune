@@ -1,6 +1,6 @@
 {
   "name": "@tempo-tune/web",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -8,6 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
+    "version:update": "node scripts/update-web-version.js",
+    "version:inject": "node scripts/inject-version.js",
     "build:cf": "opennextjs-cloudflare build",
     "deploy": "opennextjs-cloudflare build && wrangler deploy",
     "preview": "opennextjs-cloudflare build && wrangler dev"
