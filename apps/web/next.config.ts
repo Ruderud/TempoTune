@@ -8,8 +8,8 @@ const nextConfig: NextConfig = {
 export default withSentryConfig(nextConfig, {
   org: 'solo-qu',
   project: 'javascript-nextjs-z4',
+  authToken: process.env.SENTRY_AUTH_TOKEN,
   silent: !process.env.CI,
   widenClientFileUpload: true,
   tunnelRoute: '/monitoring',
-  disableLogger: true,
 });
