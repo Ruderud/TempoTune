@@ -40,8 +40,7 @@ jobs:
         run: pnpm type-check
 
       - name: Lint (web)
-        working-directory: apps/web
-        run: pnpm lint
+        run: pnpm --filter @tempo-tune/web lint
 
       - name: Test
         run: cd packages/audio && pnpm exec vitest run
