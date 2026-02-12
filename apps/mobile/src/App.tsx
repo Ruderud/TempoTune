@@ -82,7 +82,7 @@ function App(): React.JSX.Element {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* @ts-expect-error react-native-webview types incompatible with React 19 */}
+      {/* @ts-ignore react-native-webview types incompatible with React 19 */}
       <WebView
         ref={webViewRef}
         source={{ uri: WEB_URL }}
