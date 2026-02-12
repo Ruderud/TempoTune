@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
 
 export default withSentryConfig(nextConfig, {
   org: 'solo-qu',
-  project: 'javascript-nextjs-z4',
+  project: 'tempotune',
   authToken: process.env.SENTRY_AUTH_TOKEN,
   silent: !process.env.CI,
   widenClientFileUpload: true,
