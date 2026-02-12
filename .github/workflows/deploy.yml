@@ -157,8 +157,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: "4-1. Run audio tests"
-        run: cd packages/audio && pnpm exec vitest run
+      - name: "4-1. Run nx affected tests"
+        run: |
+          BASE_SHA="${{ github.event.before || 'HEAD~1' }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
+          fi
+          pnpm exec nx affected --target=test --base=$BASE_SHA --head=HEAD
 
   # ──────────────────────────────────────────────
   # 5. Deploy Web — web이 affected이고 main push일 때

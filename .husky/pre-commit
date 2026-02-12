@@ -1,6 +1,6 @@
-pnpm type-check
-pnpm --filter @tempo-tune/web lint
-(cd packages/audio && pnpm exec vitest run)
+pnpm exec nx affected --target=type-check --base=HEAD~1 --head=HEAD
+pnpm exec nx affected --target=lint --base=HEAD~1 --head=HEAD
+pnpm exec nx affected --target=test --base=HEAD~1 --head=HEAD
 
 # Auto-bump web patch version on main branch
 if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then

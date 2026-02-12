@@ -18,6 +18,13 @@
         "command": "pnpm --filter @tempo-tune/shared lint",
         "cwd": "packages/shared"
       }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter @tempo-tune/shared test",
+        "cwd": "packages/shared"
+      }
     }
   }
 }

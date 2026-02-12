@@ -18,6 +18,13 @@
         "command": "pnpm --filter @tempo-tune/audio lint",
         "cwd": "packages/audio"
       }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter @tempo-tune/audio test",
+        "cwd": "packages/audio"
+      }
     }
   }
 }
