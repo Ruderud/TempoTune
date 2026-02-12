@@ -11,8 +11,139 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # ──────────────────────────────────────────────
+  # 1. Affected 분석 — 변경된 프로젝트만 감지
+  # ──────────────────────────────────────────────
+  affected:
+    name: "1. Detect affected projects"
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.check.outputs.web }}
+      mobile: ${{ steps.check.outputs.mobile }}
+      audio: ${{ steps.check.outputs.audio }}
+      shared: ${{ steps.check.outputs.shared }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: "1-1. Analyze nx affected"
+        id: check
+        run: |
+          BASE_SHA="${{ github.event.before || 'HEAD~1' }}"
+
+          # PR인 경우 base branch와 비교
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
+          fi
+
+          echo "Comparing against: $BASE_SHA"
+
+          AFFECTED=$(pnpm exec nx show projects --affected --base=$BASE_SHA --head=HEAD 2>/dev/null || echo "")
+          echo "Affected projects: $AFFECTED"
+
+          echo "web=$( echo "$AFFECTED" | grep -q '^web$' && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
+          echo "mobile=$( echo "$AFFECTED" | grep -q '^mobile$' && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
+          echo "audio=$( echo "$AFFECTED" | grep -q '^audio$' && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
+          echo "shared=$( echo "$AFFECTED" | grep -q '^shared$' && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
+
+      - name: "1-2. Print summary"
+        run: |
+          echo "### Affected Projects" >> $GITHUB_STEP_SUMMARY
+          echo "| Project | Affected |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| web     | ${{ steps.check.outputs.web }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| mobile  | ${{ steps.check.outputs.mobile }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| audio   | ${{ steps.check.outputs.audio }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| shared  | ${{ steps.check.outputs.shared }} |" >> $GITHUB_STEP_SUMMARY
+
+  # ──────────────────────────────────────────────
+  # 2. Type Check — affected 프로젝트만
+  # ──────────────────────────────────────────────
+  type-check:
+    name: "2. Type check"
+    needs: affected
+    if: needs.affected.outputs.web == 'true' || needs.affected.outputs.mobile == 'true' || needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: "2-1. Generate mobile dev config"
+        if: needs.affected.outputs.mobile == 'true'
+        run: |
+          cat > apps/mobile/src/config.generated.ts << 'GENEOF'
+          // Auto-generated for CI
+          export const DEV_MACHINE_IP = '127.0.0.1';
+          export const DEV_SERVER_PORT = 3000;
+          export const PROD_WEB_URL = 'https://tempotune.rudbeckiaz.com';
+          export const ANDROID_EMULATOR_HOST = '10.0.2.2';
+          GENEOF
+
+      - name: "2-2. Run nx affected type-check"
+        run: |
+          BASE_SHA="${{ github.event.before || 'HEAD~1' }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
+          fi
+          pnpm exec nx affected --target=type-check --base=$BASE_SHA --head=HEAD
+
+  # ──────────────────────────────────────────────
+  # 3. Lint — affected 프로젝트만
+  # ──────────────────────────────────────────────
+  lint:
+    name: "3. Lint"
+    needs: affected
+    if: needs.affected.outputs.web == 'true' || needs.affected.outputs.mobile == 'true' || needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: "3-1. Run nx affected lint"
+        run: |
+          BASE_SHA="${{ github.event.before || 'HEAD~1' }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
+          fi
+          pnpm exec nx affected --target=lint --base=$BASE_SHA --head=HEAD
+
+  # ──────────────────────────────────────────────
+  # 4. Test — audio 패키지가 affected인 경우만
+  # ──────────────────────────────────────────────
   test:
-    name: Check & Test
+    name: "4. Test"
+    needs: affected
+    if: needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -26,29 +157,21 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Generate mobile dev config
-        run: |
-          cat > apps/mobile/src/config.generated.ts << 'GENEOF'
-          // Auto-generated for CI
-          export const DEV_MACHINE_IP = '127.0.0.1';
-          export const DEV_SERVER_PORT = 3000;
-          export const PROD_WEB_URL = 'https://tempotune.rudbeckiaz.com';
-          export const ANDROID_EMULATOR_HOST = '10.0.2.2';
-          GENEOF
-
-      - name: Type check
-        run: pnpm type-check
-
-      - name: Lint (web)
-        run: pnpm --filter @tempo-tune/web lint
-
-      - name: Test
+      - name: "4-1. Run audio tests"
         run: cd packages/audio && pnpm exec vitest run
 
-  deploy:
-    name: Deploy to Cloudflare
-    needs: test
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  # ──────────────────────────────────────────────
+  # 5. Deploy Web — web이 affected이고 main push일 때
+  # ──────────────────────────────────────────────
+  deploy-web:
+    name: "5. Deploy Web"
+    needs: [affected, type-check, lint]
+    if: |
+      always() &&
+      github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+      needs.affected.outputs.web == 'true' &&
+      (needs.type-check.result == 'success' || needs.type-check.result == 'skipped') &&
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped')
     runs-on: ubuntu-latest
     environment: github-action
     permissions:
@@ -66,10 +189,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Inject version
+      - name: "5-1. Inject version"
         run: pnpm --filter @tempo-tune/web run version:inject
 
-      - name: Build & Deploy
+      - name: "5-2. Build & Deploy to Cloudflare"
         working-directory: apps/web
         run: pnpm exec opennextjs-cloudflare build && pnpm exec wrangler deploy
         env:
