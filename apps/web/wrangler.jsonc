@@ -6,5 +6,11 @@
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
-  }
+  },
+  "routes": [
+    {
+      "pattern": "tempotune.rudbeckiaz.com",
+      "custom_domain": true
+    }
+  ]
 }

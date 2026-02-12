@@ -26,6 +26,16 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Generate mobile dev config
+        run: |
+          cat > apps/mobile/src/config.generated.ts << 'GENEOF'
+          // Auto-generated for CI
+          export const DEV_MACHINE_IP = '127.0.0.1';
+          export const DEV_SERVER_PORT = 3000;
+          export const PROD_WEB_URL = 'https://tempotune.rudbeckiaz.com';
+          export const ANDROID_EMULATOR_HOST = '10.0.2.2';
+          GENEOF
+
       - name: Type check
         run: pnpm type-check
 
