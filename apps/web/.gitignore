@@ -32,6 +32,9 @@ pnpm-debug.log*
 # vercel
 .vercel
 
+# cloudflare
+.open-next/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
