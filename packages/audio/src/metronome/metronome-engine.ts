@@ -12,6 +12,7 @@ export class MetronomeEngine {
   private currentSubdivision = 0;
   private nextTickTime = 0;
   private isRunning = false;
+  private isFirstTick = false;
 
   constructor(config?: Partial<MetronomeEngineConfig>) {
     this.config = {
@@ -28,7 +29,7 @@ export class MetronomeEngine {
     this.isRunning = true;
     this.currentBeat = 0;
     this.currentSubdivision = 0;
-    this.nextTickTime = performance.now();
+    this.isFirstTick = true;
     this.scheduler.start(() => this.processTick());
   }
 
@@ -90,7 +91,12 @@ export class MetronomeEngine {
   private processTick(): void {
     const now = performance.now();
 
-    while (this.nextTickTime <= now + 100) {
+    if (this.isFirstTick) {
+      this.nextTickTime = now;
+      this.isFirstTick = false;
+    }
+
+    while (this.nextTickTime <= now) {
       const subdivisionInterval = bpmToMs(this.config.bpm) / this.config.subdivision;
 
       const isMainBeat = this.currentSubdivision === 0;

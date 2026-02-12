@@ -16,7 +16,7 @@ export function useMetronome() {
     serviceRef.current = new MetronomeAudioService();
     const unsubscribe = serviceRef.current.onTick((event: MetronomeEvent) => {
       if (event.subdivision === 0) {
-        setCurrentBeat(event.beatIndex);
+        setCurrentBeat(event.beatIndex + 1);
       }
     });
 
