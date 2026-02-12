@@ -1,0 +1,3 @@
+pnpm type-check
+pnpm --filter @tempo-tune/web lint
+cd packages/audio && pnpm exec vitest run
