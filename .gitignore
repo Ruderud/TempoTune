@@ -91,6 +91,10 @@ project.xcworkspace
 # Generated version files
 version.generated.ts
 
+# UI test screenshots (prefixed with dot)
+.screenshots/
+test-results/
+
 # Claude Code & OMC
 .claude/
 .omc/

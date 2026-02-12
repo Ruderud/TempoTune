@@ -1,7 +1,6 @@
 import type {BridgeResponse} from '@tempo-tune/shared/types';
 import {
   requestMicPermission,
-  getMicPermissionStatus,
 } from '../services/permission.service';
 
 export async function handleRequestMicPermission(): Promise<BridgeResponse> {
