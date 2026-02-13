@@ -1,11 +1,12 @@
 'use client';
 
-type TabNavigationProps = {
-  activeTab: 'metronome' | 'tuner';
-  onTabChange: (tab: 'metronome' | 'tuner') => void;
-};
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
-export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
+export function TabNavigation() {
+  const pathname = usePathname();
+  const isTuner = pathname.startsWith('/tuner');
+
   return (
     <nav className="w-full bg-gray-950 pt-4 pb-3 px-4">
       <div className="max-w-md mx-auto relative bg-gray-800/50 rounded-full p-1 backdrop-blur-sm border border-gray-700/50">
@@ -13,32 +14,32 @@ export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
         <div
           className="absolute top-1 bottom-1 w-[calc(50%-0.25rem)] bg-blue-600 rounded-full transition-all duration-300 ease-out shadow-lg shadow-blue-500/30"
           style={{
-            left: activeTab === 'metronome' ? '0.25rem' : 'calc(50% + 0.25rem)',
+            left: isTuner ? 'calc(50% + 0.25rem)' : '0.25rem',
           }}
         />
 
-        {/* Tab buttons */}
+        {/* Tab links */}
         <div className="relative flex">
-          <button
-            onClick={() => onTabChange('metronome')}
+          <Link
+            href="/metronome"
             className={`flex-1 py-3 px-6 text-center font-medium rounded-full transition-all duration-300 ${
-              activeTab === 'metronome'
+              !isTuner
                 ? 'text-white scale-[1.02]'
                 : 'text-gray-400 hover:text-gray-200'
             }`}
           >
             메트로놈
-          </button>
-          <button
-            onClick={() => onTabChange('tuner')}
+          </Link>
+          <Link
+            href="/tuner"
             className={`flex-1 py-3 px-6 text-center font-medium rounded-full transition-all duration-300 ${
-              activeTab === 'tuner'
+              isTuner
                 ? 'text-white scale-[1.02]'
                 : 'text-gray-400 hover:text-gray-200'
             }`}
           >
             튜너
-          </button>
+          </Link>
         </div>
       </div>
     </nav>
