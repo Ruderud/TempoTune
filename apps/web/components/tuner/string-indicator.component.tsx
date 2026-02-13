@@ -8,11 +8,11 @@ type StringIndicatorProps = {
 };
 
 export function StringIndicator({ strings, activeString }: StringIndicatorProps) {
-  // Display from high to low (1st string at top, 6th at bottom) like GuitarTuna
-  const displayStrings = [...strings].reverse();
+  // Display from low to high (6th string at left, 1st at right) for horizontal layout
+  const displayStrings = [...strings];
 
   return (
-    <div className="flex flex-col items-center gap-2.5">
+    <div className="flex items-center justify-center gap-3">
       {displayStrings.map((string, index) => {
         const isActive =
           activeString &&

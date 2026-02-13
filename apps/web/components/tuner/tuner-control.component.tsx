@@ -25,9 +25,9 @@ export function TunerControl({
   const stringCount = currentPreset.strings.length;
 
   return (
-    <div className="flex items-center justify-between px-5 py-3 border-b border-gray-800/50">
+    <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-gray-800/50">
       {/* Preset info */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         <select
           value={`${currentPreset.instrument}-${currentPreset.name}`}
           onChange={(e) => {
@@ -38,8 +38,8 @@ export function TunerControl({
           }}
           disabled={isListening}
           className={`
-            bg-transparent text-white text-base font-bold
-            border-none outline-none cursor-pointer
+            bg-transparent text-white text-sm font-bold
+            border-none outline-none cursor-pointer max-w-[130px]
             ${isListening ? 'opacity-60 cursor-not-allowed' : ''}
           `}
         >
@@ -53,7 +53,7 @@ export function TunerControl({
             </option>
           ))}
         </select>
-        <span className="text-xs text-gray-500">
+        <span className="text-xs text-gray-500 whitespace-nowrap">
           {presetLabel} {stringCount}현 &middot; {referenceFrequency}Hz
         </span>
       </div>
@@ -62,7 +62,7 @@ export function TunerControl({
       <button
         onClick={isListening ? onStop : onStart}
         className={`
-          relative px-5 py-2 rounded-full font-semibold text-sm transition-all duration-200
+          relative shrink-0 px-4 py-2 rounded-full font-semibold text-sm transition-all duration-200
           ${isListening
             ? 'bg-red-600/90 text-white hover:bg-red-500 active:scale-95'
             : 'bg-green-600/90 text-white hover:bg-green-500 active:scale-95'
