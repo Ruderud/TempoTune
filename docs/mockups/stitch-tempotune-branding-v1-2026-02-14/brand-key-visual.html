@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TempoTune | Master Your Rhythm</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0fd4e6",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#102022",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #051a1d;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(15, 212, 230, 0.4);
+        }
+        .waveform-container {
+            mask-image: linear-gradient(to right, transparent, black 20%, black 80%, transparent);
+        }
+        .pulse-ring {
+            border: 1px solid rgba(15, 212, 230, 0.3);
+            border-radius: 50%;
+            position: absolute;
+            transform: scale(0.5);
+            opacity: 0;
+        }
+        .grain-overlay {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            opacity: 0.05;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-white selection:bg-primary/30">
+<!-- Cinematic Background Container -->
+<div class="fixed inset-0 z-0 overflow-hidden bg-black">
+<!-- Main Artistic Background Image -->
+<div class="absolute inset-0 z-0 opacity-60">
+<img class="w-full h-full object-cover grayscale brightness-50" data-alt="Moody dark silhouette of a guitar headstock in a studio" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDVnIsGnxiMtft3BNPiRu176zkmC997R8K28ZI-uWYvfMw_qror7g65_TZ1cca6OyOkAxCgMEJFOUFVL-dq2oBwr5FCXVewGl7i9zWjbPSCBSqvmEeg-1QCA8-rc4Ah3LUnbWl6ZgPoVQapxWdw7BzzvhO1OneZgmv6ZPCCyU_LzPpqBUr5OTbk09Gj3SJSPD9h7lEdUryKAh6uMcCYibXYDiuB9NH7Y_m12EY2XkuITHXAdy_Wfie2zYyLah1hVVVUTFupHqYTVE"/>
+</div>
+<!-- Gradient Overlays for Cinematic Depth -->
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark via-transparent to-transparent opacity-90"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-background-dark via-background-dark/40 to-transparent opacity-80"></div>
+<!-- Animated Pulse Rings (Static Representation) -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full flex items-center justify-center pointer-events-none">
+<div class="w-[400px] h-[400px] border border-primary/20 rounded-full"></div>
+<div class="absolute w-[600px] h-[600px] border border-primary/10 rounded-full"></div>
+<div class="absolute w-[800px] h-[800px] border border-primary/5 rounded-full"></div>
+</div>
+<!-- Floating Waveform Graphic -->
+<div class="absolute top-[45%] right-0 lg:right-[10%] w-full lg:w-1/2 h-64 waveform-container flex items-center justify-center pointer-events-none">
+<div class="flex items-end gap-1 h-32">
+<div class="w-1 bg-primary/20 h-12 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-24 rounded-full"></div>
+<div class="w-1 bg-primary h-32 rounded-full shadow-[0_0_15px_rgba(15,212,230,0.6)]"></div>
+<div class="w-1 bg-primary/60 h-20 rounded-full"></div>
+<div class="w-1 bg-primary/30 h-16 rounded-full"></div>
+<div class="w-1 bg-primary/80 h-28 rounded-full shadow-[0_0_15px_rgba(15,212,230,0.4)]"></div>
+<div class="w-1 bg-primary h-14 rounded-full"></div>
+<div class="w-1 bg-primary/50 h-32 rounded-full"></div>
+<div class="w-1 bg-primary/20 h-24 rounded-full"></div>
+<div class="w-1 bg-primary/60 h-18 rounded-full"></div>
+<div class="w-1 bg-primary h-26 rounded-full"></div>
+<div class="w-1 bg-primary/40 h-12 rounded-full"></div>
+</div>
+</div>
+<!-- Film Grain Overlay -->
+<div class="absolute inset-0 grain-overlay"></div>
+</div>
+<!-- Layout Container -->
+<div class="relative z-10 min-h-screen flex flex-col">
+<!-- Header / Navigation -->
+<header class="px-8 py-8 flex justify-between items-center bg-transparent">
+<div class="flex items-center gap-2 group cursor-pointer">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
+<span class="material-icons text-background-dark text-xl font-bold">tune</span>
+</div>
+<span class="text-2xl font-bold tracking-tighter glow-text">TEMPO<span class="text-primary">TUNE</span></span>
+</div>
+<nav class="hidden md:flex items-center gap-12 text-sm font-medium tracking-widest uppercase text-white/60">
+<a class="hover:text-primary transition-colors duration-300" href="#">Features</a>
+<a class="hover:text-primary transition-colors duration-300" href="#">Artists</a>
+<a class="hover:text-primary transition-colors duration-300" href="#">Pricing</a>
+<a class="px-6 py-2 border border-primary/30 rounded hover:bg-primary hover:text-background-dark transition-all duration-300" href="#">Login</a>
+</nav>
+<button class="md:hidden text-primary">
+<span class="material-icons">menu</span>
+</button>
+</header>
+<!-- Main Hero Content -->
+<main class="flex-grow flex items-center px-8 lg:px-24">
+<div class="max-w-3xl space-y-8">
+<div class="space-y-2">
+<span class="inline-block px-3 py-1 bg-primary/10 border border-primary/20 text-primary text-[10px] uppercase tracking-[0.3em] font-bold rounded">
+                        Next Generation Precision
+                    </span>
+<h1 class="text-6xl lg:text-8xl font-bold leading-tight tracking-tight">
+                        Master Your <br/>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/40">Rhythm.</span>
+</h1>
+</div>
+<p class="text-xl text-white/50 max-w-lg leading-relaxed font-light">
+                    Elevate your sound with cinematic precision. TempoTune provides professional-grade tuning and metronome tools for the modern creator.
+                </p>
+<div class="flex flex-col sm:flex-row items-center gap-6 pt-4">
+<button class="w-full sm:w-auto px-10 py-4 bg-primary text-background-dark font-bold rounded hover:shadow-[0_0_30px_rgba(15,212,230,0.4)] transition-all duration-500 uppercase tracking-widest text-sm">
+                        Get Started
+                    </button>
+<button class="w-full sm:w-auto flex items-center justify-center gap-2 text-white/80 hover:text-primary transition-colors group">
+<span class="material-icons group-hover:scale-110 transition-transform">play_circle_filled</span>
+<span class="text-sm font-semibold uppercase tracking-widest">Watch Trailer</span>
+</button>
+</div>
+<!-- Subtle Status Indicators -->
+<div class="pt-12 flex items-center gap-12 border-t border-white/5">
+<div class="space-y-1">
+<p class="text-[10px] uppercase tracking-widest text-white/30">Accuracy</p>
+<p class="text-primary font-bold">0.01 Cent</p>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] uppercase tracking-widest text-white/30">Latency</p>
+<p class="text-primary font-bold">&lt; 1.5ms</p>
+</div>
+<div class="space-y-1">
+<p class="text-[10px] uppercase tracking-widest text-white/30">Engine</p>
+<p class="text-primary font-bold">Neural 2.0</p>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Visual Elements -->
+<footer class="p-8 lg:p-12 flex justify-between items-end">
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-primary hover:border-primary/40 transition-all cursor-pointer">
+<span class="material-icons text-lg">share</span>
+</div>
+<div class="w-10 h-10 rounded border border-white/10 flex items-center justify-center text-white/40 hover:text-primary hover:border-primary/40 transition-all cursor-pointer">
+<span class="material-icons text-lg">language</span>
+</div>
+</div>
+<div class="text-right hidden sm:block">
+<p class="text-[10px] uppercase tracking-[0.4em] text-white/20 mb-2">Developed For</p>
+<div class="flex gap-6 items-center opacity-30 grayscale hover:opacity-100 transition-opacity">
+<span class="font-bold tracking-tighter text-xl">MACOS</span>
+<span class="font-bold tracking-tighter text-xl">WINDOWS</span>
+<span class="font-bold tracking-tighter text-xl">IOS</span>
+</div>
+</div>
+</footer>
+</div>
+<!-- Subtle Particle Accents (Decorative) -->
+<div class="fixed inset-0 pointer-events-none z-0">
+<div class="absolute top-1/4 left-1/3 w-1 h-1 bg-primary/40 rounded-full blur-[2px]"></div>
+<div class="absolute top-1/2 left-1/4 w-1 h-1 bg-primary/30 rounded-full blur-[1px]"></div>
+<div class="absolute top-2/3 right-1/4 w-1 h-1 bg-primary/50 rounded-full blur-[3px]"></div>
+<div class="absolute bottom-1/4 right-1/3 w-2 h-2 bg-primary/20 rounded-full blur-[4px]"></div>
+</div>
+</body></html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TempoTune - Professional Desktop Metronome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#06f9f9",
+                "background-light": "#f5f8f8",
+                "background-dark": "#0f2323",
+                "surface-dark": "#162e2e",
+                "surface-darker": "#0a1717",
+              },
+              fontFamily: {
+                "display": ["Space Grotesk"]
+              },
+              borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+            },
+          },
+        }
+      </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            overflow-x: hidden;
+        }
+        .glow-primary {
+            box-shadow: 0 0 20px rgba(6, 249, 249, 0.3);
+        }
+        .glow-beat {
+            box-shadow: 0 0 30px rgba(6, 249, 249, 0.6);
+        }
+        .bg-glass {
+            background: rgba(10, 23, 23, 0.6);
+            backdrop-filter: blur(12px);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 24px;
+            width: 24px;
+            border-radius: 50%;
+            background: #06f9f9;
+            box-shadow: 0 0 10px rgba(6, 249, 249, 0.8);
+            cursor: pointer;
+            margin-top: -8px;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 8px;
+            background: #1a3a3a;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display">
+<!-- Navigation Header -->
+<header class="w-full h-16 border-b border-primary/10 flex items-center justify-between px-8 bg-glass sticky top-0 z-50">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-icons text-background-dark text-xl font-bold">graphic_eq</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary">TempoTune</h1>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-slate-400 hover:text-primary transition-colors flex items-center gap-2 text-sm font-medium">
+<span class="material-icons text-lg">tune</span>
+<span>설정</span>
+</button>
+<div class="h-4 w-[1px] bg-primary/20"></div>
+<button class="text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons">person_outline</span>
+</button>
+</div>
+</header>
+<main class="max-w-[1440px] mx-auto grid grid-cols-12 gap-8 p-8 h-[calc(100vh-64px)]">
+<!-- Main Central Control Area -->
+<section class="col-span-12 lg:col-span-8 flex flex-col gap-8">
+<!-- Beat Visualization Strip -->
+<div class="bg-surface-dark/50 border border-primary/10 rounded-xl p-8 flex flex-col items-center justify-center gap-6">
+<div class="flex items-center gap-8">
+<!-- Beat 1: Accented -->
+<div class="relative">
+<div class="w-10 h-10 rounded-full bg-primary glow-beat animate-pulse flex items-center justify-center">
+<div class="w-4 h-4 rounded-full bg-background-dark"></div>
+</div>
+<span class="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] text-primary font-bold">DOWNBEAT</span>
+</div>
+<!-- Other Beats -->
+<div class="w-8 h-8 rounded-full border-2 border-primary/40 bg-primary/10"></div>
+<div class="w-8 h-8 rounded-full border-2 border-primary/40 bg-primary/10"></div>
+<div class="w-8 h-8 rounded-full border-2 border-primary/40 bg-primary/10"></div>
+</div>
+</div>
+<!-- Massive BPM & Controls -->
+<div class="flex-1 bg-surface-dark border border-primary/10 rounded-xl p-10 flex flex-col items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
+<div class="flex items-center gap-12 mb-8 relative z-10">
+<button class="w-16 h-16 rounded-full border border-primary/20 hover:border-primary/60 hover:bg-primary/5 transition-all flex items-center justify-center group">
+<span class="material-icons text-3xl text-primary/60 group-hover:text-primary">remove</span>
+</button>
+<div class="text-center">
+<div class="text-[180px] font-bold leading-none text-primary flex items-baseline gap-4">
+                            120
+                            <span class="text-2xl font-medium text-primary/40 tracking-[0.2em]">BPM</span>
+</div>
+</div>
+<button class="w-16 h-16 rounded-full border border-primary/20 hover:border-primary/60 hover:bg-primary/5 transition-all flex items-center justify-center group">
+<span class="material-icons text-3xl text-primary/60 group-hover:text-primary">add</span>
+</button>
+</div>
+<div class="w-full max-w-2xl px-4 mb-12 relative z-10">
+<input class="w-full appearance-none bg-transparent" max="240" min="40" type="range" value="120"/>
+<div class="flex justify-between mt-4 text-[10px] text-primary/30 font-bold uppercase tracking-widest px-1">
+<span>Largo</span>
+<span>Andante</span>
+<span>Moderato</span>
+<span>Allegro</span>
+<span>Presto</span>
+</div>
+</div>
+<!-- Time Signature Chips -->
+<div class="flex items-center gap-3 relative z-10">
+<button class="px-6 py-2.5 rounded-full bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-all font-medium">2/4</button>
+<button class="px-6 py-2.5 rounded-full bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-all font-medium">3/4</button>
+<button class="px-6 py-2.5 rounded-full bg-primary border border-primary text-background-dark font-bold glow-primary">4/4</button>
+<button class="px-6 py-2.5 rounded-full bg-primary/10 border border-primary/30 text-primary hover:bg-primary/20 transition-all font-medium">6/8</button>
+<button class="w-10 h-10 rounded-full bg-surface-darker border border-primary/20 flex items-center justify-center text-primary/60 hover:text-primary">
+<span class="material-icons">more_horiz</span>
+</button>
+</div>
+</div>
+<!-- Primary Action & Custom Sound Section -->
+<div class="grid grid-cols-2 gap-8 h-48">
+<button class="bg-primary hover:bg-primary/90 transition-all rounded-xl flex flex-col items-center justify-center gap-2 group glow-primary">
+<span class="material-icons text-5xl text-background-dark font-bold group-active:scale-95 transition-transform">play_arrow</span>
+<span class="text-background-dark font-bold text-xl tracking-tight uppercase">시작 / 정지</span>
+</button>
+<div class="bg-surface-dark border border-primary/10 rounded-xl p-6 flex flex-col gap-4">
+<h3 class="text-sm font-bold text-primary/60 flex items-center gap-2">
+<span class="material-icons text-lg">audiotrack</span>
+                        커스텀 사운드
+                    </h3>
+<div class="grid grid-cols-2 gap-3">
+<button class="flex items-center gap-3 p-3 rounded-lg bg-primary border border-primary text-background-dark font-bold text-sm">
+<span class="material-icons text-lg">radio_button_checked</span>
+                            Woodblock
+                        </button>
+<button class="flex items-center gap-3 p-3 rounded-lg bg-surface-darker border border-primary/10 text-primary/60 hover:border-primary/30 hover:text-primary transition-all text-sm font-medium">
+<span class="material-icons text-lg">memory</span>
+                            Electronic
+                        </button>
+<button class="flex items-center gap-3 p-3 rounded-lg bg-surface-darker border border-primary/10 text-primary/60 hover:border-primary/30 hover:text-primary transition-all text-sm font-medium">
+<span class="material-icons text-lg">settings_input_component</span>
+                            Analog
+                        </button>
+<button class="flex items-center gap-3 p-3 rounded-lg bg-surface-darker border border-primary/10 text-primary/60 hover:border-primary/30 hover:text-primary transition-all text-sm font-medium">
+<span class="material-icons text-lg">album</span>
+                            Rimshot
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Utility Sidebar -->
+<aside class="col-span-12 lg:col-span-4 flex flex-col gap-8">
+<!-- Tap Tempo Area -->
+<div class="bg-surface-dark border border-primary/10 rounded-xl p-8 flex flex-col items-center justify-center text-center gap-6 group cursor-pointer hover:border-primary/40 transition-all active:scale-[0.98]">
+<div class="w-24 h-24 rounded-full border-2 border-dashed border-primary/30 flex items-center justify-center group-hover:border-primary/60 group-hover:scale-110 transition-all duration-300">
+<span class="material-icons text-5xl text-primary/40 group-hover:text-primary">touch_app</span>
+</div>
+<div>
+<h2 class="text-2xl font-bold text-primary mb-1">탭 템포</h2>
+<p class="text-slate-400 text-sm">리듬에 맞춰 버튼을 눌러주세요</p>
+</div>
+<div class="w-full h-2 bg-surface-darker rounded-full overflow-hidden">
+<div class="w-1/3 h-full bg-primary/40"></div>
+</div>
+</div>
+<!-- Recent History -->
+<div class="bg-surface-dark border border-primary/10 rounded-xl p-8 flex-1 flex flex-col gap-6">
+<div class="flex items-center justify-between">
+<h2 class="text-lg font-bold text-primary flex items-center gap-2">
+<span class="material-icons">history</span>
+                        최근 기록
+                    </h2>
+<button class="text-xs text-primary/40 hover:text-primary">모두 지우기</button>
+</div>
+<div class="flex flex-col gap-3 overflow-y-auto">
+<!-- History Item -->
+<div class="p-4 rounded-lg bg-surface-darker border border-primary/5 flex items-center justify-between hover:border-primary/20 transition-all cursor-pointer group">
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-primary group-hover:scale-110 transition-transform">128</span>
+<span class="text-[10px] text-primary/40 font-bold">BPM</span>
+</div>
+<div class="text-right">
+<div class="text-xs text-slate-300 font-medium">오전 11:24</div>
+<div class="text-[10px] text-slate-500 font-medium">2023.10.27</div>
+</div>
+</div>
+<div class="p-4 rounded-lg bg-surface-darker border border-primary/5 flex items-center justify-between hover:border-primary/20 transition-all cursor-pointer group">
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-primary group-hover:scale-110 transition-transform">95</span>
+<span class="text-[10px] text-primary/40 font-bold">BPM</span>
+</div>
+<div class="text-right">
+<div class="text-xs text-slate-300 font-medium">오후 09:15</div>
+<div class="text-[10px] text-slate-500 font-medium">2023.10.26</div>
+</div>
+</div>
+<div class="p-4 rounded-lg bg-surface-darker border border-primary/5 flex items-center justify-between hover:border-primary/20 transition-all cursor-pointer group opacity-60">
+<div class="flex items-baseline gap-2">
+<span class="text-2xl font-bold text-primary">144</span>
+<span class="text-[10px] text-primary/40 font-bold">BPM</span>
+</div>
+<div class="text-right">
+<div class="text-xs text-slate-300 font-medium">오후 02:40</div>
+<div class="text-[10px] text-slate-500 font-medium">2023.10.25</div>
+</div>
+</div>
+</div>
+<!-- Session Stats -->
+<div class="mt-auto pt-6 border-t border-primary/5 grid grid-cols-2 gap-4">
+<div class="bg-surface-darker p-4 rounded-lg">
+<div class="text-[10px] text-primary/40 font-bold uppercase mb-1">연습 시간</div>
+<div class="text-xl font-bold text-primary">02:45:12</div>
+</div>
+<div class="bg-surface-darker p-4 rounded-lg">
+<div class="text-[10px] text-primary/40 font-bold uppercase mb-1">총 비트 수</div>
+<div class="text-xl font-bold text-primary">19,420</div>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- Footer Stats / Info -->
+<footer class="fixed bottom-0 left-0 right-0 h-10 bg-surface-darker border-t border-primary/5 px-8 flex items-center justify-between text-[10px] font-bold tracking-widest text-primary/20 uppercase">
+<div class="flex gap-6">
+<span>Server Status: Online</span>
+<span>Latency: 4ms</span>
+</div>
+<div>© 2024 TempoTune Pro Engine</div>
+</footer>
+</body></html>

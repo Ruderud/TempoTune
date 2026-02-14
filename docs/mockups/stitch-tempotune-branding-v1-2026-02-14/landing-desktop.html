@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TempoTune - 음악의 완벽한 템포</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans+KR:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0fd4e6",
+                        "background-light": "#f6f8f8",
+                        "background-dark": "#0a1112",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "Noto Sans KR", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', 'Noto Sans KR', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .glass-nav {
+            background: rgba(10, 17, 18, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(15, 212, 230, 0.1);
+        }
+        .neon-glow {
+            box-shadow: 0 0 20px rgba(15, 212, 230, 0.3);
+        }
+        .hero-gradient {
+            background: radial-gradient(circle at 50% 50%, rgba(15, 212, 230, 0.15) 0%, rgba(10, 17, 18, 0) 70%);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 selection:bg-primary selection:text-background-dark">
+<!-- Navigation -->
+<nav class="fixed top-0 left-0 right-0 z-50 glass-nav">
+<div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-icons text-background-dark font-bold text-2xl">graphic_eq</span>
+</div>
+<span class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">TempoTune</span>
+</div>
+<div class="hidden md:flex items-center gap-10">
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">기능</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">가격</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">라이브러리</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="#">커뮤니티</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-2.5 rounded-lg border border-primary/30 text-primary text-sm font-semibold hover:bg-primary/10 transition-all">로그인</button>
+<button class="px-6 py-2.5 rounded-lg bg-primary text-background-dark text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20">시작하기</button>
+</div>
+</div>
+</nav>
+<!-- Hero Section -->
+<section class="relative pt-40 pb-24 overflow-hidden">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full hero-gradient pointer-events-none"></div>
+<div class="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="relative z-10">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-8">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-xs font-bold text-primary uppercase tracking-widest">New Version 2.0 Out Now</span>
+</div>
+<h1 class="text-5xl lg:text-7xl font-bold leading-[1.15] text-slate-900 dark:text-white mb-8">
+                    음악의 완벽한 템포, <br/>
+<span class="text-primary">TempoTune</span>
+</h1>
+<p class="text-xl text-slate-600 dark:text-slate-400 mb-10 leading-relaxed max-w-xl">
+                    전문 연주자와 작곡가를 위한 고정밀 튜닝 엔진과 스마트 메트로놈. 소수점 단위의 정밀함으로 당신의 연주를 완벽하게 서포트합니다.
+                </p>
+<div class="flex flex-wrap gap-4">
+<button class="flex items-center gap-3 px-8 py-4 bg-primary text-background-dark rounded-xl font-bold text-lg hover:brightness-110 transition-all group">
+<span class="material-icons">download</span>
+                        앱 다운로드
+                    </button>
+<button class="flex items-center gap-3 px-8 py-4 bg-slate-200 dark:bg-white/5 text-slate-900 dark:text-white rounded-xl font-bold text-lg hover:bg-white/10 transition-all border border-slate-300 dark:border-white/10">
+<span class="material-icons">language</span>
+                        웹에서 시작
+                    </button>
+</div>
+<div class="mt-12 flex items-center gap-8 grayscale opacity-50">
+<div class="flex items-center gap-2">
+<span class="material-icons text-2xl">apple</span>
+<span class="text-xs font-medium">App Store</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-icons text-2xl">play_arrow</span>
+<span class="text-xs font-medium">Google Play</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-icons text-2xl">computer</span>
+<span class="text-xs font-medium">macOS / Win</span>
+</div>
+</div>
+</div>
+<div class="relative">
+<div class="absolute -inset-10 bg-primary/20 blur-[100px] rounded-full"></div>
+<div class="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl">
+<img alt="TempoTune Dashboard" class="w-full aspect-[4/3] object-cover" data-alt="Digital audio workstation interface with neon waves" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKyAinKaHwQ51zXK5Xr20AyYGGlsHH7VHFRRTWfLfLSomUGxRKdmz9Jnbx1BzHndl6ALVtAOFaZiA3c1WDXIss31dzPK8Tt1zBq_1ch_S333SyWuwxtx_wZsMRIgEdf0xwh3fBWZeAE9Sm1i57Q8d8JhDNGbvDLFP3Y-7fjVIZvc1VT9z8nRkvylfBhHvk56CinkKhZ1FbG64i17gs7MeUZPNBDj54N0PBXzMGb36rlI-FU0xBBYr5hbImPC-ZdTb4zFFuoXD6_KI"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background-dark/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-6 left-6 right-6 p-6 rounded-xl bg-white/5 backdrop-blur-md border border-white/10">
+<div class="flex items-center justify-between mb-4">
+<span class="text-xs font-bold text-primary tracking-widest uppercase">Live Pitch Analysis</span>
+<span class="text-xs text-slate-400">440.0 Hz</span>
+</div>
+<div class="h-12 flex items-end gap-1">
+<div class="flex-1 bg-primary/20 h-4 rounded-t-sm"></div>
+<div class="flex-1 bg-primary/40 h-8 rounded-t-sm"></div>
+<div class="flex-1 bg-primary/60 h-12 rounded-t-sm"></div>
+<div class="flex-1 bg-primary h-10 rounded-t-sm"></div>
+<div class="flex-1 bg-primary/80 h-6 rounded-t-sm"></div>
+<div class="flex-1 bg-primary/50 h-9 rounded-t-sm"></div>
+<div class="flex-1 bg-primary/30 h-5 rounded-t-sm"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Platform Icons Section -->
+<section class="py-12 border-y border-white/5 bg-white/[0.02]">
+<div class="max-w-7xl mx-auto px-6">
+<div class="flex flex-wrap justify-center items-center gap-12 lg:gap-24">
+<div class="flex items-center gap-3 text-slate-400">
+<span class="material-icons text-3xl">phone_iphone</span>
+<span class="font-display font-medium tracking-tight">iOS Mobile</span>
+</div>
+<div class="flex items-center gap-3 text-slate-400">
+<span class="material-icons text-3xl">android</span>
+<span class="font-display font-medium tracking-tight">Android App</span>
+</div>
+<div class="flex items-center gap-3 text-slate-400">
+<span class="material-icons text-3xl">desktop_windows</span>
+<span class="font-display font-medium tracking-tight">Windows Native</span>
+</div>
+<div class="flex items-center gap-3 text-slate-400">
+<span class="material-icons text-3xl">laptop_mac</span>
+<span class="font-display font-medium tracking-tight">macOS Silicon</span>
+</div>
+<div class="flex items-center gap-3 text-slate-400">
+<span class="material-icons text-3xl">public</span>
+<span class="font-display font-medium tracking-tight">Cloud Web</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Section -->
+<section class="py-32 relative">
+<div class="max-w-7xl mx-auto px-6">
+<div class="text-center mb-20">
+<h2 class="text-primary font-bold tracking-widest uppercase text-sm mb-4">핵심 기능</h2>
+<h3 class="text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white mb-6">프로를 위한 완벽한 도구</h3>
+<p class="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto text-lg leading-relaxed">
+                    TempoTune은 단순한 도구를 넘어 연주자의 감각을 극대화하는 파트너입니다.
+                </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Feature 1 -->
+<div class="p-10 rounded-2xl bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 hover:border-primary/50 transition-all group">
+<div class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-8 group-hover:bg-primary transition-colors">
+<span class="material-icons text-primary group-hover:text-background-dark text-3xl">vibration</span>
+</div>
+<h4 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">정밀 튜너</h4>
+<p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                        0.1센트 단위의 초정밀 피치 분석 엔진을 탑재했습니다. 어떤 환경에서도 빠르고 정확한 튜닝이 가능합니다.
+                    </p>
+</div>
+<!-- Feature 2 -->
+<div class="p-10 rounded-2xl bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 hover:border-primary/50 transition-all group">
+<div class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-8 group-hover:bg-primary transition-colors">
+<span class="material-icons text-primary group-hover:text-background-dark text-3xl">metronome</span>
+</div>
+<h4 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">프로 메트로놈</h4>
+<p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                        단순 비트를 넘어 복합 박자와 리듬 시각화 기능을 제공합니다. 곡의 감정적 템포를 완벽하게 제어하세요.
+                    </p>
+</div>
+<!-- Feature 3 -->
+<div class="p-10 rounded-2xl bg-white dark:bg-white/[0.03] border border-slate-200 dark:border-white/5 hover:border-primary/50 transition-all group">
+<div class="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-8 group-hover:bg-primary transition-colors">
+<span class="material-icons text-primary group-hover:text-background-dark text-3xl">cloud_sync</span>
+</div>
+<h4 class="text-2xl font-bold text-slate-900 dark:text-white mb-4">하이브리드 앱</h4>
+<p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                        모바일에서 연습하던 세팅 그대로 데스크톱에서 이어가세요. 클라우드 동기화로 어디서든 음악에 집중할 수 있습니다.
+                    </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Visual Banner -->
+<section class="py-24">
+<div class="max-w-7xl mx-auto px-6">
+<div class="relative rounded-3xl overflow-hidden aspect-[21/9] flex items-center">
+<img alt="Studio Background" class="absolute inset-0 w-full h-full object-cover" data-alt="Modern recording studio with blue and pink ambient lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDu4xzB4z7jqS1l8SWfhpDmjJCufM3Qth10I6Xk_-FL5GqQWHii3jEpbOTq9jZe1tqmCLxN3ZOb2k4cZwC2iBpl4oMtSWcferavrpNVeOHoVUocs1VFXFmdFrAC0QLSNwzBfrTVk9v30XSXa3Keyz2fLq6t2CWp82SVmT-HiuZyIeof-PCn1MFIFs9NDt-aktGookyuvvEo1EC1z8rUznfDKkUlCvtJnykiv5efQ-RwZ8DU4X3jjzKku3fJmgfgjm_jjhY7GausZ2M"/>
+<div class="absolute inset-0 bg-background-dark/60"></div>
+<div class="relative z-10 px-12 md:px-24">
+<h2 class="text-4xl md:text-5xl font-bold text-white mb-6">당신의 소리를<br/>더 선명하게.</h2>
+<p class="text-lg text-slate-300 max-w-md mb-8">
+                        전 세계 100만 명 이상의 뮤지션이 선택한 TempoTune과 함께 최상의 퍼포먼스를 완성하세요.
+                    </p>
+<button class="px-8 py-3 bg-primary text-background-dark rounded-lg font-bold hover:scale-105 transition-transform">
+                        무료로 시작하기
+                    </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="bg-background-dark border-t border-white/5 pt-20 pb-10">
+<div class="max-w-7xl mx-auto px-6">
+<div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-20">
+<div class="col-span-2 lg:col-span-2">
+<div class="flex items-center gap-2 mb-6">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
+<span class="material-icons text-background-dark text-xl font-bold">graphic_eq</span>
+</div>
+<span class="text-xl font-bold text-white">TempoTune</span>
+</div>
+<p class="text-slate-500 max-w-xs leading-relaxed">
+                        우리는 기술을 통해 음악적 정밀함을 재정의합니다. 모든 뮤지션이 완벽한 템포를 찾을 수 있도록 끊임없이 혁신합니다.
+                    </p>
+</div>
+<div>
+<h5 class="text-white font-bold mb-6">제품</h5>
+<ul class="space-y-4 text-slate-500 text-sm">
+<li><a class="hover:text-primary transition-colors" href="#">주요 기능</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">튜너 엔진</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">메트로놈 설정</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">업데이트 소식</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-white font-bold mb-6">지원</h5>
+<ul class="space-y-4 text-slate-500 text-sm">
+<li><a class="hover:text-primary transition-colors" href="#">고객 센터</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">이용 약관</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">개인정보 처리방침</a></li>
+<li><a class="hover:text-primary transition-colors" href="#">자주 묻는 질문</a></li>
+</ul>
+</div>
+<div>
+<h5 class="text-white font-bold mb-6">소셜</h5>
+<div class="flex gap-4">
+<a class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all" href="#">
+<span class="material-icons text-lg">facebook</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all" href="#">
+<span class="material-icons text-lg">camera_alt</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all" href="#">
+<span class="material-icons text-lg">play_circle</span>
+</a>
+</div>
+</div>
+</div>
+<div class="flex flex-col md:flex-row justify-between items-center pt-10 border-t border-white/5 text-slate-600 text-sm">
+<p>© 2024 TempoTune Inc. All rights reserved.</p>
+<div class="flex gap-8 mt-4 md:mt-0">
+<span class="flex items-center gap-1"><span class="material-icons text-sm">language</span> 한국어 (KR)</span>
+<a class="hover:text-white" href="#">Status</a>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

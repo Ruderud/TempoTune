@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0df2f2",
+              "background-light": "#f5f8f8",
+              "background-dark": "#102222",
+              "surface": "#1a2e2e",
+              "accent-muted": "rgba(13, 242, 242, 0.2)",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style type="text/tailwindcss">
+        body {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            min-height: max(884px, 100dvh);
+        }
+        .glow-primary {
+            box-shadow: 0 0 15px rgba(13, 242, 242, 0.4);
+        }
+        .headstock-bg {
+            background: linear-gradient(180deg, rgba(26, 46, 46, 0.8) 0%, rgba(16, 34, 34, 1) 100%);
+        }
+        .active-string-glow {
+            box-shadow: 0 0 20px rgba(13, 242, 242, 0.3);
+            border-color: rgba(13, 242, 242, 0.6);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-dark font-display text-slate-100 flex flex-col overflow-hidden">
+<div class="px-6 pt-12 pb-2 flex justify-between items-center w-full">
+<div class="flex items-center gap-2">
+<span class="text-xs font-bold tracking-widest text-primary">TEMPO<span class="text-white">TUNE</span></span>
+</div>
+<div class="flex items-center gap-4">
+<span class="text-[10px] text-primary/60 font-mono">수동 모드 활성</span>
+<div class="w-2 h-2 rounded-full bg-primary glow-primary"></div>
+</div>
+</div>
+<div class="px-4 py-2 flex items-center justify-between gap-3">
+<button class="flex-1 flex items-center justify-center gap-2 bg-surface border border-primary/20 py-2.5 rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors">
+<span class="material-icons text-sm text-primary">tune</span>
+<span>표준 기타</span>
+</button>
+<div class="flex-1 bg-surface border border-primary/20 p-1 rounded-lg flex items-center">
+<button class="flex-1 py-1.5 rounded-md text-xs font-bold text-primary/40 hover:text-primary transition-colors">자동</button>
+<button class="flex-1 py-1.5 rounded-md text-xs font-bold bg-primary text-background-dark">수동</button>
+</div>
+<button class="px-6 py-2.5 bg-primary rounded-lg text-background-dark font-bold text-sm shadow-lg shadow-primary/20 flex items-center gap-2">
+<span class="material-icons text-sm">play_arrow</span>
+<span>시작</span>
+</button>
+</div>
+<div class="px-4 pt-6 flex flex-col items-center">
+<div class="flex items-end gap-3">
+<div class="text-6xl font-bold text-white tracking-tighter">E<span class="text-2xl ml-1 text-primary/80">2</span></div>
+<div class="mb-2 flex flex-col">
+<span class="text-[10px] text-primary/60 font-mono">440.0 Hz</span>
+<div class="flex items-center gap-1">
+<span class="text-xl font-bold text-primary">+2</span>
+<span class="text-[10px] text-primary/60">cents</span>
+</div>
+</div>
+</div>
+<div class="w-full max-w-xs mt-4 relative h-10 flex items-center">
+<div class="absolute inset-x-0 h-[1px] bg-primary/20"></div>
+<div class="absolute left-1/2 -translate-x-1/2 h-4 w-[2px] bg-primary"></div>
+<div class="flex justify-between w-full px-2">
+<div class="flex flex-col items-center"><div class="h-1.5 w-[1px] bg-primary/40 mb-1"></div><span class="text-[8px] font-mono text-primary/40">-50</span></div>
+<div class="flex flex-col items-center"><div class="h-1.5 w-[1px] bg-primary/40 mb-1"></div><span class="text-[8px] font-mono text-primary/40">-25</span></div>
+<div class="flex flex-col items-center"><div class="h-2 w-[2px] bg-primary mb-1"></div><span class="text-[8px] font-mono text-primary">0</span></div>
+<div class="flex flex-col items-center"><div class="h-1.5 w-[1px] bg-primary/40 mb-1"></div><span class="text-[8px] font-mono text-primary/40">+25</span></div>
+<div class="flex flex-col items-center"><div class="h-1.5 w-[1px] bg-primary/40 mb-1"></div><span class="text-[8px] font-mono text-primary/40">+50</span></div>
+</div>
+<div class="absolute left-[52%] h-6 w-0.5 bg-primary glow-primary z-10"></div>
+</div>
+</div>
+<div class="flex-1 flex flex-col items-center justify-center py-4 relative">
+<div class="relative w-64 h-[400px] flex items-center justify-center">
+<div class="absolute inset-0 bg-surface/40 border border-primary/10 rounded-t-[40px] rounded-b-[20px] shadow-2xl overflow-hidden headstock-bg">
+<div class="absolute inset-0 flex justify-around px-8">
+<div class="w-[1px] h-full bg-white/5"></div>
+<div class="w-[1px] h-full bg-white/10"></div>
+<div class="w-[1px] h-full bg-white/15"></div>
+<div class="w-[1px] h-full bg-white/15"></div>
+<div class="w-[1px] h-full bg-white/10"></div>
+<div class="w-[1px] h-full bg-white/5"></div>
+</div>
+</div>
+<div class="absolute inset-0 flex flex-col justify-around py-12">
+<div class="flex flex-col gap-12 absolute -left-12 top-16">
+<button class="group flex items-center gap-2">
+<div class="w-16 h-16 rounded-full bg-primary/10 border-2 border-primary active-string-glow flex flex-col items-center justify-center transition-all">
+<span class="text-lg font-bold text-primary">E</span>
+<span class="text-[10px] text-primary/80">6번줄</span>
+</div>
+<div class="w-12 h-[2px] bg-primary shadow-lg shadow-primary/40"></div>
+</button>
+<button class="group flex items-center gap-2 opacity-60 hover:opacity-100">
+<div class="w-14 h-14 rounded-full bg-surface border border-primary/20 flex flex-col items-center justify-center transition-all">
+<span class="text-md font-bold text-white">A</span>
+<span class="text-[8px] text-white/40">5번줄</span>
+</div>
+<div class="w-10 h-[1px] bg-primary/20"></div>
+</button>
+<button class="group flex items-center gap-2 opacity-60 hover:opacity-100">
+<div class="w-14 h-14 rounded-full bg-surface border border-primary/20 flex flex-col items-center justify-center transition-all">
+<span class="text-md font-bold text-white">D</span>
+<span class="text-[8px] text-white/40">4번줄</span>
+</div>
+<div class="w-10 h-[1px] bg-primary/20"></div>
+</button>
+</div>
+<div class="flex flex-col gap-12 absolute -right-12 top-16 items-end">
+<button class="group flex items-center gap-2 opacity-60 hover:opacity-100">
+<div class="w-10 h-[1px] bg-primary/20"></div>
+<div class="w-14 h-14 rounded-full bg-surface border border-primary/20 flex flex-col items-center justify-center transition-all">
+<span class="text-md font-bold text-white">G</span>
+<span class="text-[8px] text-white/40">3번줄</span>
+</div>
+</button>
+<button class="group flex items-center gap-2 opacity-60 hover:opacity-100">
+<div class="w-10 h-[1px] bg-primary/20"></div>
+<div class="w-14 h-14 rounded-full bg-surface border border-primary/20 flex flex-col items-center justify-center transition-all">
+<span class="text-md font-bold text-white">B</span>
+<span class="text-[8px] text-white/40">2번줄</span>
+</div>
+</button>
+<button class="group flex items-center gap-2 opacity-60 hover:opacity-100">
+<div class="w-10 h-[1px] bg-primary/20"></div>
+<div class="w-14 h-14 rounded-full bg-surface border border-primary/20 flex flex-col items-center justify-center transition-all">
+<span class="text-md font-bold text-white">E</span>
+<span class="text-[8px] text-white/40">1번줄</span>
+</div>
+</button>
+</div>
+</div>
+<div class="absolute bottom-8 text-[10px] text-primary/40 font-bold tracking-widest uppercase">Manual String Select</div>
+</div>
+</div>
+<div class="px-6 pb-6">
+<div class="flex items-center justify-between text-xs text-primary/40 border-t border-primary/10 pt-4">
+<div class="flex flex-col">
+<span>목표 주파수</span>
+<span class="text-primary font-mono font-bold">82.41 Hz</span>
+</div>
+<div class="text-center bg-primary/5 px-4 py-2 rounded-lg border border-primary/10">
+<span class="text-primary/60">현재 스트링: </span>
+<span class="text-primary font-bold">E2 (저음)</span>
+</div>
+<div class="flex flex-col items-end">
+<span>공차 범위</span>
+<span class="text-primary font-mono font-bold">±0.5 Cents</span>
+</div>
+</div>
+</div>
+<nav class="bg-background-dark border-t border-primary/10 px-8 pt-4 pb-8 flex items-center justify-between">
+<button class="flex flex-col items-center gap-1 text-primary/40">
+<span class="material-icons">home</span>
+<span class="text-[10px]">홈</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-icons">graphic_eq</span>
+<span class="text-[10px]">튜너</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary/40">
+<span class="material-icons">timer</span>
+<span class="text-[10px]">메트로놈</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary/40">
+<span class="material-icons">settings</span>
+<span class="text-[10px]">설정</span>
+</button>
+</nav>
+<div class="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
+<div class="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[120px]"></div>
+</div>
+
+</body></html>

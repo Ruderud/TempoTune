@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TempoTune - Professional Desktop Tuner</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0df2f2",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#102222",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            overflow: hidden;
+        }
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(13, 242, 242, 0.3);
+        }
+        .glow-text {
+            text-shadow: 0 0 10px rgba(13, 242, 242, 0.6);
+        }
+        .grid-bg {
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(13, 242, 242, 0.05) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(13, 242, 242, 0.05) 1px, transparent 1px);
+        }
+        .cents-line {
+            height: 100%;
+            width: 2px;
+            background: rgba(13, 242, 242, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-display">
+<!-- Top Navigation Bar -->
+<header class="h-16 border-b border-primary/10 bg-background-light dark:bg-background-dark/80 backdrop-blur-md flex items-center justify-between px-6 z-50">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-icons text-background-dark text-xl font-bold">graphic_eq</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary uppercase">TempoTune</h1>
+</div>
+<div class="h-8 w-px bg-primary/20"></div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-primary/20 hover:bg-primary/10 transition-colors">
+<span class="text-xs uppercase opacity-60">프리셋</span>
+<span class="font-medium">Standard E</span>
+<span class="material-icons text-sm">expand_more</span>
+</button>
+<div class="flex bg-primary/10 p-1 rounded-lg">
+<button class="px-4 py-1 rounded bg-primary text-background-dark font-bold text-sm">자동</button>
+<button class="px-4 py-1 rounded text-primary/60 font-bold text-sm hover:text-primary transition-colors">수동</button>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4">
+<div class="flex flex-col items-end">
+<span class="text-[10px] uppercase opacity-50 tracking-widest">입력 신호</span>
+<div class="flex gap-0.5 h-3 items-end">
+<div class="w-1 h-1/2 bg-primary"></div>
+<div class="w-1 h-3/4 bg-primary"></div>
+<div class="w-1 h-full bg-primary"></div>
+<div class="w-1 h-2/3 bg-primary"></div>
+<div class="w-1 h-1/2 bg-primary/20"></div>
+</div>
+</div>
+<button class="flex items-center gap-2 bg-primary px-6 py-2 rounded-lg text-background-dark font-bold hover:brightness-110 transition-all glow-cyan">
+<span class="material-icons text-lg">stop</span>
+                    중지
+                </button>
+</div>
+<button class="text-primary/60 hover:text-primary">
+<span class="material-icons">settings</span>
+</button>
+</div>
+</header>
+<main class="flex-1 flex overflow-hidden">
+<!-- Left Sidebar: Instrument Panel -->
+<aside class="w-20 border-r border-primary/10 flex flex-col items-center py-6 gap-6 bg-background-light dark:bg-background-dark/40">
+<span class="text-[10px] text-primary/50 font-bold uppercase vertical-text transform -rotate-180" style="writing-mode: vertical-rl;">INSTRUMENT</span>
+<div class="flex flex-col gap-3">
+<!-- String Selectors -->
+<button class="w-10 h-10 rounded-full border border-primary/20 flex items-center justify-center text-xs font-bold hover:bg-primary/20 transition-all">E4</button>
+<button class="w-10 h-10 rounded-full border border-primary/20 flex items-center justify-center text-xs font-bold hover:bg-primary/20 transition-all">B3</button>
+<button class="w-10 h-10 rounded-full border border-primary/20 flex items-center justify-center text-xs font-bold hover:bg-primary/20 transition-all">G3</button>
+<button class="w-10 h-10 rounded-full border border-primary/20 flex items-center justify-center text-xs font-bold hover:bg-primary/20 transition-all">D3</button>
+<button class="w-10 h-10 rounded-full border border-primary/20 flex items-center justify-center text-xs font-bold hover:bg-primary/20 transition-all">A2</button>
+<button class="w-12 h-12 rounded-full border-2 border-primary bg-primary/10 flex items-center justify-center text-sm font-black text-primary glow-cyan">E2</button>
+</div>
+<div class="mt-auto relative w-full h-48 flex justify-center">
+<div class="absolute inset-0 bg-primary/5 rounded-t-full mx-4"></div>
+<span class="material-icons text-primary/20 text-4xl mt-4">guitar</span>
+</div>
+</aside>
+<!-- Main Tuner Canvas -->
+<section class="flex-1 relative flex flex-col grid-bg overflow-hidden">
+<!-- Status Badge -->
+<div class="absolute top-8 left-1/2 -translate-x-1/2 flex items-center gap-3">
+<div class="flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/30">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-xs font-bold text-primary tracking-widest uppercase">튜닝 상태: 인 튠</span>
+</div>
+</div>
+<!-- Central Pitch Display -->
+<div class="flex-1 flex flex-col items-center justify-center relative">
+<!-- Cents Arc/Gauge -->
+<div class="relative w-[500px] h-[250px] flex items-center justify-center">
+<!-- Gauge Scale -->
+<div class="absolute bottom-0 w-full h-1 bg-primary/10 rounded-full"></div>
+<!-- Tick Marks -->
+<div class="absolute bottom-1 w-full flex justify-between px-2 items-end h-8 opacity-40">
+<div class="cents-line h-6"></div>
+<div class="cents-line"></div>
+<div class="cents-line"></div>
+<div class="cents-line"></div>
+<div class="cents-line h-6"></div>
+<div class="cents-line"></div>
+<div class="cents-line"></div>
+<div class="cents-line"></div>
+<div class="cents-line h-8 w-1 bg-primary"></div>
+<div class="cents-line"></div>
+<div class="cents-line"></div>
+<div class="cents-line"></div>
+<div class="cents-line h-6"></div>
+<div class="cents-line"></div>
+<div class="cents-line"></div>
+<div class="cents-line"></div>
+<div class="cents-line h-6"></div>
+</div>
+<!-- Large Note Display -->
+<div class="flex flex-col items-center">
+<span class="text-[12rem] font-black leading-none text-primary glow-text tracking-tighter">E<sub class="text-4xl">2</sub></span>
+<div class="flex items-center gap-4 -mt-4">
+<span class="text-2xl font-light opacity-60">82.41 Hz</span>
+<span class="text-4xl font-bold text-primary">+0.2<span class="text-lg ml-1 opacity-60">Cents</span></span>
+</div>
+</div>
+<!-- Needle -->
+<div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-32 bg-primary glow-cyan shadow-lg z-10 transition-transform duration-75" style="transform-origin: bottom center; transform: rotate(1deg);">
+<div class="w-3 h-3 rounded-full bg-primary absolute -top-1.5 -left-1"></div>
+</div>
+</div>
+</div>
+<!-- Frequency Trend Graph -->
+<div class="h-48 border-t border-primary/10 bg-background-dark/60 p-4 relative">
+<div class="absolute top-2 left-4 flex gap-4 text-[10px] uppercase font-bold text-primary/40 tracking-widest">
+<span>실시간 주파수 분석</span>
+<span class="text-primary/20">|</span>
+<span>128ms 레이턴시</span>
+</div>
+<div class="w-full h-full flex items-end gap-[2px] pb-2">
+<!-- Mock wave data -->
+<div class="flex-1 bg-primary/10 rounded-t-sm" style="height: 30%;"></div>
+<div class="flex-1 bg-primary/20 rounded-t-sm" style="height: 45%;"></div>
+<div class="flex-1 bg-primary/30 rounded-t-sm" style="height: 60%;"></div>
+<div class="flex-1 bg-primary/40 rounded-t-sm" style="height: 55%;"></div>
+<div class="flex-1 bg-primary/60 rounded-t-sm" style="height: 80%;"></div>
+<div class="flex-1 bg-primary rounded-t-sm glow-cyan" style="height: 95%;"></div>
+<div class="flex-1 bg-primary rounded-t-sm glow-cyan" style="height: 98%;"></div>
+<div class="flex-1 bg-primary rounded-t-sm glow-cyan" style="height: 94%;"></div>
+<div class="flex-1 bg-primary/60 rounded-t-sm" style="height: 70%;"></div>
+<div class="flex-1 bg-primary/40 rounded-t-sm" style="height: 50%;"></div>
+<div class="flex-1 bg-primary/30 rounded-t-sm" style="height: 40%;"></div>
+<div class="flex-1 bg-primary/20 rounded-t-sm" style="height: 35%;"></div>
+<div class="flex-1 bg-primary/10 rounded-t-sm" style="height: 25%;"></div>
+<div class="flex-1 bg-primary/20 rounded-t-sm" style="height: 40%;"></div>
+<div class="flex-1 bg-primary/30 rounded-t-sm" style="height: 60%;"></div>
+<div class="flex-1 bg-primary/40 rounded-t-sm" style="height: 80%;"></div>
+<div class="flex-1 bg-primary/60 rounded-t-sm" style="height: 85%;"></div>
+<div class="flex-1 bg-primary rounded-t-sm glow-cyan" style="height: 92%;"></div>
+<div class="flex-1 bg-primary rounded-t-sm glow-cyan" style="height: 96%;"></div>
+<div class="flex-1 bg-primary/80 rounded-t-sm" style="height: 80%;"></div>
+<div class="flex-1 bg-primary/60 rounded-t-sm" style="height: 60%;"></div>
+<div class="flex-1 bg-primary/40 rounded-t-sm" style="height: 40%;"></div>
+</div>
+</div>
+</section>
+<!-- Right Sidebar: Quick Settings -->
+<aside class="w-64 border-l border-primary/10 p-6 flex flex-col gap-8 bg-background-light dark:bg-background-dark/40">
+<div>
+<h3 class="text-xs font-bold uppercase tracking-widest text-primary mb-4">빠른 설정</h3>
+<!-- A4 Frequency Selection -->
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<label class="text-sm opacity-60">A4 기준 주파수</label>
+<span class="text-primary font-bold">440 Hz</span>
+</div>
+<div class="relative h-1.5 w-full bg-primary/10 rounded-full">
+<div class="absolute h-full w-3/4 bg-primary rounded-full"></div>
+<div class="absolute h-4 w-4 bg-primary rounded-full -top-[5px] left-3/4 shadow-lg border-2 border-background-dark"></div>
+</div>
+<div class="flex justify-between text-[10px] opacity-40">
+<span>432</span>
+<span>440</span>
+<span>448</span>
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<label class="text-sm opacity-60">입력 감도</label>
+<span class="text-primary font-bold">85%</span>
+</div>
+<div class="relative h-1.5 w-full bg-primary/10 rounded-full">
+<div class="absolute h-full w-[85%] bg-primary rounded-full"></div>
+<div class="absolute h-4 w-4 bg-primary rounded-full -top-[5px] left-[85%] shadow-lg border-2 border-background-dark"></div>
+</div>
+</div>
+<div class="p-4 bg-primary/5 rounded-xl border border-primary/10 space-y-3">
+<h4 class="text-xs font-bold opacity-40 uppercase">환경 설정</h4>
+<div class="flex items-center justify-between">
+<span class="text-sm">노이즈 캔슬링</span>
+<div class="w-10 h-5 bg-primary rounded-full p-1 flex justify-end items-center">
+<div class="w-3 h-3 bg-background-dark rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-sm">어두운 테마</span>
+<div class="w-10 h-5 bg-primary rounded-full p-1 flex justify-end items-center">
+<div class="w-3 h-3 bg-background-dark rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="mt-auto">
+<div class="flex items-center gap-3 p-3 bg-primary/10 rounded-lg">
+<div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+<span class="material-icons text-primary">mic</span>
+</div>
+<div>
+<p class="text-[10px] opacity-50 uppercase">활성 장치</p>
+<p class="text-xs font-bold truncate">Focusrite Scarlett 2i2</p>
+</div>
+</div>
+</div>
+</aside>
+</main>
+<!-- Footer Status Bar -->
+<footer class="h-8 border-t border-primary/10 flex items-center justify-between px-6 text-[10px] bg-background-dark/80 backdrop-blur-md opacity-60 font-medium">
+<div class="flex gap-4">
+<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span> 시스템 정상</span>
+<span>CPU 점유율: 1.2%</span>
+<span>샘플링: 48kHz / 24bit</span>
+</div>
+<div class="flex gap-4 uppercase tracking-widest">
+<span>v2.4.0 Build Stable</span>
+<span>© 2024 TEMPOTUNE LABS</span>
+</div>
+</footer>
+</body></html>

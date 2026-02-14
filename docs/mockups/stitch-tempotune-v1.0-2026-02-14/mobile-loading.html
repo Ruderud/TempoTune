@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0df2f2",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#102222",
+                        "neutral-dark": "#1a2e2e",
+                        "neutral-muted": "#2a4242",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(13, 242, 242, 0.4);
+        }
+        .skeleton-pulse {
+            background: linear-gradient(90deg, #1a2e2e 25%, #2a4242 50%, #1a2e2e 75%);
+            background-size: 200% 100%;
+        }
+    </style>
+<title>TempoTune Loading</title>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-white overflow-hidden h-screen flex flex-col justify-between p-6 pb-safe pt-safe">
+<!-- Background Skeleton Layer (Structural Blueprint) -->
+<div class="fixed inset-0 pointer-events-none opacity-20 flex flex-col items-center justify-center p-8 space-y-12">
+<!-- Tuner Dial Skeleton -->
+<div class="w-64 h-64 rounded-full border-4 border-neutral-muted flex items-center justify-center relative">
+<div class="absolute inset-4 rounded-full border border-neutral-muted/50"></div>
+<div class="w-1 h-32 bg-neutral-muted rounded-full origin-bottom -translate-y-16 rotate-45"></div>
+</div>
+<!-- Spectral Wave Skeleton -->
+<div class="w-full h-32 flex items-end justify-between space-x-1">
+<div class="flex-1 bg-neutral-muted rounded-t h-12"></div>
+<div class="flex-1 bg-neutral-muted rounded-t h-20"></div>
+<div class="flex-1 bg-neutral-muted rounded-t h-32"></div>
+<div class="flex-1 bg-neutral-muted rounded-t h-24"></div>
+<div class="flex-1 bg-neutral-muted rounded-t h-16"></div>
+<div class="flex-1 bg-neutral-muted rounded-t h-28"></div>
+<div class="flex-1 bg-neutral-muted rounded-t h-14"></div>
+<div class="flex-1 bg-neutral-muted rounded-t h-8"></div>
+<div class="flex-1 bg-neutral-muted rounded-t h-20"></div>
+<div class="flex-1 bg-neutral-muted rounded-t h-32"></div>
+<div class="flex-1 bg-neutral-muted rounded-t h-26"></div>
+<div class="flex-1 bg-neutral-muted rounded-t h-12"></div>
+</div>
+</div>
+<!-- Top Navigation / Status (Safe Area Aware) -->
+<div class="relative z-10 flex justify-between items-center w-full">
+<div class="text-[10px] tracking-widest text-primary uppercase font-bold">Initializing Engine</div>
+<div class="text-[10px] tracking-widest text-primary/60 uppercase font-medium">v2.4.0</div>
+</div>
+<!-- Main Loading Content -->
+<div class="relative z-10 flex flex-col items-center justify-center flex-grow space-y-8">
+<!-- Logo Animation Area -->
+<div class="relative flex flex-col items-center">
+<div class="w-20 h-20 rounded-xl bg-background-dark border-2 border-primary flex items-center justify-center glow-cyan mb-6">
+<span class="material-icons text-primary text-5xl">graphic_eq</span>
+</div>
+<h1 class="text-3xl font-bold tracking-tighter text-white">Tempo<span class="text-primary">Tune</span></h1>
+</div>
+<!-- Progress and Status -->
+<div class="w-full max-w-[280px] space-y-4">
+<!-- Progress Bar Container -->
+<div class="w-full h-1 bg-neutral-dark rounded-full overflow-hidden">
+<div class="h-full bg-primary w-2/3 glow-cyan"></div>
+</div>
+<!-- Dynamic Korean Status Text -->
+<div class="flex flex-col items-center space-y-1">
+<p class="text-sm font-medium text-white/90">오디오 엔진 초기화 중...</p>
+<p class="text-xs text-primary/60">마이크 연결 확인 중...</p>
+</div>
+</div>
+</div>
+<!-- Bottom Actions (Safe Area Aware) -->
+<div class="relative z-10 flex justify-between items-center w-full pt-4 border-t border-neutral-muted/30">
+<button class="text-sm text-neutral-muted hover:text-primary transition-colors flex items-center space-x-2 py-2 px-4 rounded-lg bg-neutral-dark/50">
+<span class="material-icons text-base">refresh</span>
+<span>재시도</span>
+</button>
+<div class="flex space-x-6">
+<button class="text-sm text-neutral-muted hover:text-white transition-colors py-2">
+                도움말
+            </button>
+<button class="text-sm text-neutral-muted hover:text-white transition-colors py-2">
+                설정
+            </button>
+</div>
+</div>
+<!-- Optional Detail for Premium Look -->
+<div class="absolute bottom-12 left-1/2 -translate-x-1/2 opacity-10">
+<img alt="Subtle technical wave pattern backdrop" class="w-64" data-alt="Subtle cyan audio wave pattern background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtslJft_4rs4NRgoJKxzxgZ_WkSdGLzjNqJZi2JdSqb1XuFyv3sTQUg3_53DhyXhioNt2KpEghvj00mduQg--PodOHv4aJwAGxCGaMAQVO5KTt-OT3MKolNsE8XCTetxMJGURt9FpCmBb8OX0wBNIc50Tt1C-yw3wtxzdfw5NOgUiSnt1dlOtXntvBFWrR2djBeyXA_hQ6tc-cBfcY7aXPqxbN4nVfhcdtjbDa-XwmUZyRPA0nSldyav97ZW-oPzGJk1cW0w0w"/>
+</div>
+</body></html>

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TempoTune Desktop Tuner</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#06f9f9",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#0f2323",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #0f2323;
+            color: #ffffff;
+            overflow: hidden;
+        }
+        .glass-panel {
+            background: rgba(15, 35, 35, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(6, 249, 249, 0.1);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 15px rgba(6, 249, 249, 0.3);
+        }
+        .glow-cyan-strong {
+            box-shadow: 0 0 25px rgba(6, 249, 249, 0.6);
+        }
+        .grid-bg {
+            background-image: radial-gradient(circle at 2px 2px, rgba(6, 249, 249, 0.05) 1px, transparent 0);
+            background-size: 40px 40px;
+        }
+    </style>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="h-16 border-b border-primary/20 flex items-center justify-between px-6 glass-panel z-50">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
+<span class="material-icons text-background-dark">music_note</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight text-primary">TempoTune</h1>
+</div>
+<div class="h-6 w-px bg-primary/20 mx-2"></div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-primary/10 transition-colors">
+<span class="text-sm font-medium opacity-70">프리셋</span>
+<span class="text-sm font-bold">Standard E</span>
+<span class="material-icons text-xs">expand_more</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="bg-background-dark/50 p-1 rounded-lg border border-primary/20 flex">
+<button class="px-4 py-1.5 rounded text-sm font-medium transition-all opacity-40 hover:opacity-100">자동</button>
+<button class="px-4 py-1.5 rounded text-sm font-bold transition-all bg-primary text-background-dark shadow-lg shadow-primary/20">수동</button>
+</div>
+<button class="flex items-center gap-2 bg-red-500/10 border border-red-500/50 hover:bg-red-500 hover:text-white text-red-400 px-6 py-1.5 rounded font-bold transition-all">
+<span class="material-icons text-sm">stop</span>
+<span>중지</span>
+</button>
+</div>
+</header>
+<main class="flex-1 flex overflow-hidden grid-bg relative">
+<!-- Sidebar Left (Tuning Status) -->
+<div class="w-80 border-r border-primary/10 glass-panel p-6 flex flex-col gap-8">
+<section>
+<h3 class="text-xs font-bold text-primary tracking-widest uppercase mb-4 opacity-70">현재 음정</h3>
+<div class="flex flex-col items-center justify-center p-8 bg-primary/5 rounded-xl border border-primary/20 relative overflow-hidden group">
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="text-8xl font-black text-primary drop-shadow-[0_0_20px_rgba(6,249,249,0.4)]">E2</span>
+<span class="text-sm font-medium mt-2 opacity-60">82.41 Hz</span>
+</div>
+</section>
+<section class="flex-1">
+<h3 class="text-xs font-bold text-primary tracking-widest uppercase mb-4 opacity-70">정밀도 (Cents)</h3>
+<div class="relative h-48 flex items-end justify-center">
+<!-- Gauge Visualization -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="w-full h-1 bg-primary/10 relative rounded-full overflow-hidden">
+<div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-primary z-10"></div>
+<div class="absolute top-0 bottom-0 right-[48%] left-[45%] bg-primary/40"></div>
+</div>
+</div>
+<!-- Cents Meter Numbers -->
+<div class="flex justify-between w-full text-[10px] font-mono opacity-50 absolute bottom-12 px-2">
+<span>-50</span>
+<span>-25</span>
+<span class="text-primary opacity-100">0</span>
+<span>+25</span>
+<span>+50</span>
+</div>
+<!-- Needle Indicator -->
+<div class="flex flex-col items-center transform -translate-x-2">
+<div class="w-1 h-32 bg-gradient-to-t from-primary to-transparent glow-cyan"></div>
+<div class="w-4 h-4 rounded-full bg-primary glow-cyan-strong border-4 border-background-dark"></div>
+<span class="mt-2 text-xl font-bold text-primary">-2.4</span>
+</div>
+</div>
+</section>
+</div>
+<!-- Main Content (Headstock) -->
+<div class="flex-1 flex flex-col items-center justify-center p-8 relative">
+<div class="relative w-full max-w-2xl aspect-[3/4] flex items-center justify-center">
+<!-- Guitar Headstock Illustration -->
+<div class="relative w-64 h-[500px] bg-neutral-900 border-x-4 border-neutral-800 rounded-t-[100px] rounded-b-xl shadow-2xl flex flex-col items-center pt-16">
+<!-- Strings -->
+<div class="absolute inset-x-0 top-0 bottom-0 flex justify-around px-8 pointer-events-none">
+<div class="w-[1px] h-full bg-slate-600 opacity-40"></div>
+<div class="w-[1.5px] h-full bg-slate-500 opacity-50"></div>
+<div class="w-[2px] h-full bg-slate-400 opacity-60"></div>
+<div class="w-[2.5px] h-full bg-slate-400 opacity-70 shadow-[0_0_8px_rgba(255,255,255,0.2)]"></div>
+<div class="w-[3px] h-full bg-slate-300 opacity-80 shadow-[0_0_10px_rgba(255,255,255,0.3)]"></div>
+<div class="w-[4px] h-full bg-primary glow-cyan-strong shadow-[0_0_15px_rgba(6,249,249,0.5)]"></div> <!-- Selected String -->
+</div>
+<!-- Tuning Pegs Left -->
+<div class="absolute -left-16 top-24 space-y-24">
+<div class="relative group cursor-pointer">
+<div class="w-16 h-8 bg-neutral-800 border-2 border-primary/30 rounded-lg group-hover:border-primary group-hover:glow-cyan transition-all flex items-center justify-center">
+<span class="text-xs font-bold text-white/50 group-hover:text-primary">E</span>
+</div>
+<div class="absolute -right-2 top-3 w-4 h-2 bg-neutral-700"></div>
+</div>
+<div class="relative group cursor-pointer">
+<div class="w-16 h-8 bg-neutral-800 border-2 border-primary/30 rounded-lg group-hover:border-primary group-hover:glow-cyan transition-all flex items-center justify-center">
+<span class="text-xs font-bold text-white/50 group-hover:text-primary">A</span>
+</div>
+<div class="absolute -right-2 top-3 w-4 h-2 bg-neutral-700"></div>
+</div>
+<div class="relative group cursor-pointer">
+<div class="w-16 h-8 bg-neutral-800 border-2 border-primary/30 rounded-lg group-hover:border-primary group-hover:glow-cyan transition-all flex items-center justify-center">
+<span class="text-xs font-bold text-white/50 group-hover:text-primary">D</span>
+</div>
+<div class="absolute -right-2 top-3 w-4 h-2 bg-neutral-700"></div>
+</div>
+</div>
+<!-- Tuning Pegs Right -->
+<div class="absolute -right-16 top-24 space-y-24">
+<div class="relative group cursor-pointer">
+<div class="w-16 h-8 bg-neutral-800 border-2 border-primary/30 rounded-lg group-hover:border-primary group-hover:glow-cyan transition-all flex items-center justify-center">
+<span class="text-xs font-bold text-white/50 group-hover:text-primary">G</span>
+</div>
+<div class="absolute -left-2 top-3 w-4 h-2 bg-neutral-700"></div>
+</div>
+<div class="relative group cursor-pointer">
+<div class="w-16 h-8 bg-neutral-800 border-2 border-primary/30 rounded-lg group-hover:border-primary group-hover:glow-cyan transition-all flex items-center justify-center">
+<span class="text-xs font-bold text-white/50 group-hover:text-primary">B</span>
+</div>
+<div class="absolute -left-2 top-3 w-4 h-2 bg-neutral-700"></div>
+</div>
+<div class="relative group cursor-pointer">
+<!-- Active State -->
+<div class="w-16 h-8 bg-primary/20 border-2 border-primary rounded-lg glow-cyan transition-all flex items-center justify-center">
+<span class="text-xs font-bold text-primary">E</span>
+</div>
+<div class="absolute -left-2 top-3 w-4 h-2 bg-primary/40"></div>
+</div>
+</div>
+<!-- Brand Inlay -->
+<div class="mt-8 opacity-20 transform -rotate-90 origin-center whitespace-nowrap">
+<span class="text-3xl font-black tracking-tighter">TEMPO TUNE</span>
+</div>
+</div>
+</div>
+<!-- Frequency Trend Graph (Bottom) -->
+<div class="absolute bottom-0 inset-x-0 h-40 glass-panel border-t border-primary/20 px-4 py-2">
+<div class="flex justify-between items-center mb-2 px-2">
+<span class="text-[10px] font-bold text-primary/60 tracking-widest uppercase">실시간 주파수 추이 (Hz)</span>
+<span class="text-[10px] font-mono opacity-40">82.41 Hz REF</span>
+</div>
+<div class="w-full h-24 relative overflow-hidden">
+<svg class="w-full h-full preserve-3d" viewbox="0 0 1000 100">
+<path class="opacity-80" d="M0 50 Q 50 45, 100 52 T 200 48 T 300 55 T 400 50 T 500 45 T 600 52 T 700 48 T 800 55 T 900 50 T 1000 45" fill="none" stroke="#06f9f9" stroke-width="2"></path>
+<path class="opacity-20" d="M0 50 Q 50 45, 100 52 T 200 48 T 300 55 T 400 50 T 500 45 T 600 52 T 700 48 T 800 55 T 900 50 T 1000 45 L 1000 100 L 0 100 Z" fill="url(#graphGradient)"></path>
+<defs>
+<lineargradient id="graphGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#06f9f9;stop-opacity:1"></stop>
+<stop offset="100%" style="stop-color:#06f9f9;stop-opacity:0"></stop>
+</lineargradient>
+</defs>
+</svg>
+<!-- Center Line -->
+<div class="absolute top-1/2 left-0 right-0 h-px bg-primary/20 dashed"></div>
+</div>
+</div>
+</div>
+<!-- Right Sidebar (Quick Settings) -->
+<aside class="w-72 border-l border-primary/10 glass-panel p-6 flex flex-col gap-8">
+<h2 class="text-sm font-bold flex items-center gap-2">
+<span class="material-icons text-primary text-lg">settings</span>
+                빠른 설정
+            </h2>
+<!-- A4 Calibration -->
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<label class="text-xs font-medium opacity-60">기준 주파수 (A4)</label>
+<span class="text-xs font-bold text-primary">440 Hz</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="w-8 h-8 rounded border border-primary/20 flex items-center justify-center hover:bg-primary/10 transition-colors">
+<span class="material-icons text-sm">remove</span>
+</button>
+<div class="flex-1 bg-background-dark/80 h-8 rounded border border-primary/10 flex items-center justify-center">
+<span class="text-sm font-bold">440</span>
+</div>
+<button class="w-8 h-8 rounded border border-primary/20 flex items-center justify-center hover:bg-primary/10 transition-colors">
+<span class="material-icons text-sm">add</span>
+</button>
+</div>
+</div>
+<!-- Sensitivity -->
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<label class="text-xs font-medium opacity-60">마이크 감도</label>
+<span class="text-xs font-bold text-primary">75%</span>
+</div>
+<div class="relative h-2 bg-background-dark/80 rounded-full border border-primary/10">
+<div class="absolute top-0 left-0 h-full w-3/4 bg-primary glow-cyan rounded-full"></div>
+<div class="absolute top-1/2 left-3/4 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white border-4 border-primary rounded-full shadow-lg"></div>
+</div>
+</div>
+<div class="mt-auto pt-6 border-t border-primary/10 space-y-4">
+<div class="flex items-center justify-between text-xs opacity-60">
+<span>노이즈 게이트</span>
+<div class="w-8 h-4 bg-primary rounded-full relative">
+<div class="absolute right-0.5 top-0.5 w-3 h-3 bg-background-dark rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between text-xs opacity-60">
+<span>고정밀 모드</span>
+<div class="w-8 h-4 bg-primary/20 rounded-full relative border border-primary/20">
+<div class="absolute left-0.5 top-0.5 w-3 h-3 bg-primary/40 rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="p-4 bg-primary/5 rounded-lg border border-primary/20">
+<div class="flex items-start gap-3">
+<span class="material-icons text-primary text-sm">info</span>
+<p class="text-[10px] leading-relaxed opacity-70">
+                        수동 모드에서는 선택한 줄에 맞춰 튜닝이 진행됩니다. 헤드스톡의 튜닝 페그를 클릭하여 현을 전환하세요.
+                    </p>
+</div>
+</div>
+</aside>
+</main>
+<!-- Footer Status -->
+<footer class="h-8 border-t border-primary/10 glass-panel px-6 flex items-center justify-between text-[10px] uppercase tracking-widest font-bold opacity-50">
+<div class="flex items-center gap-6">
+<span class="flex items-center gap-1.5"><span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> INPUT: BUILT-IN MIC</span>
+<span>SAMPLE RATE: 48KHZ</span>
+</div>
+<div>
+<span>LATENCY: 12MS</span>
+</div>
+</footer>
+</body></html>

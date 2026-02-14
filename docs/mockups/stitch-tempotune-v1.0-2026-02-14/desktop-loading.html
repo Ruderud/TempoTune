@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#06f9f9",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#0f2323",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
+            overflow: hidden;
+        }
+        .breathing-glow {
+            box-shadow: 0 0 20px rgba(6, 249, 249, 0.2);
+        }
+        .skeleton-fade {
+            opacity: 0.03;
+        }
+    </style>
+<title>TempoTune - Loading</title>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 h-screen w-screen relative font-display">
+<!-- Background Skeleton UI (Visual Depth) -->
+<div class="absolute inset-0 flex p-6 gap-6 skeleton-fade pointer-events-none">
+<!-- Sidebar Skeleton -->
+<div class="w-64 flex flex-col gap-4">
+<div class="h-12 bg-primary/40 rounded-lg"></div>
+<div class="flex-1 bg-primary/20 rounded-lg"></div>
+<div class="h-32 bg-primary/20 rounded-lg"></div>
+</div>
+<!-- Main Content Skeleton -->
+<div class="flex-1 flex flex-col gap-6">
+<!-- Header/Tuner Dial Area -->
+<div class="h-1/2 flex items-center justify-center border-2 border-dashed border-primary/30 rounded-xl relative">
+<div class="w-64 h-64 border-8 border-primary/20 rounded-full"></div>
+</div>
+<!-- Waveform/Graph Area -->
+<div class="flex-1 bg-primary/10 rounded-xl border border-primary/10 flex flex-col p-4 gap-2">
+<div class="h-2 w-1/4 bg-primary/30 rounded"></div>
+<div class="flex-1 flex items-center gap-1">
+<div class="flex-1 h-32 bg-primary/20 rounded-sm"></div>
+<div class="flex-1 h-16 bg-primary/20 rounded-sm"></div>
+<div class="flex-1 h-48 bg-primary/20 rounded-sm"></div>
+<div class="flex-1 h-24 bg-primary/20 rounded-sm"></div>
+<div class="flex-1 h-40 bg-primary/20 rounded-sm"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Central Initialization Overlay -->
+<main class="absolute inset-0 flex flex-col items-center justify-center z-10">
+<!-- Logo Section -->
+<div class="mb-12 flex flex-col items-center">
+<div class="w-24 h-24 bg-primary/10 border-2 border-primary rounded-xl flex items-center justify-center mb-6 breathing-glow">
+<span class="material-icons text-primary text-5xl">tune</span>
+</div>
+<h1 class="text-4xl font-bold tracking-tight dark:text-white flex items-center gap-2">
+                Tempo<span class="text-primary">Tune</span>
+</h1>
+<p class="text-primary/60 mt-2 font-medium tracking-widest text-xs uppercase">Professional Audio Suite</p>
+</div>
+<!-- Progress Tracking Section -->
+<div class="w-full max-w-md px-6 flex flex-col items-center">
+<!-- Progress Bar -->
+<div class="w-full h-1 bg-primary/10 rounded-full overflow-hidden mb-4">
+<div class="h-full bg-primary w-3/4 rounded-full shadow-[0_0_10px_#06f9f9]"></div>
+</div>
+<!-- Status Text Area -->
+<div class="flex flex-col items-center gap-2">
+<div class="flex items-center gap-2">
+<span class="material-icons text-primary text-sm animate-spin" style="animation-duration: 2s;">sync</span>
+<p class="text-slate-400 text-sm font-medium">마이크 권한 확인 중...</p>
+</div>
+<p class="text-primary/40 text-[10px] uppercase tracking-tighter">System Initializing (75%)</p>
+</div>
+</div>
+</main>
+<!-- Bottom Interface Controls -->
+<footer class="absolute bottom-8 right-8 flex items-center gap-4 z-20">
+<button class="px-5 py-2 rounded border border-primary/20 bg-transparent text-slate-400 hover:text-primary hover:border-primary transition-all text-sm font-medium flex items-center gap-2">
+<span class="material-icons text-sm">refresh</span>
+            재시도
+        </button>
+<button class="px-5 py-2 rounded border border-primary/20 bg-transparent text-slate-400 hover:text-primary hover:border-primary transition-all text-sm font-medium flex items-center gap-2">
+<span class="material-icons text-sm">help_outline</span>
+            도움말
+        </button>
+</footer>
+<!-- Subtle Technical Decoration -->
+<div class="absolute bottom-8 left-8 flex flex-col gap-1 z-20 opacity-50">
+<p class="text-[10px] text-primary/40">VER. 2.4.0-STABLE</p>
+<div class="flex gap-1">
+<div class="w-1 h-1 bg-primary rounded-full"></div>
+<div class="w-1 h-1 bg-primary rounded-full"></div>
+<div class="w-1 h-1 bg-primary/20 rounded-full"></div>
+</div>
+</div>
+<!-- Corner Accents -->
+<div class="absolute top-0 left-0 p-8">
+<div class="w-8 h-8 border-t-2 border-l-2 border-primary/20"></div>
+</div>
+<div class="absolute top-0 right-0 p-8">
+<div class="w-8 h-8 border-t-2 border-r-2 border-primary/20"></div>
+</div>
+<div class="absolute bottom-0 left-0 p-8">
+<div class="w-8 h-8 border-b-2 border-l-2 border-primary/20"></div>
+</div>
+<div class="absolute bottom-0 right-0 p-8">
+<div class="w-8 h-8 border-b-2 border-r-2 border-primary/20"></div>
+</div>
+</body></html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#06f9f9",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#0f2323",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(6, 249, 249, 0.2) transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(6, 249, 249, 0.2);
+            border-radius: 10px;
+        }
+        .glass-panel {
+            background: rgba(15, 35, 35, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(6, 249, 249, 0.1);
+        }
+        .cyan-glow:hover {
+            box-shadow: 0 0 15px rgba(6, 249, 249, 0.2);
+        }
+    </style>
+<title>TempoTune Desktop Settings</title>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen flex overflow-hidden font-display">
+<!-- Left Navigation Sidebar -->
+<aside class="w-64 border-r border-primary/10 flex flex-col glass-panel">
+<div class="p-8 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(6,249,249,0.4)]">
+<span class="material-icons-round text-background-dark">tune</span>
+</div>
+<h1 class="text-xl font-bold tracking-tight">TempoTune</h1>
+</div>
+<nav class="flex-1 px-4 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary border border-primary/20 transition-all" href="#">
+<span class="material-icons-round text-sm">settings</span>
+<span class="font-medium">일반</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-slate-400 hover:text-primary transition-all group" href="#">
+<span class="material-icons-round text-sm group-hover:scale-110 transition-transform">graphic_eq</span>
+<span class="font-medium">튜너</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-slate-400 hover:text-primary transition-all group" href="#">
+<span class="material-icons-round text-sm group-hover:scale-110 transition-transform">metronome</span>
+<span class="font-medium">메트로놈</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/5 text-slate-400 hover:text-primary transition-all group" href="#">
+<span class="material-icons-round text-sm group-hover:scale-110 transition-transform">keyboard</span>
+<span class="font-medium">단축키</span>
+</a>
+</nav>
+<div class="p-6 border-t border-primary/10">
+<div class="flex items-center gap-3 p-3 rounded-xl bg-primary/5">
+<img alt="Profile" class="w-10 h-10 rounded-full object-cover border border-primary/30" data-alt="User profile avatar close up" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGmuYRvfx61WOLD7OUY8bRESshZH72FHya-jNgpza0gS3t61eM5dmnguhzGzhEgqDcL9ZTAIIsFaUBVaILeSXoOrZtBLEE9EQa2a0oJyAoyAFwlH1b1KqJ5PIx4VWuOWJNTM73iqw_CCQRJQ9dz2ry1piZc7g7TFuxqOOb33xnV-DofeWEuH9oJzONzCwMCjoFEw_hjS_EzA-HKNHTZ2kw2W3qf5WtQqKgCKl9JjGhr6IWqLcZdeWLTlAovmsJQGmU0cwdvksD"/>
+<div>
+<p class="text-sm font-bold">Premium User</p>
+<p class="text-[10px] text-primary/60 uppercase tracking-widest">Pro License</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Panel -->
+<main class="flex-1 flex flex-col overflow-hidden">
+<!-- Header -->
+<header class="h-20 border-b border-primary/10 flex items-center justify-between px-10 glass-panel">
+<div class="flex items-center gap-4">
+<h2 class="text-lg font-bold">환경 설정</h2>
+<span class="px-2 py-0.5 rounded text-[10px] bg-primary/20 text-primary border border-primary/30 font-bold uppercase tracking-tighter">System</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-background-dark font-bold rounded shadow-lg shadow-primary/20 hover:brightness-110 transition-all">
+<span class="material-icons-round text-sm">save</span>
+<span>변경사항 저장</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto custom-scrollbar p-10 space-y-12">
+<!-- A4 Reference Frequency -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<div>
+<h3 class="text-xl font-bold mb-1">A4 기준 주파수</h3>
+<p class="text-sm text-slate-400">표준 피치를 설정하여 튜너의 기준점을 조정합니다.</p>
+</div>
+<div class="flex items-center gap-4 bg-primary/5 p-4 rounded-xl border border-primary/10">
+<button class="w-8 h-8 rounded-full border border-primary/30 flex items-center justify-center hover:bg-primary/20 text-primary transition-all">
+<span class="material-icons-round">remove</span>
+</button>
+<div class="flex items-baseline gap-1">
+<input class="bg-transparent text-3xl font-bold text-primary w-24 text-center border-none focus:ring-0" type="text" value="440.0"/>
+<span class="text-sm text-primary/60 font-bold">Hz</span>
+</div>
+<button class="w-8 h-8 rounded-full border border-primary/30 flex items-center justify-center hover:bg-primary/20 text-primary transition-all">
+<span class="material-icons-round">add</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Tuner Sensitivity -->
+<section>
+<h3 class="text-xl font-bold mb-6">튜너 민감도 설정</h3>
+<div class="grid grid-cols-3 gap-4 mb-8">
+<!-- Card 1 -->
+<div class="p-6 rounded-xl border border-primary/10 bg-white/5 hover:border-primary/40 cursor-pointer transition-all group relative overflow-hidden">
+<div class="mb-4 text-slate-400 group-hover:text-primary transition-colors">
+<span class="material-icons-round text-3xl">filter_tilt_shift</span>
+</div>
+<h4 class="font-bold mb-2">안정형</h4>
+<p class="text-xs text-slate-500 leading-relaxed">배경 소음을 억제하고 안정적인 피치 감지를 선호할 때 사용합니다.</p>
+</div>
+<!-- Card 2 (Active) -->
+<div class="p-6 rounded-xl border border-primary bg-primary/10 cursor-pointer shadow-[0_0_20px_rgba(6,249,249,0.1)] relative">
+<div class="absolute top-4 right-4 text-primary">
+<span class="material-icons-round">check_circle</span>
+</div>
+<div class="mb-4 text-primary">
+<span class="material-icons-round text-3xl">balance</span>
+</div>
+<h4 class="font-bold mb-2 text-primary">균형형</h4>
+<p class="text-xs text-primary/70 leading-relaxed">대부분의 환경에서 권장되는 표준 응답 속도와 정확도입니다.</p>
+</div>
+<!-- Card 3 -->
+<div class="p-6 rounded-xl border border-primary/10 bg-white/5 hover:border-primary/40 cursor-pointer transition-all group">
+<div class="mb-4 text-slate-400 group-hover:text-primary transition-colors">
+<span class="material-icons-round text-3xl">bolt</span>
+</div>
+<h4 class="font-bold mb-2">빠른응답</h4>
+<p class="text-xs text-slate-500 leading-relaxed">정확도보다 빠른 실시간 응답이 필요할 때 최적화됩니다.</p>
+</div>
+</div>
+<!-- Advanced Sliders -->
+<div class="p-6 rounded-xl border border-primary/10 bg-white/5">
+<h4 class="text-sm font-bold uppercase tracking-widest text-primary/60 mb-6">고급 감지 설정</h4>
+<div class="space-y-6">
+<div class="space-y-3">
+<div class="flex justify-between text-sm">
+<span class="text-slate-300">노이즈 게이트</span>
+<span class="text-primary font-bold">-45 dB</span>
+</div>
+<input class="w-full h-1.5 bg-primary/10 rounded-full appearance-none accent-primary cursor-pointer" type="range"/>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between text-sm">
+<span class="text-slate-300">입력 게인</span>
+<span class="text-primary font-bold">+12 dB</span>
+</div>
+<input class="w-full h-1.5 bg-primary/10 rounded-full appearance-none accent-primary cursor-pointer" type="range"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Metronome Options -->
+<section>
+<h3 class="text-xl font-bold mb-6">메트로놈 옵션</h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex items-center justify-between p-5 rounded-xl border border-primary/10 bg-white/5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-icons-round">play_arrow</span>
+</div>
+<div>
+<p class="font-bold">백그라운드 재생</p>
+<p class="text-xs text-slate-500">다른 앱 사용 중에도 박자 유지</p>
+</div>
+</div>
+<div class="w-12 h-6 bg-primary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-4 h-4 bg-background-dark rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between p-5 rounded-xl border border-primary/10 bg-white/5">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-icons-round">visibility</span>
+</div>
+<div>
+<p class="font-bold">시각적 강조</p>
+<p class="text-xs text-slate-500">박자에 맞춰 화면 테두리 플래시</p>
+</div>
+</div>
+<div class="w-12 h-6 bg-slate-700 rounded-full relative cursor-pointer">
+<div class="absolute left-1 top-1 w-4 h-4 bg-slate-300 rounded-full"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Keyboard Shortcuts Table -->
+<section>
+<h3 class="text-xl font-bold mb-6">키보드 단축키</h3>
+<div class="rounded-xl border border-primary/10 overflow-hidden glass-panel">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-primary/5 text-primary/60 text-[10px] uppercase tracking-widest border-b border-primary/10">
+<th class="px-6 py-4">동작</th>
+<th class="px-6 py-4 text-right">단축키</th>
+</tr>
+</thead>
+<tbody class="text-sm divide-y divide-primary/5">
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 text-slate-300">재생 / 일시정지</td>
+<td class="px-6 py-4 text-right">
+<span class="px-2 py-1 bg-white/10 rounded border border-white/10 text-xs font-bold font-mono">Space</span>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 text-slate-300">템포 직접 입력 (Tap)</td>
+<td class="px-6 py-4 text-right">
+<span class="px-2 py-1 bg-white/10 rounded border border-white/10 text-xs font-bold font-mono">T</span>
+</td>
+</tr>
+<tr class="hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 text-slate-300">A4 주파수 리셋</td>
+<td class="px-6 py-4 text-right">
+<span class="px-2 py-1 bg-white/10 rounded border border-white/10 text-xs font-bold font-mono">Ctrl + R</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</main>
+<!-- Right Side Utility Panel -->
+<aside class="w-80 border-l border-primary/10 flex flex-col glass-panel">
+<div class="p-8">
+<h3 class="text-sm font-bold uppercase tracking-widest text-primary/60 mb-6">유틸리티 및 관리</h3>
+<div class="space-y-8">
+<!-- Theme Section -->
+<div class="space-y-4">
+<p class="text-xs font-bold text-slate-400">테마 및 가독성</p>
+<div class="flex p-1 bg-white/5 rounded-lg border border-primary/10">
+<button class="flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold text-slate-500">
+<span class="material-icons-round text-sm">light_mode</span>
+                            라이트
+                        </button>
+<button class="flex-1 flex items-center justify-center gap-2 py-2 text-xs font-bold bg-primary text-background-dark rounded shadow-lg shadow-primary/20">
+<span class="material-icons-round text-sm">dark_mode</span>
+                            다크
+                        </button>
+</div>
+</div>
+<!-- Data Management -->
+<div class="space-y-4">
+<p class="text-xs font-bold text-slate-400">데이터 관리</p>
+<div class="space-y-2">
+<button class="w-full flex items-center justify-between p-4 rounded-lg bg-white/5 border border-primary/10 hover:bg-white/10 transition-all group">
+<span class="text-sm font-medium">데이터 가져오기</span>
+<span class="material-icons-round text-sm text-primary group-hover:translate-x-1 transition-transform">file_download</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 rounded-lg bg-white/5 border border-primary/10 hover:bg-white/10 transition-all group">
+<span class="text-sm font-medium">데이터 내보내기</span>
+<span class="material-icons-round text-sm text-primary group-hover:translate-x-1 transition-transform">file_upload</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 rounded-lg bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all text-red-400">
+<span class="text-sm font-medium">설정 초기화</span>
+<span class="material-icons-round text-sm">history</span>
+</button>
+</div>
+</div>
+<!-- App Stats/Info Card -->
+<div class="p-6 rounded-xl bg-gradient-to-br from-primary/20 to-transparent border border-primary/20">
+<p class="text-xs text-primary font-bold mb-4 flex items-center gap-2">
+<span class="material-icons-round text-xs">info</span>
+                        시스템 정보
+                    </p>
+<div class="space-y-3">
+<div class="flex justify-between text-[11px]">
+<span class="text-slate-400">앱 버전</span>
+<span class="text-slate-100 font-mono">v1.0.4-build.2024</span>
+</div>
+<div class="flex justify-between text-[11px]">
+<span class="text-slate-400">엔진 상태</span>
+<span class="text-primary animate-pulse flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                                Operational
+                            </span>
+</div>
+<div class="flex justify-between text-[11px]">
+<span class="text-slate-400">CPU 점유율</span>
+<span class="text-slate-100 font-mono">0.8%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-auto p-8 text-center">
+<p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">TempoTune Desktop</p>
+<p class="text-[9px] text-slate-600">© 2024 AudioPrecision Tech. All rights reserved.</p>
+</div>
+</aside>
+</body></html>

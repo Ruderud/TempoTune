@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="ko"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TempoTune - 음악의 완벽한 템포</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#0fd4e6",
+              "background-light": "#f6f8f8",
+              "background-dark": "#102022",
+              "accent-dark": "#081214",
+            },
+            fontFamily: {
+              "display": ["Space Grotesk", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      .glass-card {
+        background: rgba(15, 212, 230, 0.05);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(15, 212, 230, 0.1);
+      }
+      .glow-shadow {
+        box-shadow: 0 0 30px rgba(15, 212, 230, 0.15);
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200 min-h-screen">
+<!-- Header -->
+<header class="fixed top-0 w-full z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10">
+<div class="max-w-md mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
+<span class="material-icons text-background-dark text-xl">graphic_eq</span>
+</div>
+<span class="font-bold text-lg tracking-tight text-slate-900 dark:text-white">TempoTune</span>
+</div>
+<button class="bg-primary hover:bg-primary/90 text-background-dark px-4 py-1.5 rounded font-bold text-sm transition-all">
+                다운로드
+            </button>
+</div>
+</header>
+<main class="max-w-md mx-auto pt-24 pb-12 px-6">
+<!-- Hero Section -->
+<section class="text-center mb-12">
+<h1 class="text-4xl font-bold tracking-tighter text-slate-900 dark:text-white mb-4 leading-tight">
+                음악의 완벽한 템포,<br/>
+<span class="text-primary">TempoTune</span>
+</h1>
+<p class="text-slate-600 dark:text-slate-400 text-lg mb-8 leading-relaxed">
+                정밀한 튜닝과 프로페셔널 메트로놈을<br/>하나의 앱에서 경험하세요.
+            </p>
+<div class="flex flex-col gap-3 mb-12">
+<button class="w-full bg-primary text-background-dark font-bold py-4 rounded-lg text-lg flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
+<span class="material-icons">download</span>
+                    앱 다운로드
+                </button>
+<button class="w-full bg-transparent border-2 border-primary/30 text-primary font-bold py-4 rounded-lg text-lg hover:bg-primary/5 transition-all">
+                    웹에서 시작
+                </button>
+</div>
+<!-- Device Mockup -->
+<div class="relative mx-auto w-64 h-[520px] bg-slate-900 rounded-[2.5rem] border-[6px] border-slate-800 shadow-2xl overflow-hidden glow-shadow">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-6 bg-slate-800 rounded-b-2xl z-20"></div>
+<div class="relative h-full w-full p-4 flex flex-col items-center justify-center">
+<div class="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent"></div>
+<img class="w-full h-full object-cover rounded-2xl opacity-80" data-alt="Digital metronome interface showing tempo and rhythm visuals" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiyaqJcYCyVprTwgUAgXuHfQbTeW__uODhGMs-YwSWX9HUIlWLdUeS9N9V4-ob-FL2bgYUpn302buFDU9FH_rYkEc735PSQta5xOH1ZoRVOouBec86y6-yJfKIcfFYt6a1bVthsYkbMSZme-HcMkmy622ZVG6bZ6gDerfpP7YZAbw9sNwVfnNkCk6EgX2jTA_vlXmoIdGtwAB7MRBSS6-AqUPlBkx69nVA2X441SrBhrFw_cXV6uZJnYsgzD5-yMpR_Bh-8hEWmnk"/>
+<div class="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+<span class="material-icons text-primary text-6xl mb-4">speed</span>
+<div class="text-white text-3xl font-bold">120 BPM</div>
+<div class="w-full h-1 bg-slate-700 mt-4 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-2/3"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Features -->
+<section class="space-y-4 mb-16">
+<div class="glass-card p-6 rounded-xl flex items-start gap-4">
+<div class="p-3 bg-primary/20 rounded-lg">
+<span class="material-icons text-primary">tune</span>
+</div>
+<div>
+<h3 class="text-white font-bold text-lg mb-1">정밀 튜너</h3>
+<p class="text-slate-400 text-sm">0.1Hz 단위의 초정밀 감지로 악기의 본연의 소리를 찾아드립니다.</p>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl flex items-start gap-4">
+<div class="p-3 bg-primary/20 rounded-lg">
+<span class="material-icons text-primary">timer</span>
+</div>
+<div>
+<h3 class="text-white font-bold text-lg mb-1">프로 메트로놈</h3>
+<p class="text-slate-400 text-sm">복잡한 폴리리듬부터 변박자까지 완벽하게 소화하는 엔진.</p>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl flex items-start gap-4">
+<div class="p-3 bg-primary/20 rounded-lg">
+<span class="material-icons text-primary">devices</span>
+</div>
+<div>
+<h3 class="text-white font-bold text-lg mb-1">하이브리드 앱</h3>
+<p class="text-slate-400 text-sm">모바일, 태블릿, 웹 어디서든 당신의 설정이 동기화됩니다.</p>
+</div>
+</div>
+</section>
+<!-- App Store Badges -->
+<section class="flex flex-col items-center gap-6 mb-16">
+<p class="text-slate-500 font-medium">지금 무료로 시작하세요</p>
+<div class="flex gap-4">
+<div class="w-36 h-12 bg-slate-900 rounded-lg border border-slate-700 flex items-center justify-center overflow-hidden">
+<img class="h-full py-2 px-3" data-alt="Download on the App Store button" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBE5NaTnLXs0vOiVjmWWjf37pJaBvHDEDjf5tlC0KbJaezmT_F6Mp6KsJjwL7Ua0AEOQ-Til9hp87hN5D50zY7YhWu-hswFymrqFeEJWddT3OsTsRTwABaYgaCOODF6sbrW5k4KDgWEHSNUlmx2w3BPyOL61o2i4OQ3gRWX12kHDpas7jhdj0DWIJGcAds1-Me3d08Jlhivkp8LmmStoH2MuWwBdHDXlvCriL9SxhZYuQYCnjDkhlJNesFxzFhu-lZvRK_iIp7KDYg"/>
+</div>
+<div class="w-36 h-12 bg-slate-900 rounded-lg border border-slate-700 flex items-center justify-center overflow-hidden">
+<img class="h-full py-2 px-3" data-alt="Get it on Google Play button" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFk3Y0CIOxYzGyK-mxkWdsHWDFp8uKjSHGf3r59cgWXOTloDmIFtRhtMPnIi9LWZVDZfApHCw4j_-mvJKI_uudUf18-MgvJ_4eQRJ2wLvXD3_84w7q5zDNgFZfmXsywQrnJCFjyAZtVD3eQyU6GSGOJMGO6qm7x9UYTLoT2Dfu5n44Ukv0YYMz8mRCaVg-wv_vtfB66VSfBrR-PtmScdV5PKlPiIr1U6UAgM3xgAApNfIkW_cHBAz7H9S-EXh2zR59Loz3HJbzChw"/>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="border-t border-primary/10 pt-8 text-center">
+<div class="flex justify-center gap-6 mb-6">
+<a class="text-xs text-slate-500 hover:text-primary transition-colors" href="#">개인정보 처리방침</a>
+<a class="text-xs text-slate-500 hover:text-primary transition-colors" href="#">이용약관</a>
+<a class="text-xs text-slate-500 hover:text-primary transition-colors" href="#">문의하기</a>
+</div>
+<p class="text-[10px] text-slate-600 uppercase tracking-widest">© 2024 TEMPOTUNE. ALL RIGHTS RESERVED.</p>
+</footer>
+</main>
+<!-- Floating Background Elements -->
+<div class="fixed top-20 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
+<div class="fixed bottom-20 -right-20 w-64 h-64 bg-primary/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
+</body></html>
