@@ -27,7 +27,7 @@ export function TunerControl({
   const presetLabel = currentPreset.instrument === 'guitar' ? '기타' : '베이스';
   const stringCount = currentPreset.strings.length;
   const modeButtonBaseClass =
-    'px-2.5 py-1 rounded-full text-xs font-semibold transition-all duration-200';
+    'px-3 py-2 rounded-full text-sm font-semibold transition-all duration-200';
 
   return (
     <div className="px-4 py-3 border-b border-gray-800/50 space-y-3">
@@ -68,7 +68,7 @@ export function TunerControl({
         <button
           onClick={isListening ? onStop : onStart}
           className={`
-            relative shrink-0 px-4 py-2 rounded-full font-semibold text-sm transition-all duration-200
+            relative shrink-0 px-5 py-2.5 min-h-[48px] rounded-full font-semibold text-sm transition-all duration-200
             ${
               isListening
                 ? 'bg-red-600/90 text-white hover:bg-red-500 active:scale-95'
@@ -84,7 +84,7 @@ export function TunerControl({
       </div>
 
       <div className="flex items-center justify-between gap-2">
-        <div className="inline-flex rounded-full bg-gray-900/80 p-0.5 border border-gray-800">
+        <div className="inline-flex rounded-full bg-gray-900/80 p-1 border border-gray-800">
           <button
             type="button"
             onClick={() => onTuningModeChange('auto')}
@@ -109,9 +109,6 @@ export function TunerControl({
           </button>
         </div>
 
-        <span className="text-[11px] text-gray-400">
-          {tuningMode === 'auto' ? '음정 자동 추적' : '줄 직접 지정'}
-        </span>
       </div>
     </div>
   );

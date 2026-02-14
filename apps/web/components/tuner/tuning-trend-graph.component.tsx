@@ -69,7 +69,7 @@ export function TuningTrendGraph({
       : '정지됨';
   const noteLabel = detectedNote ? `${detectedNote.name}${detectedNote.octave}` : '--';
   const targetLabel = targetString ? `${targetString.name}${targetString.octave}` : 'AUTO';
-  const svgHeightClass = isLarge ? 'h-[44vh] min-h-[280px] max-h-[420px]' : 'h-24';
+  const svgHeightClass = isLarge ? 'h-[32vh] min-h-[160px] max-h-[280px]' : 'h-24';
   const lineWidth = isLarge ? 2.2 : 1.6;
   const pointRadius = isLarge ? 2.2 : 1.8;
   const confidencePercent = Math.round(confidence * 100);
@@ -86,19 +86,19 @@ export function TuningTrendGraph({
   return (
     <div className={`rounded-2xl border border-gray-800 bg-gray-900/40 ${isLarge ? 'p-4' : 'p-3'}`}>
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className={`${isLarge ? 'text-sm' : 'text-xs'} font-semibold text-gray-300`}>실시간 음정 편차</span>
-          <span className="text-[11px] px-2 py-0.5 rounded-full border border-gray-700 bg-gray-900/70 text-gray-400">
+        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+          <span className={`${isLarge ? 'text-sm' : 'text-xs'} font-semibold text-gray-300`}>음정 편차</span>
+          <span className="text-xs px-1.5 py-0.5 rounded-full border border-gray-700 bg-gray-900/70 text-gray-400 tabular-nums">
             {noteLabel}
           </span>
-          <span className="text-[11px] px-2 py-0.5 rounded-full border border-gray-700 bg-gray-900/70 text-gray-500">
-            목표 {targetLabel}
+          <span className="text-xs px-1.5 py-0.5 rounded-full border border-gray-700 bg-gray-900/70 text-gray-500 tabular-nums">
+            {targetLabel}
           </span>
-          <span className={`text-[11px] px-2 py-0.5 rounded-full border tabular-nums ${confidenceColor}`}>
-            신뢰도 {confidenceLabel}
+          <span className={`text-xs px-1.5 py-0.5 rounded-full border tabular-nums ${confidenceColor}`}>
+            {confidenceLabel}
           </span>
         </div>
-        <span className="text-xs font-semibold tabular-nums" style={{ color: hasSignal ? trendColor : '#6b7280' }}>
+        <span className="text-xs font-semibold tabular-nums shrink-0" style={{ color: hasSignal ? trendColor : '#6b7280' }}>
           {isLowConfidence && isListening ? '신뢰도 낮음' : label}
         </span>
       </div>
@@ -130,7 +130,7 @@ export function TuningTrendGraph({
         )}
       </svg>
 
-      <div className={`mt-1 flex items-center justify-between ${isLarge ? 'text-xs' : 'text-[10px]'} text-gray-500 tabular-nums`}>
+      <div className={`mt-1 flex items-center justify-between ${isLarge ? 'text-xs' : 'text-xs'} text-gray-500 tabular-nums`}>
         <span>-50c</span>
         <span>0c</span>
         <span>+50c</span>
