@@ -8,11 +8,11 @@ export default function TabsLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main className="flex flex-col h-screen overflow-hidden bg-gray-950">
-      <TabNavigation />
-      <div className="flex-1 overflow-y-auto">
+    <main className="flex flex-col h-[100dvh] overflow-hidden bg-gray-950">
+      <div className="flex-1 min-h-0">
         {children}
       </div>
+      <TabNavigation />
     </main>
   );
 }
