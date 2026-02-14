@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import type { HeadstockLayout } from './guitar-headstock.component';
 
 type TunerDetectionSettings = {
   confidenceGate: number;
@@ -20,6 +21,8 @@ type TunerOptionsDrawerProps = {
   onDetectionSettingsChange: (patch: Partial<TunerDetectionSettings>) => void;
   sensitivityPreset: SensitivityPreset;
   onSensitivityPresetChange: (preset: Exclude<SensitivityPreset, 'custom'>) => void;
+  headstockLayout: HeadstockLayout;
+  onHeadstockLayoutChange: (layout: HeadstockLayout) => void;
 };
 
 const MIN_REFERENCE_FREQ = 432;
@@ -44,6 +47,8 @@ export function TunerOptionsDrawer({
   onDetectionSettingsChange,
   sensitivityPreset,
   onSensitivityPresetChange,
+  headstockLayout,
+  onHeadstockLayoutChange,
 }: TunerOptionsDrawerProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -59,6 +64,13 @@ export function TunerOptionsDrawer({
   const presetButtonClass = (preset: Exclude<SensitivityPreset, 'custom'>) =>
     `px-2.5 py-1.5 rounded-lg text-[11px] font-semibold border transition-colors ${
       sensitivityPreset === preset
+        ? 'bg-sky-500/25 text-sky-200 border-sky-400/50'
+        : 'bg-gray-800/70 text-gray-300 border-gray-700 hover:bg-gray-700/70'
+    }`;
+
+  const headstockButtonClass = (layout: HeadstockLayout) =>
+    `p-2 rounded-lg border transition-colors text-left ${
+      headstockLayout === layout
         ? 'bg-sky-500/25 text-sky-200 border-sky-400/50'
         : 'bg-gray-800/70 text-gray-300 border-gray-700 hover:bg-gray-700/70'
     }`;
@@ -152,6 +164,33 @@ export function TunerOptionsDrawer({
                   className={presetButtonClass('fast')}
                 >
                   빠른응답
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-4 border-t border-gray-800 pt-3">
+              <div className="flex items-center justify-between text-xs text-gray-400 mb-2">
+                <span>헤드스톡 형태</span>
+                <span className="text-[11px] text-gray-500">
+                  {headstockLayout === 'three-plus-three' ? '3+3' : '6-인라인'}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => onHeadstockLayoutChange('three-plus-three')}
+                  className={headstockButtonClass('three-plus-three')}
+                >
+                  <span className="block text-xs font-semibold">3+3</span>
+                  <span className="block text-[10px] opacity-80">깁슨 스타일</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onHeadstockLayoutChange('six-inline')}
+                  className={headstockButtonClass('six-inline')}
+                >
+                  <span className="block text-xs font-semibold">6-인라인</span>
+                  <span className="block text-[10px] opacity-80">펜더 스타일</span>
                 </button>
               </div>
             </div>

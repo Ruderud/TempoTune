@@ -1,11 +1,31 @@
 'use client';
 
+import { useCallback, useState } from 'react';
 import { TunerControl, GuitarHeadstock, TuningTrendGraph, TunerOptionsDrawer } from '../../../components/tuner';
+import type { HeadstockLayout } from '../../../components/tuner/guitar-headstock.component';
 import { useTuner } from '../../../hooks/use-tuner';
+
+const HEADSTOCK_LAYOUT_STORAGE_KEY = 'tempo_tuner_headstock_layout_v1';
+
+function getInitialHeadstockLayout(): HeadstockLayout {
+  if (typeof window === 'undefined') return 'three-plus-three';
+  const saved = window.localStorage.getItem(HEADSTOCK_LAYOUT_STORAGE_KEY);
+  if (saved === 'three-plus-three' || saved === 'six-inline') return saved;
+  return 'three-plus-three';
+}
 
 export default function TunerPage() {
   const tuner = useTuner();
   const activeTarget = tuner.targetString ?? tuner.closestString;
+  const [headstockLayout, setHeadstockLayout] = useState<HeadstockLayout>(getInitialHeadstockLayout);
+
+  const handleHeadstockLayoutChange = useCallback((layout: HeadstockLayout) => {
+    setHeadstockLayout(layout);
+
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(HEADSTOCK_LAYOUT_STORAGE_KEY, layout);
+    }
+  }, []);
 
   return (
     <div
@@ -59,6 +79,7 @@ export default function TunerPage() {
           strings={tuner.currentPreset.strings}
           targetString={tuner.targetString}
           detectedString={tuner.closestString}
+          layout={headstockLayout}
           onSelectString={tuner.setTargetString}
         />
       </div>
@@ -71,6 +92,8 @@ export default function TunerPage() {
           onDetectionSettingsChange={tuner.setDetectionSettings}
           sensitivityPreset={tuner.sensitivityPreset}
           onSensitivityPresetChange={tuner.applySensitivityPreset}
+          headstockLayout={headstockLayout}
+          onHeadstockLayoutChange={handleHeadstockLayoutChange}
         />
       </div>
     </div>
