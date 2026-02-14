@@ -20,8 +20,8 @@ export function MetronomeDisplay({
     <div className="flex flex-col items-center justify-center space-y-6 mb-6">
       {/* BPM Display */}
       <div className="text-center">
-        <div className="text-8xl font-bold text-white tabular-nums tracking-tight">{bpm}</div>
-        <div className="text-sm font-semibold text-gray-500 uppercase tracking-wider mt-1">BPM</div>
+        <div className="text-[40px] leading-[48px] font-bold text-white tabular-nums tracking-tight">{bpm}</div>
+        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mt-1">BPM</div>
       </div>
 
       {/* Beat Indicators */}
@@ -54,7 +54,7 @@ export function MetronomeDisplay({
       </div>
 
       {/* Time Signature */}
-      <div className="text-xl font-medium text-gray-500">
+      <div className="text-base font-medium text-gray-500">
         {timeSignature[0]}/{timeSignature[1]}
       </div>
     </div>

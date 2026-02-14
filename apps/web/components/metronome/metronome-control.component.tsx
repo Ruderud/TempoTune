@@ -97,7 +97,7 @@ export function MetronomeControl({
                 onClick={() => onTimeSignatureChange(ts)}
                 disabled={isPlaying}
                 className={`
-                  px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200
+                  px-5 py-3 rounded-xl font-medium text-sm transition-all duration-200
                   ${isActive
                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/40 scale-[1.02]'
                     : 'bg-gray-800/60 text-gray-400 hover:bg-gray-800 hover:text-gray-300 active:scale-95'
@@ -117,7 +117,7 @@ export function MetronomeControl({
         <button
           onClick={isPlaying ? onStop : onStart}
           className={`
-            relative w-28 h-28 rounded-full font-bold text-lg transition-all duration-300
+            relative w-24 h-24 rounded-full font-bold text-base transition-all duration-300
             ${isPlaying
               ? 'bg-gradient-to-br from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 active:scale-95 shadow-xl shadow-red-600/40'
               : 'bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 active:scale-95 shadow-xl shadow-green-600/40'
@@ -145,8 +145,8 @@ export function MetronomeControl({
       {/* Custom Sound Upload */}
       {onLoadCustomSound && (
         <div className="flex gap-2">
-          <label className="px-4 py-2 text-xs font-medium bg-gray-800/60 hover:bg-gray-800 active:scale-95 rounded-xl cursor-pointer transition-all duration-150 text-gray-400 hover:text-gray-300">
-            강세음
+          <label className="min-h-[44px] flex items-center justify-center px-4 text-xs font-medium bg-gray-800/40 hover:bg-gray-800/70 active:scale-95 rounded-xl cursor-pointer transition-all duration-150 text-gray-500 hover:text-gray-300 border border-gray-800/50">
+            강세음 업로드
             <input
               type="file"
               accept="audio/*"
@@ -154,8 +154,8 @@ export function MetronomeControl({
               className="hidden"
             />
           </label>
-          <label className="px-4 py-2 text-xs font-medium bg-gray-800/60 hover:bg-gray-800 active:scale-95 rounded-xl cursor-pointer transition-all duration-150 text-gray-400 hover:text-gray-300">
-            일반음
+          <label className="min-h-[44px] flex items-center justify-center px-4 text-xs font-medium bg-gray-800/40 hover:bg-gray-800/70 active:scale-95 rounded-xl cursor-pointer transition-all duration-150 text-gray-500 hover:text-gray-300 border border-gray-800/50">
+            일반음 업로드
             <input
               type="file"
               accept="audio/*"

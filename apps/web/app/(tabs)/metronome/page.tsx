@@ -7,8 +7,8 @@ export default function MetronomePage() {
   const metronome = useMetronome();
 
   return (
-    <div className="flex-1 flex items-center">
-      <div className="w-full max-w-md mx-auto px-4 py-8 animate-[fadeIn_0.3s_ease-out]">
+    <div className="h-full flex items-center">
+      <div className="w-full max-w-md mx-auto px-4 py-4 animate-[fadeIn_0.3s_ease-out]">
         <MetronomeDisplay
           bpm={metronome.bpm}
           currentBeat={metronome.currentBeat}
