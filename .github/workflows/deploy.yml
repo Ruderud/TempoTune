@@ -39,11 +39,23 @@ jobs:
       - name: "1-1. Analyze nx affected"
         id: check
         run: |
-          BASE_SHA="${{ github.event.before || 'HEAD~1' }}"
-
-          # PR인 경우 base branch와 비교
+          BASE_SHA="${{ github.event.before }}"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
+          fi
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              git fetch --no-tags --depth=1 origin "${{ github.event.pull_request.base.ref }}" || true
+              BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
+            else
+              BASE_SHA="$(git rev-parse HEAD~1 2>/dev/null || echo HEAD)"
+            fi
+          fi
+
+          if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            echo "Failed to resolve valid BASE_SHA: $BASE_SHA"
+            exit 1
           fi
 
           echo "Comparing against: $BASE_SHA"
@@ -101,10 +113,25 @@ jobs:
 
       - name: "2-2. Run nx affected type-check"
         run: |
-          BASE_SHA="${{ github.event.before || 'HEAD~1' }}"
+          BASE_SHA="${{ github.event.before }}"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
           fi
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              git fetch --no-tags --depth=1 origin "${{ github.event.pull_request.base.ref }}" || true
+              BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
+            else
+              BASE_SHA="$(git rev-parse HEAD~1 2>/dev/null || echo HEAD)"
+            fi
+          fi
+
+          if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            echo "Failed to resolve valid BASE_SHA: $BASE_SHA"
+            exit 1
+          fi
+
           pnpm exec nx affected --target=type-check --base=$BASE_SHA --head=HEAD
 
   # ──────────────────────────────────────────────
@@ -131,10 +158,25 @@ jobs:
 
       - name: "3-1. Run nx affected lint"
         run: |
-          BASE_SHA="${{ github.event.before || 'HEAD~1' }}"
+          BASE_SHA="${{ github.event.before }}"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
           fi
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              git fetch --no-tags --depth=1 origin "${{ github.event.pull_request.base.ref }}" || true
+              BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
+            else
+              BASE_SHA="$(git rev-parse HEAD~1 2>/dev/null || echo HEAD)"
+            fi
+          fi
+
+          if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            echo "Failed to resolve valid BASE_SHA: $BASE_SHA"
+            exit 1
+          fi
+
           pnpm exec nx affected --target=lint --base=$BASE_SHA --head=HEAD
 
   # ──────────────────────────────────────────────
@@ -147,6 +189,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/action-setup@v4
 
@@ -159,10 +203,25 @@ jobs:
 
       - name: "4-1. Run nx affected tests"
         run: |
-          BASE_SHA="${{ github.event.before || 'HEAD~1' }}"
+          BASE_SHA="${{ github.event.before }}"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
           fi
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              git fetch --no-tags --depth=1 origin "${{ github.event.pull_request.base.ref }}" || true
+              BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
+            else
+              BASE_SHA="$(git rev-parse HEAD~1 2>/dev/null || echo HEAD)"
+            fi
+          fi
+
+          if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            echo "Failed to resolve valid BASE_SHA: $BASE_SHA"
+            exit 1
+          fi
+
           pnpm exec nx affected --target=test --base=$BASE_SHA --head=HEAD
 
   # ──────────────────────────────────────────────
