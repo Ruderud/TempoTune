@@ -16,6 +16,8 @@ import {
   ANDROID_EMULATOR_HOST,
 } from './config.generated';
 
+const DEBUG_TUNER_LATENCY = __DEV__;
+
 const getWebUrl = (): string => {
   if (!__DEV__) {
     return PROD_WEB_URL;
@@ -43,6 +45,14 @@ function App(): React.JSX.Element {
     bridge.registerHandler('START_LISTENING', async () => {
       nativeAudioService.start(
         (pitchData) => {
+          const bridgeSentAtMs = Date.now();
+          if (DEBUG_TUNER_LATENCY && typeof pitchData.detectedAtMs === 'number') {
+            const nativeToBridgeMs = bridgeSentAtMs - pitchData.detectedAtMs;
+            console.info(
+              `[tuner-latency:native->bridge] ${nativeToBridgeMs}ms seq=${pitchData.debugSeq ?? '-'} note=${pitchData.name}${pitchData.octave}`,
+            );
+          }
+
           bridge.sendToWebView({
             type: 'PITCH_DETECTED',
             data: {
@@ -50,6 +60,11 @@ function App(): React.JSX.Element {
               name: pitchData.name,
               octave: pitchData.octave,
               cents: pitchData.cents,
+              confidence: pitchData.confidence ?? pitchData.probability,
+              detectedAtMs: pitchData.detectedAtMs,
+              bridgeSentAtMs,
+              debugSource: pitchData.debugSource ?? 'native',
+              debugSeq: pitchData.debugSeq,
             },
           });
         },

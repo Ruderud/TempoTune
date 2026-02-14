@@ -2,6 +2,22 @@ import type { AudioBridgeInterface } from '@tempo-tune/shared/bridge';
 import type { AudioPermissionStatus, TunerNote } from '@tempo-tune/shared/types';
 import { isNativeEnvironment, postMessageToNative, addNativeMessageListener } from './bridge-adapter';
 
+function isLatencyDebugEnabled(): boolean {
+  if (typeof window === 'undefined') return false;
+
+  try {
+    if (window.localStorage.getItem('tempo_tuner_latency_debug') === '1') return true;
+  } catch {
+    // ignore storage errors
+  }
+
+  try {
+    return new URLSearchParams(window.location.search).get('tunerDebug') === '1';
+  } catch {
+    return false;
+  }
+}
+
 export class AudioBridgeClient implements AudioBridgeInterface {
   private pitchCallbacks: Set<(note: TunerNote) => void> = new Set();
   private errorCallbacks: Set<(error: Error) => void> = new Set();
@@ -84,8 +100,24 @@ export class AudioBridgeClient implements AudioBridgeInterface {
   private handleNativeMessage(data: unknown): void {
     const msg = data as { type: string; data?: unknown; error?: string };
     if (msg.type === 'PITCH_DETECTED' && msg.data) {
+      const receivedAtMs = Date.now();
+      const note = {
+        ...(msg.data as TunerNote),
+        webReceivedAtMs: receivedAtMs,
+      } satisfies TunerNote;
+
+      if (isLatencyDebugEnabled()) {
+        const nativeToBridgeMs =
+          typeof note.detectedAtMs === 'number' ? receivedAtMs - note.detectedAtMs : null;
+        const bridgeToWebMs =
+          typeof note.bridgeSentAtMs === 'number' ? receivedAtMs - note.bridgeSentAtMs : null;
+        console.info(
+          `[tuner-latency:bridge->web] native->web=${nativeToBridgeMs ?? '-'}ms bridge->web=${bridgeToWebMs ?? '-'}ms seq=${note.debugSeq ?? '-'} note=${note.name}${note.octave}`,
+        );
+      }
+
       for (const cb of this.pitchCallbacks) {
-        cb(msg.data as TunerNote);
+        cb(note);
       }
     }
     if (msg.type === 'ERROR' && msg.error) {

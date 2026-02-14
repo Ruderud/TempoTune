@@ -5,9 +5,15 @@ const {PitchDetectorModule} = NativeModules;
 type PitchEvent = {
   frequency: number;
   probability: number;
+  confidence?: number;
   name: string;
   octave: number;
   cents: number;
+  detectedAtMs?: number;
+  bridgeSentAtMs?: number;
+  webReceivedAtMs?: number;
+  debugSource?: 'native' | 'web';
+  debugSeq?: number;
 };
 
 type PitchErrorEvent = {

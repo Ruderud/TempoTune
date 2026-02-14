@@ -7,6 +7,13 @@ export type TunerNote = {
   name: NoteName;
   octave: number;
   cents: number;
+  confidence?: number;
+  rms?: number;
+  detectedAtMs?: number;
+  bridgeSentAtMs?: number;
+  webReceivedAtMs?: number;
+  debugSource?: 'native' | 'web';
+  debugSeq?: number;
 };
 
 export type TuningString = {

@@ -60,6 +60,17 @@ describe('TunerEngine.processAudioData', () => {
 
     expect(note).toBeNull();
   });
+
+  it('detectPitch는 Hz + confidence를 반환한다', () => {
+    const engine = new TunerEngine({ sampleRate: 44100, bufferSize: 4096 });
+    const signal = generateSineWave(329.63, 44100, 4096);
+    const result = engine.detectPitch(signal);
+
+    expect(result).not.toBeNull();
+    expect(result!.frequency).toBeGreaterThan(320);
+    expect(result!.frequency).toBeLessThan(338);
+    expect(result!.confidence).toBeGreaterThan(0.6);
+  });
 });
 
 describe('TunerEngine.findClosestString', () => {
@@ -124,5 +135,17 @@ describe('TunerEngine.getCentsFromTarget', () => {
     const target = STANDARD_GUITAR_TUNING.strings[1]; // A2 = 110Hz
     const cents = engine.getCentsFromTarget(108, target);
     expect(cents).toBeLessThan(0);
+  });
+
+  it('setPitchDetectionConfig로 민감도 조정 가능', () => {
+    const engine = new TunerEngine({ sampleRate: 44100, bufferSize: 4096 });
+    engine.setPitchDetectionConfig({
+      rmsThreshold: 0.03,
+      probabilityThreshold: 0.25,
+    });
+
+    const weakSignal = generateSineWave(110, 44100, 4096).map((sample) => sample * 0.015);
+    const result = engine.detectPitch(weakSignal);
+    expect(result).toBeNull();
   });
 });

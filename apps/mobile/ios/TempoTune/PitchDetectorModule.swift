@@ -6,11 +6,12 @@ import React
 class PitchDetectorModule: RCTEventEmitter {
   private var audioEngine: AVAudioEngine?
   private var isListening = false
-  private let sampleRate: Double = 44100
-  private let bufferSize: AVAudioFrameCount = 4096
+  private var sampleRate: Double = 44100
+  private let bufferSize: AVAudioFrameCount = 2048
   private let yinThreshold: Float = 0.15
   private let yinProbabilityThreshold: Float = 0.1
   private let referenceFrequency: Double = 440.0
+  private var detectionSequence: UInt64 = 0
 
   private let noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
 
@@ -27,6 +28,8 @@ class PitchDetectorModule: RCTEventEmitter {
     do {
       try session.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker, .allowBluetooth])
       try session.setPreferredSampleRate(sampleRate)
+      try session.setPreferredIOBufferDuration(0.005)
+      try? session.setPreferredInputNumberOfChannels(1)
       try session.setActive(true)
     } catch {
       sendEvent(withName: "onPitchError", body: ["message": error.localizedDescription])
@@ -38,6 +41,7 @@ class PitchDetectorModule: RCTEventEmitter {
 
     let inputNode = audioEngine.inputNode
     let format = inputNode.outputFormat(forBus: 0)
+    sampleRate = format.sampleRate
 
     inputNode.installTap(onBus: 0, bufferSize: bufferSize, format: format) { [weak self] buffer, _ in
       self?.processAudioBuffer(buffer)
@@ -68,15 +72,21 @@ class PitchDetectorModule: RCTEventEmitter {
 
     let audioData = Array(UnsafeBufferPointer(start: channelData, count: Int(bufferSize)))
     guard let result = yinDetect(audioData) else { return }
+    let detectedAtMs = Int64(Date().timeIntervalSince1970 * 1000)
+    detectionSequence += 1
 
     let note = frequencyToNote(result.frequency)
 
     sendEvent(withName: "onPitchDetected", body: [
       "frequency": result.frequency,
       "probability": result.probability,
+      "confidence": result.probability,
       "name": note.name,
       "octave": note.octave,
       "cents": note.cents,
+      "detectedAtMs": detectedAtMs,
+      "debugSeq": detectionSequence,
+      "debugSource": "native",
     ])
   }
 
