@@ -36,15 +36,15 @@ function GuitarHeadstockInner({
     const isTarget = isSameString(string, targetString);
     const isDetected = isSameString(string, detectedString);
     if (isTarget && isDetected) {
-      return 'bg-green-500/20 text-green-300 ring-2 ring-green-400 shadow-lg shadow-green-500/30 scale-105';
+      return 'bg-primary/20 text-primary ring-2 ring-primary active-string-glow scale-105';
     }
     if (isTarget) {
-      return 'bg-sky-500/20 text-sky-300 ring-2 ring-sky-400 shadow-lg shadow-sky-500/30 scale-105';
+      return 'bg-primary/10 text-primary ring-2 ring-primary/60 active-string-glow scale-105';
     }
     if (isDetected) {
-      return 'bg-amber-500/20 text-amber-300 ring-2 ring-amber-400 shadow-lg shadow-amber-500/30';
+      return 'bg-primary/10 text-primary/80 ring-2 ring-primary/40 shadow-lg shadow-primary/20';
     }
-    return 'bg-gray-800/80 text-gray-300 hover:bg-gray-700/80 hover:text-white';
+    return 'bg-surface text-gray-300 border border-primary/20 hover:bg-surface/80 hover:text-white';
   };
 
   // Fallback to simple button list if string count doesn't match anchor config
@@ -139,10 +139,10 @@ function GuitarHeadstockInner({
         })}
       </div>
 
-      <div className="mt-2 flex items-center justify-center gap-3 text-xs text-gray-400">
-        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-400" />목표</span>
-        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" />감지</span>
-        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400" />일치</span>
+      <div className="mt-2 flex items-center justify-center gap-3 text-xs text-primary/60">
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary" />목표</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/60" />감지</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary glow-primary" />일치</span>
       </div>
     </div>
   );
@@ -169,15 +169,15 @@ function GuitarHeadstockFallback({
     const isTarget = isSameString(string, targetString);
     const isDetected = isSameString(string, detectedString);
     if (isTarget && isDetected) {
-      return 'bg-green-500/20 text-green-300 ring-2 ring-green-400 shadow-lg shadow-green-500/30 scale-105';
+      return 'bg-primary/20 text-primary ring-2 ring-primary active-string-glow scale-105';
     }
     if (isTarget) {
-      return 'bg-sky-500/20 text-sky-300 ring-2 ring-sky-400 shadow-lg shadow-sky-500/30 scale-105';
+      return 'bg-primary/10 text-primary ring-2 ring-primary/60 active-string-glow scale-105';
     }
     if (isDetected) {
-      return 'bg-amber-500/20 text-amber-300 ring-2 ring-amber-400 shadow-lg shadow-amber-500/30';
+      return 'bg-primary/10 text-primary/80 ring-2 ring-primary/40 shadow-lg shadow-primary/20';
     }
-    return 'bg-gray-800/80 text-gray-300 hover:bg-gray-700/80 hover:text-white';
+    return 'bg-surface text-gray-300 border border-primary/20 hover:bg-surface/80 hover:text-white';
   };
 
   const useOverlayMode = strings.length === spec.anchors.length && strings.length === spec.stringToAnchorMap.length;
@@ -252,10 +252,10 @@ function GuitarHeadstockFallback({
         })}
       </div>
 
-      <div className="mt-2 flex items-center justify-center gap-3 text-xs text-gray-400">
-        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-400" />목표</span>
-        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" />감지</span>
-        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400" />일치</span>
+      <div className="mt-2 flex items-center justify-center gap-3 text-xs text-primary/60">
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary" />목표</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/60" />감지</span>
+        <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary glow-primary" />일치</span>
       </div>
     </div>
   );

@@ -5,3 +5,5 @@ export { NeedleGauge } from './needle-gauge.component';
 export { GuitarHeadstock } from './guitar-headstock.component';
 export { TuningTrendGraph } from './tuning-trend-graph.component';
 export { TunerOptionsDrawer } from './tuner-options-drawer.component';
+export { CircularDial } from './circular-dial.component';
+export { InstrumentSelector } from './instrument-selector.component';

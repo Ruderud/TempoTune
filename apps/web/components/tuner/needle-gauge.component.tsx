@@ -11,9 +11,9 @@ type NeedleGaugeProps = {
   isListening: boolean;
 };
 
-const COLOR_GREEN = '#22c55e';
-const COLOR_YELLOW = '#eab308';
-const COLOR_RED = '#ef4444';
+const COLOR_GREEN = '#0df2f2';
+const COLOR_YELLOW = '#0df2f2';
+const COLOR_RED = '#0df2f2';
 const COLOR_GRAY = '#6b7280';
 
 const LERP_FACTOR = 0.12;
@@ -175,7 +175,7 @@ export function NeedleGauge({
       ctx.font = `bold ${fontSize(0.04, 16, 26)}px serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#4b5563';
+      ctx.fillStyle = '#6b7280';
       ctx.fillText('\u266D', barLeft - marginX / 2, tickY);
       ctx.fillText('\u266F', barRight + marginX / 2, tickY);
 
@@ -191,15 +191,15 @@ export function NeedleGauge({
         if (isCenter) {
           tickH = clamp(h * 0.06, 24, 44);
           tickW = 2.5;
-          tickColor = '#5eead4';
+          tickColor = '#0df2f2';
         } else if (isMajor) {
           tickH = clamp(h * 0.045, 18, 32);
           tickW = 2;
-          tickColor = '#4b5563';
+          tickColor = '#6b7280';
         } else {
           tickH = clamp(h * 0.025, 10, 20);
           tickW = 1.5;
-          tickColor = 'rgba(75, 85, 99, 0.5)';
+          tickColor = 'rgba(107, 114, 128, 0.5)';
         }
 
         ctx.fillStyle = tickColor;
@@ -272,7 +272,7 @@ export function NeedleGauge({
       ctx.font = `900 ${noteFontSize}px system-ui, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = isInTune ? '#4ade80' : '#ffffff';
+      ctx.fillStyle = isInTune ? '#0df2f2' : '#ffffff';
       ctx.fillText(displayNote, w / 2, noteY);
 
       if (note) {

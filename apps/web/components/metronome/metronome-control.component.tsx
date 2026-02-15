@@ -21,72 +21,72 @@ export function MetronomeControl({
   onTimeSignatureChange,
   onStart,
   onStop,
-  onLoadCustomSound,
 }: MetronomeControlProps) {
   const handleBpmChange = (newBpm: number) => {
     const clampedBpm = Math.max(MIN_BPM, Math.min(MAX_BPM, newBpm));
     onBpmChange(clampedBpm);
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'accent' | 'normal') => {
-    const file = e.target.files?.[0];
-    if (file && onLoadCustomSound) {
-      onLoadCustomSound(file, type);
-    }
-  };
-
   return (
-    <div className="flex flex-col items-center space-y-6">
-      {/* BPM Slider */}
-      <div className="w-full max-w-sm">
-        <div className="bg-gray-900/50 rounded-2xl p-4 border border-gray-800">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => handleBpmChange(bpm - 1)}
-              disabled={isPlaying}
-              className={`
-                w-11 h-11 shrink-0 rounded-xl font-bold text-lg transition-all duration-150
-                ${isPlaying
-                  ? 'bg-gray-800/40 text-gray-600 cursor-not-allowed'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700 active:scale-95 shadow-sm'
-                }
-              `}
-            >
-              −
-            </button>
+    <div className="w-full space-y-4">
+      {/* BPM Precision Controls */}
+      <div className="flex items-center justify-between gap-3">
+        <button
+          onClick={() => handleBpmChange(bpm - 1)}
+          disabled={isPlaying}
+          className={`
+            w-11 h-11 rounded-lg flex items-center justify-center transition-all shrink-0
+            ${isPlaying
+              ? 'bg-surface/30 border border-primary/5 text-primary/30 cursor-not-allowed'
+              : 'bg-surface border border-primary/10 text-primary hover:border-primary/30 active:scale-95'
+            }
+          `}
+        >
+          <span className="text-xl font-light">&minus;</span>
+        </button>
 
-            <input
-              type="range"
-              min={MIN_BPM}
-              max={MAX_BPM}
-              value={bpm}
-              onChange={(e) => handleBpmChange(Number(e.target.value))}
-              className="flex-1 min-w-0 h-2 bg-gray-800 rounded-full appearance-none cursor-pointer slider"
-            />
-
-            <button
-              onClick={() => handleBpmChange(bpm + 1)}
-              disabled={isPlaying}
-              className={`
-                w-11 h-11 shrink-0 rounded-xl font-bold text-lg transition-all duration-150
-                ${isPlaying
-                  ? 'bg-gray-800/40 text-gray-600 cursor-not-allowed'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700 active:scale-95 shadow-sm'
-                }
-              `}
-            >
-              +
-            </button>
+        <div className="flex-1">
+          <input
+            type="range"
+            min={MIN_BPM}
+            max={MAX_BPM}
+            value={bpm}
+            onChange={(e) => handleBpmChange(Number(e.target.value))}
+            disabled={isPlaying}
+            className="w-full h-1.5 bg-surface rounded-full appearance-none cursor-pointer slider"
+            style={{
+              background: `linear-gradient(to right, rgb(13, 242, 242) 0%, rgb(13, 242, 242) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgb(26, 46, 46) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgb(26, 46, 46) 100%)`
+            }}
+          />
+          {/* Desktop: Tempo scale labels */}
+          <div className="hidden lg:flex justify-between mt-1 text-xs text-text-muted px-1">
+            <span>Largo</span>
+            <span>Andante</span>
+            <span>Moderato</span>
+            <span>Allegro</span>
+            <span>Presto</span>
           </div>
         </div>
+
+        <button
+          onClick={() => handleBpmChange(bpm + 1)}
+          disabled={isPlaying}
+          className={`
+            w-11 h-11 rounded-lg flex items-center justify-center transition-all shrink-0
+            ${isPlaying
+              ? 'bg-surface/30 border border-primary/5 text-primary/30 cursor-not-allowed'
+              : 'bg-surface border border-primary/10 text-primary hover:border-primary/30 active:scale-95'
+            }
+          `}
+        >
+          <span className="text-xl font-light">+</span>
+        </button>
       </div>
 
-      {/* Time Signature Buttons */}
-      <div className="w-full max-w-sm">
-        <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 text-center">
-          박자
-        </div>
-        <div className="flex gap-2 justify-center">
+      {/* Time Signature Chips */}
+      <div className="space-y-1.5">
+        <span className="text-xs text-text-muted font-medium ml-1">박자 선택</span>
+        <div className="flex gap-2">
           {COMMON_TIME_SIGNATURES.map((ts) => {
             const [beats, noteValue] = ts;
             const isActive = timeSignature[0] === beats && timeSignature[1] === noteValue;
@@ -97,10 +97,10 @@ export function MetronomeControl({
                 onClick={() => onTimeSignatureChange(ts)}
                 disabled={isPlaying}
                 className={`
-                  px-5 py-3 rounded-xl font-medium text-sm transition-all duration-200
+                  flex-1 h-11 rounded-lg font-medium text-sm transition-all
                   ${isActive
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/40 scale-[1.02]'
-                    : 'bg-gray-800/60 text-gray-400 hover:bg-gray-800 hover:text-gray-300 active:scale-95'
+                    ? 'bg-primary text-background-dark font-bold shadow-lg shadow-primary/20'
+                    : 'bg-surface border border-primary/20 text-white/80 hover:border-primary/50'
                   }
                   ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 `}
@@ -112,59 +112,39 @@ export function MetronomeControl({
         </div>
       </div>
 
-      {/* Play/Stop Button */}
-      <div className="flex flex-col items-center gap-3">
-        <button
-          onClick={isPlaying ? onStop : onStart}
-          className={`
-            relative w-24 h-24 rounded-full font-bold text-base transition-all duration-300
-            ${isPlaying
-              ? 'bg-gradient-to-br from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 active:scale-95 shadow-xl shadow-red-600/40'
-              : 'bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 active:scale-95 shadow-xl shadow-green-600/40'
-            }
-          `}
-        >
-          <div className="absolute inset-0 rounded-full bg-white/10 opacity-0 hover:opacity-100 transition-opacity duration-200" />
-          <span className="relative z-10 text-white drop-shadow-lg">
-            {isPlaying ? '정지' : '시작'}
-          </span>
-        </button>
-
-        <div className="flex items-center gap-2">
-          <div
-            className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              isPlaying ? 'bg-green-500 animate-pulse shadow-lg shadow-green-500/50' : 'bg-gray-700'
-            }`}
-          />
-          <span className="text-xs text-gray-500 font-medium">
-            {isPlaying ? '재생 중...' : '대기 중'}
-          </span>
+      {/* Sound Presets */}
+      <div className="space-y-1.5">
+        <span className="text-xs text-text-muted font-medium ml-1">사운드 설정</span>
+        <div className="flex gap-2">
+          <button
+            disabled
+            className="flex-1 h-11 rounded-lg bg-surface border border-primary/10 text-xs text-white/40 cursor-not-allowed"
+          >
+            나무 (Wood)
+          </button>
+          <button
+            disabled
+            className="flex-1 h-11 rounded-lg bg-primary/20 border border-primary/50 text-primary text-xs cursor-not-allowed"
+          >
+            전자음 (Digital)
+          </button>
         </div>
       </div>
 
-      {/* Custom Sound Upload */}
-      {onLoadCustomSound && (
-        <div className="flex gap-2">
-          <label className="min-h-[44px] flex items-center justify-center px-4 text-xs font-medium bg-gray-800/40 hover:bg-gray-800/70 active:scale-95 rounded-xl cursor-pointer transition-all duration-150 text-gray-500 hover:text-gray-300 border border-gray-800/50">
-            강세음 업로드
-            <input
-              type="file"
-              accept="audio/*"
-              onChange={(e) => handleFileUpload(e, 'accent')}
-              className="hidden"
-            />
-          </label>
-          <label className="min-h-[44px] flex items-center justify-center px-4 text-xs font-medium bg-gray-800/40 hover:bg-gray-800/70 active:scale-95 rounded-xl cursor-pointer transition-all duration-150 text-gray-500 hover:text-gray-300 border border-gray-800/50">
-            일반음 업로드
-            <input
-              type="file"
-              accept="audio/*"
-              onChange={(e) => handleFileUpload(e, 'normal')}
-              className="hidden"
-            />
-          </label>
-        </div>
-      )}
+      {/* Play/Stop Action */}
+      <button
+        onClick={isPlaying ? onStop : onStart}
+        className={`
+          w-full h-14 rounded-xl flex items-center justify-center gap-3 transition-all font-bold text-lg tracking-wider
+          ${isPlaying
+            ? 'bg-background-dark border-2 border-primary text-primary breathing-glow active:scale-[0.98]'
+            : 'bg-primary text-background-dark glow-primary-strong active:scale-[0.98] shadow-2xl shadow-primary/10'
+          }
+        `}
+      >
+        <span className="text-2xl">{isPlaying ? '■' : '▶'}</span>
+        <span>{isPlaying ? '정지' : '시작'}</span>
+      </button>
     </div>
   );
 }

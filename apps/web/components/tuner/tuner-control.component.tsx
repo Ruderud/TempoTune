@@ -24,16 +24,31 @@ export function TunerControl({
   onStart,
   onStop,
 }: TunerControlProps) {
-  const presetLabel = currentPreset.instrument === 'guitar' ? '기타' : '베이스';
-  const stringCount = currentPreset.strings.length;
-  const modeButtonBaseClass =
-    'px-3 py-2 rounded-full text-sm font-semibold transition-all duration-200';
-
   return (
-    <div className="px-4 py-3 border-b border-gray-800/50 space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        {/* Preset info */}
-        <div className="flex items-center gap-2 min-w-0">
+    <div className="px-4 py-2 space-y-2">
+      {/* Mobile: Top bar with hamburger, logo and mic status */}
+      <div className="flex items-center justify-between lg:hidden">
+        <div className="flex items-center gap-3">
+          <button type="button" className="w-8 h-8 rounded-lg bg-surface border border-primary/10 flex items-center justify-center text-primary/60">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <path d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <span className="text-xs font-bold tracking-[0.2em] text-primary uppercase">TEMPOTUNE</span>
+        </div>
+        <span className={`text-xs font-semibold tracking-wider uppercase ${isListening ? 'text-primary' : 'text-text-muted'}`}>
+          {isListening ? 'MIC ACTIVE' : 'MIC OFF'}
+        </span>
+      </div>
+
+      {/* Controls row */}
+      <div className="flex items-center gap-3">
+        {/* Preset selector button */}
+        <button
+          className="flex-1 flex items-center justify-center gap-2 bg-surface border border-primary/20 min-h-[44px] py-2.5 rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors"
+          disabled={isListening}
+        >
+          <span className="text-xs text-primary">⚙</span>
           <select
             value={`${currentPreset.instrument}-${currentPreset.name}`}
             onChange={(e) => {
@@ -43,55 +58,29 @@ export function TunerControl({
               if (preset) onPresetChange(preset);
             }}
             disabled={isListening}
-            className={`
-              bg-transparent text-white text-sm font-bold
-              border-none outline-none cursor-pointer max-w-[130px]
-              ${isListening ? 'opacity-60 cursor-not-allowed' : ''}
-            `}
+            className="bg-transparent text-white text-sm font-medium border-none outline-none cursor-pointer"
           >
             {ALL_TUNING_PRESETS.map((preset) => (
               <option
                 key={`${preset.instrument}-${preset.name}`}
                 value={`${preset.instrument}-${preset.name}`}
-                className="bg-gray-900 text-white"
+                className="bg-surface text-white"
               >
                 {preset.instrument === 'guitar' ? '기타' : '베이스'} {preset.name}
               </option>
             ))}
           </select>
-          <span className="text-xs text-gray-500 whitespace-nowrap">
-            {presetLabel} {stringCount}현
-          </span>
-        </div>
-
-        {/* Start/Stop */}
-        <button
-          onClick={isListening ? onStop : onStart}
-          className={`
-            relative shrink-0 px-5 py-2.5 min-h-[48px] rounded-full font-semibold text-sm transition-all duration-200
-            ${
-              isListening
-                ? 'bg-red-600/90 text-white hover:bg-red-500 active:scale-95'
-                : 'bg-green-600/90 text-white hover:bg-green-500 active:scale-95'
-            }
-          `}
-        >
-          {isListening ? '정지' : '시작'}
-          {isListening && (
-            <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-400 rounded-full animate-pulse" />
-          )}
         </button>
-      </div>
 
-      <div className="flex items-center justify-between gap-2">
-        <div className="inline-flex rounded-full bg-gray-900/80 p-1 border border-gray-800">
+        {/* Mode toggle */}
+        <div className="flex-1 bg-surface border border-primary/20 p-1 rounded-lg flex items-center">
           <button
             type="button"
             onClick={() => onTuningModeChange('auto')}
-            className={`${modeButtonBaseClass} ${
+            className={`flex-1 min-h-[36px] rounded-md text-xs font-bold transition-colors ${
               tuningMode === 'auto'
-                ? 'bg-sky-400/30 text-sky-200'
-                : 'text-gray-400 hover:text-gray-100'
+                ? 'bg-primary text-background-dark'
+                : 'text-primary/40 hover:text-primary'
             }`}
           >
             자동
@@ -99,17 +88,32 @@ export function TunerControl({
           <button
             type="button"
             onClick={() => onTuningModeChange('manual')}
-            className={`${modeButtonBaseClass} ${
+            className={`flex-1 min-h-[36px] rounded-md text-xs font-bold transition-colors ${
               tuningMode === 'manual'
-                ? 'bg-sky-400/30 text-sky-200'
-                : 'text-gray-400 hover:text-gray-100'
+                ? 'bg-primary text-background-dark'
+                : 'text-primary/40 hover:text-primary'
             }`}
           >
             수동
           </button>
         </div>
 
+        {/* Start/Stop button */}
+        <button
+          onClick={isListening ? onStop : onStart}
+          className="px-5 min-h-[44px] rounded-lg font-bold text-sm shadow-lg flex items-center gap-2 transition-all bg-primary text-background-dark shadow-primary/20"
+        >
+          <span className="text-sm">{isListening ? '⏸' : '▶'}</span>
+          <span>{isListening ? '중지' : '시작'}</span>
+        </button>
       </div>
+
+      {/* Manual mode indicator */}
+      {tuningMode === 'manual' && (
+        <div className="lg:hidden text-center">
+          <span className="text-xs font-medium text-primary/60">수동 모드 활성</span>
+        </div>
+      )}
     </div>
   );
 }
