@@ -75,7 +75,7 @@
 <div class="flex items-center gap-6">
 <div class="flex items-center gap-4">
 <div class="flex flex-col items-end">
-<span class="text-[10px] uppercase opacity-50 tracking-widest">입력 신호</span>
+<span class="text-xs uppercase opacity-50 tracking-widest">입력 신호</span>
 <div class="flex gap-0.5 h-3 items-end">
 <div class="w-1 h-1/2 bg-primary"></div>
 <div class="w-1 h-3/4 bg-primary"></div>
@@ -97,7 +97,7 @@
 <main class="flex-1 flex overflow-hidden">
 <!-- Left Sidebar: Instrument Panel -->
 <aside class="w-20 border-r border-primary/10 flex flex-col items-center py-6 gap-6 bg-background-light dark:bg-background-dark/40">
-<span class="text-[10px] text-primary/50 font-bold uppercase vertical-text transform -rotate-180" style="writing-mode: vertical-rl;">INSTRUMENT</span>
+<span class="text-xs text-primary/50 font-bold uppercase vertical-text transform -rotate-180" style="writing-mode: vertical-rl;">INSTRUMENT</span>
 <div class="flex flex-col gap-3">
 <!-- String Selectors -->
 <button class="w-10 h-10 rounded-full border border-primary/20 flex items-center justify-center text-xs font-bold hover:bg-primary/20 transition-all">E4</button>
@@ -163,7 +163,7 @@
 </div>
 <!-- Frequency Trend Graph -->
 <div class="h-48 border-t border-primary/10 bg-background-dark/60 p-4 relative">
-<div class="absolute top-2 left-4 flex gap-4 text-[10px] uppercase font-bold text-primary/40 tracking-widest">
+<div class="absolute top-2 left-4 flex gap-4 text-xs uppercase font-bold text-primary/40 tracking-widest">
 <span>실시간 주파수 분석</span>
 <span class="text-primary/20">|</span>
 <span>128ms 레이턴시</span>
@@ -209,7 +209,7 @@
 <div class="absolute h-full w-3/4 bg-primary rounded-full"></div>
 <div class="absolute h-4 w-4 bg-primary rounded-full -top-[5px] left-3/4 shadow-lg border-2 border-background-dark"></div>
 </div>
-<div class="flex justify-between text-[10px] opacity-40">
+<div class="flex justify-between text-xs opacity-40">
 <span>432</span>
 <span>440</span>
 <span>448</span>
@@ -247,7 +247,7 @@
 <span class="material-icons text-primary">mic</span>
 </div>
 <div>
-<p class="text-[10px] opacity-50 uppercase">활성 장치</p>
+<p class="text-xs opacity-50 uppercase">활성 장치</p>
 <p class="text-xs font-bold truncate">Focusrite Scarlett 2i2</p>
 </div>
 </div>
@@ -255,15 +255,15 @@
 </aside>
 </main>
 <!-- Footer Status Bar -->
-<footer class="h-8 border-t border-primary/10 flex items-center justify-between px-6 text-[10px] bg-background-dark/80 backdrop-blur-md opacity-60 font-medium">
+<footer class="h-8 border-t border-primary/10 flex items-center justify-between px-6 text-xs bg-background-dark/80 backdrop-blur-md opacity-60 font-medium">
 <div class="flex gap-4">
 <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 bg-green-400 rounded-full"></span> 시스템 정상</span>
 <span>CPU 점유율: 1.2%</span>
 <span>샘플링: 48kHz / 24bit</span>
 </div>
 <div class="flex gap-4 uppercase tracking-widest">
-<span>v2.4.0 Build Stable</span>
-<span>© 2024 TEMPOTUNE LABS</span>
+<span>{{APP_VERSION}}</span>
+<span>© {{COPYRIGHT_YEAR}} {{LEGAL_ENTITY}}.</span>
 </div>
 </footer>
 </body></html>

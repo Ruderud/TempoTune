@@ -60,10 +60,10 @@
 <span class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">TempoTune</span>
 </div>
 <div class="hidden md:flex items-center gap-10">
-<a class="text-sm font-medium hover:text-primary transition-colors" href="#">기능</a>
-<a class="text-sm font-medium hover:text-primary transition-colors" href="#">가격</a>
-<a class="text-sm font-medium hover:text-primary transition-colors" href="#">라이브러리</a>
-<a class="text-sm font-medium hover:text-primary transition-colors" href="#">커뮤니티</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="/features" data-route="/features">기능</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="/pricing" data-route="/pricing">가격</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="/library" data-route="/library">라이브러리</a>
+<a class="text-sm font-medium hover:text-primary transition-colors" href="/community" data-route="/community">커뮤니티</a>
 </div>
 <div class="flex items-center gap-4">
 <button class="px-6 py-2.5 rounded-lg border border-primary/30 text-primary text-sm font-semibold hover:bg-primary/10 transition-all">로그인</button>
@@ -243,41 +243,41 @@
 <div>
 <h5 class="text-white font-bold mb-6">제품</h5>
 <ul class="space-y-4 text-slate-500 text-sm">
-<li><a class="hover:text-primary transition-colors" href="#">주요 기능</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">튜너 엔진</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">메트로놈 설정</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">업데이트 소식</a></li>
+<li><a class="hover:text-primary transition-colors" href="/features" data-route="/features">주요 기능</a></li>
+<li><a class="hover:text-primary transition-colors" href="/tuner" data-route="/tuner">튜너 엔진</a></li>
+<li><a class="hover:text-primary transition-colors" href="/metronome" data-route="/metronome">메트로놈 설정</a></li>
+<li><a class="hover:text-primary transition-colors" href="/updates" data-route="/updates">업데이트 소식</a></li>
 </ul>
 </div>
 <div>
 <h5 class="text-white font-bold mb-6">지원</h5>
 <ul class="space-y-4 text-slate-500 text-sm">
-<li><a class="hover:text-primary transition-colors" href="#">고객 센터</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">이용 약관</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">개인정보 처리방침</a></li>
-<li><a class="hover:text-primary transition-colors" href="#">자주 묻는 질문</a></li>
+<li><a class="hover:text-primary transition-colors" href="/support" data-route="/support">고객 센터</a></li>
+<li><a class="hover:text-primary transition-colors" href="/terms" data-route="/terms">이용 약관</a></li>
+<li><a class="hover:text-primary transition-colors" href="/privacy" data-route="/privacy">개인정보 처리방침</a></li>
+<li><a class="hover:text-primary transition-colors" href="/faq" data-route="/faq">자주 묻는 질문</a></li>
 </ul>
 </div>
 <div>
 <h5 class="text-white font-bold mb-6">소셜</h5>
 <div class="flex gap-4">
-<a class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all" href="#">
+<a class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all" href="/social/facebook" data-route="/social/facebook">
 <span class="material-icons text-lg">facebook</span>
 </a>
-<a class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all" href="#">
+<a class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all" href="/social/instagram" data-route="/social/instagram">
 <span class="material-icons text-lg">camera_alt</span>
 </a>
-<a class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all" href="#">
+<a class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all" href="/social/youtube" data-route="/social/youtube">
 <span class="material-icons text-lg">play_circle</span>
 </a>
 </div>
 </div>
 </div>
 <div class="flex flex-col md:flex-row justify-between items-center pt-10 border-t border-white/5 text-slate-600 text-sm">
-<p>© 2024 TempoTune Inc. All rights reserved.</p>
+<p>© {{COPYRIGHT_YEAR}} {{LEGAL_ENTITY}} All rights reserved.</p>
 <div class="flex gap-8 mt-4 md:mt-0">
 <span class="flex items-center gap-1"><span class="material-icons text-sm">language</span> 한국어 (KR)</span>
-<a class="hover:text-white" href="#">Status</a>
+<a class="hover:text-white" href="/status" data-route="/status">Status</a>
 </div>
 </div>
 </div>

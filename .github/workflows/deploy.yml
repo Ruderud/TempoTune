@@ -180,10 +180,35 @@ jobs:
           pnpm exec nx affected --target=lint --base=$BASE_SHA --head=HEAD
 
   # ──────────────────────────────────────────────
-  # 4. Test — audio 패키지가 affected인 경우만
+  # 4. UI Guardrails — web가 affected인 경우만
+  # ──────────────────────────────────────────────
+  ui-guardrails:
+    name: "4. UI Guardrails"
+    needs: affected
+    if: needs.affected.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: "4-1. Run UI quality guardrails"
+        run: bash scripts/check-ui-quality.sh
+
+  # ──────────────────────────────────────────────
+  # 5. Test — audio 패키지가 affected인 경우만
   # ──────────────────────────────────────────────
   test:
-    name: "4. Test"
+    name: "5. Test"
     needs: affected
     if: needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true'
     runs-on: ubuntu-latest
@@ -201,7 +226,7 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: "4-1. Run nx affected tests"
+      - name: "5-1. Run nx affected tests"
         run: |
           BASE_SHA="${{ github.event.before }}"
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -225,17 +250,18 @@ jobs:
           pnpm exec nx affected --target=test --base=$BASE_SHA --head=HEAD
 
   # ──────────────────────────────────────────────
-  # 5. Deploy Web — web이 affected이고 main push일 때
+  # 6. Deploy Web — web이 affected이고 main push일 때
   # ──────────────────────────────────────────────
   deploy-web:
-    name: "5. Deploy Web"
-    needs: [affected, type-check, lint]
+    name: "6. Deploy Web"
+    needs: [affected, type-check, lint, ui-guardrails]
     if: |
       always() &&
       github.event_name == 'push' && github.ref == 'refs/heads/main' &&
       needs.affected.outputs.web == 'true' &&
       (needs.type-check.result == 'success' || needs.type-check.result == 'skipped') &&
-      (needs.lint.result == 'success' || needs.lint.result == 'skipped')
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
+      (needs.ui-guardrails.result == 'success' || needs.ui-guardrails.result == 'skipped')
     runs-on: ubuntu-latest
     environment: github-action
     permissions:
@@ -253,10 +279,10 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: "5-1. Inject version"
+      - name: "6-1. Inject version"
         run: pnpm --filter @tempo-tune/web run version:inject
 
-      - name: "5-2. Build & Deploy to Cloudflare"
+      - name: "6-2. Build & Deploy to Cloudflare"
         working-directory: apps/web
         run: pnpm exec opennextjs-cloudflare build && pnpm exec wrangler deploy
         env:
