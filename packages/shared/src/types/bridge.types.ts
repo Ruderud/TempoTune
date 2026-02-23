@@ -20,3 +20,20 @@ export type BridgeResponse<T = unknown> = {
   error?: string;
   requestId?: string;
 };
+
+/**
+ * Explicit request → response type pairs for the bridge protocol.
+ * Mobile sends a BridgeResponseEnvelope to the WebView; web listeners match on `type`.
+ */
+export type BridgeResponseEnvelope<T = unknown> = {
+  type: BridgeMessageType;
+  success: boolean;
+  data?: T;
+  error?: string;
+  requestId?: string;
+};
+
+/** Payload carried in the MIC_PERMISSION_RESPONSE envelope */
+export type MicPermissionResponseData = {
+  status: string;
+};

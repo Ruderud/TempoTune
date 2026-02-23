@@ -1,7 +1,5 @@
 import {NativeModules, NativeEventEmitter} from 'react-native';
 
-const {PitchDetectorModule} = NativeModules;
-
 type PitchEvent = {
   frequency: number;
   probability: number;
@@ -21,14 +19,26 @@ type PitchErrorEvent = {
 };
 
 class NativeAudioService {
-  private emitter: NativeEventEmitter;
+  private emitter: NativeEventEmitter | null = null;
   private pitchSubscription: ReturnType<NativeEventEmitter['addListener']> | null = null;
   private errorSubscription: ReturnType<NativeEventEmitter['addListener']> | null = null;
   private onPitchCallback: ((data: PitchEvent) => void) | null = null;
   private onErrorCallback: ((error: string) => void) | null = null;
+  private moduleAvailable: boolean;
+  private isListening: boolean = false;
 
   constructor() {
-    this.emitter = new NativeEventEmitter(PitchDetectorModule);
+    try {
+      const module = NativeModules.PitchDetectorModule;
+      if (module == null) {
+        this.moduleAvailable = false;
+      } else {
+        this.emitter = new NativeEventEmitter(module);
+        this.moduleAvailable = true;
+      }
+    } catch {
+      this.moduleAvailable = false;
+    }
   }
 
   start(
@@ -38,31 +48,63 @@ class NativeAudioService {
     this.onPitchCallback = onPitch;
     this.onErrorCallback = onError ?? null;
 
-    this.pitchSubscription = this.emitter.addListener(
-      'onPitchDetected',
-      (event: PitchEvent) => {
-        this.onPitchCallback?.(event);
-      },
-    );
+    if (!this.moduleAvailable || this.emitter == null) {
+      this.onErrorCallback?.(
+        'PitchDetectorModule is not available on this device.',
+      );
+      return;
+    }
 
-    this.errorSubscription = this.emitter.addListener(
-      'onPitchError',
-      (event: PitchErrorEvent) => {
-        this.onErrorCallback?.(event.message);
-      },
-    );
+    if (this.isListening) {
+      this.pitchSubscription?.remove();
+      this.errorSubscription?.remove();
+      this.pitchSubscription = null;
+      this.errorSubscription = null;
+      this.isListening = false;
+    }
 
-    PitchDetectorModule.startListening();
+    try {
+      this.pitchSubscription = this.emitter.addListener(
+        'onPitchDetected',
+        (event: PitchEvent) => {
+          this.onPitchCallback?.(event);
+        },
+      );
+
+      this.errorSubscription = this.emitter.addListener(
+        'onPitchError',
+        (event: PitchErrorEvent) => {
+          this.onErrorCallback?.(event.message);
+        },
+      );
+
+      NativeModules.PitchDetectorModule.startListening();
+      this.isListening = true;
+    } catch (e: unknown) {
+      const message =
+        e instanceof Error ? e.message : 'Failed to start pitch detection.';
+      this.onErrorCallback?.(message);
+    }
   }
 
   stop(): void {
-    PitchDetectorModule.stopListening();
+    if (!this.moduleAvailable) {
+      return;
+    }
+
+    try {
+      NativeModules.PitchDetectorModule.stopListening();
+    } catch {
+      // Module may have already been torn down; ignore.
+    }
+
     this.pitchSubscription?.remove();
     this.errorSubscription?.remove();
     this.pitchSubscription = null;
     this.errorSubscription = null;
     this.onPitchCallback = null;
     this.onErrorCallback = null;
+    this.isListening = false;
   }
 }
 

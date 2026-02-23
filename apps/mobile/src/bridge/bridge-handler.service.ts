@@ -1,8 +1,13 @@
-import type {BridgeMessage, BridgeResponse} from '@tempo-tune/shared/types';
+import type {BridgeMessage, BridgeMessageType, BridgeResponse} from '@tempo-tune/shared/types';
 import type WebView from 'react-native-webview';
 import type {RefObject} from 'react';
 
 type MessageHandler = (data: unknown) => Promise<BridgeResponse>;
+
+/** Maps a request type to its corresponding response type. */
+const RESPONSE_TYPE: Partial<Record<BridgeMessageType, BridgeMessageType>> = {
+  REQUEST_MIC_PERMISSION: 'MIC_PERMISSION_RESPONSE',
+};
 
 export class BridgeHandler {
   private handlers: Map<string, MessageHandler> = new Map();
@@ -31,8 +36,9 @@ export class BridgeHandler {
       }
 
       const response = await handler(message.data);
+      const responseType = RESPONSE_TYPE[message.type] ?? message.type;
       this.sendToWebView({
-        type: message.type,
+        type: responseType,
         ...response,
         requestId: message.requestId,
       });

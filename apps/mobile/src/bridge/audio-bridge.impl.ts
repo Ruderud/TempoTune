@@ -1,13 +1,13 @@
-import type {BridgeResponse} from '@tempo-tune/shared/types';
+import type {BridgeResponse, MicPermissionResponseData} from '@tempo-tune/shared/types';
 import {
   requestMicPermission,
 } from '../services/permission.service';
 
-export async function handleRequestMicPermission(): Promise<BridgeResponse> {
+export async function handleRequestMicPermission(): Promise<BridgeResponse<MicPermissionResponseData>> {
   const status = await requestMicPermission();
   return {
     success: true,
-    data: {type: 'MIC_PERMISSION_RESPONSE', status},
+    data: {status},
   };
 }
 

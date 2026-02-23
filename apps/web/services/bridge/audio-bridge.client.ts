@@ -1,22 +1,7 @@
 import type { AudioBridgeInterface } from '@tempo-tune/shared/bridge';
 import type { AudioPermissionStatus, TunerNote } from '@tempo-tune/shared/types';
 import { isNativeEnvironment, postMessageToNative, addNativeMessageListener } from './bridge-adapter';
-
-function isLatencyDebugEnabled(): boolean {
-  if (typeof window === 'undefined') return false;
-
-  try {
-    if (window.localStorage.getItem('tempo_tuner_latency_debug') === '1') return true;
-  } catch {
-    // ignore storage errors
-  }
-
-  try {
-    return new URLSearchParams(window.location.search).get('tunerDebug') === '1';
-  } catch {
-    return false;
-  }
-}
+import { isLatencyDebugEnabled } from '../../utils/latency-debug';
 
 export class AudioBridgeClient implements AudioBridgeInterface {
   private pitchCallbacks: Set<(note: TunerNote) => void> = new Set();
@@ -40,13 +25,17 @@ export class AudioBridgeClient implements AudioBridgeInterface {
       }
     }
 
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       postMessageToNative({ type: 'REQUEST_MIC_PERMISSION' });
       const cleanup = addNativeMessageListener((data) => {
-        const msg = data as { type: string; status: AudioPermissionStatus };
+        const msg = data as { type: string; success: boolean; data?: { status: AudioPermissionStatus }; error?: string };
         if (msg.type === 'MIC_PERMISSION_RESPONSE') {
           cleanup();
-          resolve(msg.status);
+          if (!msg.success) {
+            reject(new Error(msg.error ?? 'Permission request failed'));
+          } else {
+            resolve(msg.data?.status ?? 'denied');
+          }
         }
       });
     });

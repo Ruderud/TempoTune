@@ -1,6 +1,6 @@
 {
   "name": "@tempo-tune/web",
-  "version": "0.1.27",
+  "version": "0.1.28",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint .",
     "type-check": "tsc --noEmit",
+    "test": "vitest run",
     "version:update": "node scripts/update-web-version.js",
     "version:inject": "node scripts/inject-version.js",
     "build:cf": "opennextjs-cloudflare build",
@@ -32,6 +33,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
+    "vitest": "^4.0.18",
     "wrangler": "^4.64.0"
   }
 }
