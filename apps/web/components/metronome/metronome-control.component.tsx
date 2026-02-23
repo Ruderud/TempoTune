@@ -35,10 +35,10 @@ export function MetronomeControl({
           onClick={() => handleBpmChange(bpm - 1)}
           disabled={isPlaying}
           className={`
-            w-11 h-11 rounded-lg flex items-center justify-center transition-all shrink-0
+            w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0
             ${isPlaying
-              ? 'bg-surface/30 border border-primary/5 text-primary/30 cursor-not-allowed'
-              : 'bg-surface border border-primary/10 text-primary hover:border-primary/30 active:scale-95'
+              ? 'bg-white/5 border border-white/5 text-white/20 cursor-not-allowed'
+              : 'bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95'
             }
           `}
         >
@@ -53,9 +53,9 @@ export function MetronomeControl({
             value={bpm}
             onChange={(e) => handleBpmChange(Number(e.target.value))}
             disabled={isPlaying}
-            className="w-full h-1.5 bg-surface rounded-full appearance-none cursor-pointer slider"
+            className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer slider"
             style={{
-              background: `linear-gradient(to right, rgb(13, 242, 242) 0%, rgb(13, 242, 242) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgb(26, 46, 46) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgb(26, 46, 46) 100%)`
+              background: `linear-gradient(to right, rgb(13, 242, 242) 0%, rgb(13, 242, 242) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgba(255, 255, 255, 0.1) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgba(255, 255, 255, 0.1) 100%)`
             }}
           />
           {/* Desktop: Tempo scale labels */}
@@ -72,10 +72,10 @@ export function MetronomeControl({
           onClick={() => handleBpmChange(bpm + 1)}
           disabled={isPlaying}
           className={`
-            w-11 h-11 rounded-lg flex items-center justify-center transition-all shrink-0
+            w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0
             ${isPlaying
-              ? 'bg-surface/30 border border-primary/5 text-primary/30 cursor-not-allowed'
-              : 'bg-surface border border-primary/10 text-primary hover:border-primary/30 active:scale-95'
+              ? 'bg-white/5 border border-white/5 text-white/20 cursor-not-allowed'
+              : 'bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95'
             }
           `}
         >
@@ -114,19 +114,31 @@ export function MetronomeControl({
 
       {/* Sound Presets */}
       <div className="space-y-1.5">
-        <span className="text-xs text-text-muted font-medium ml-1">사운드 설정</span>
-        <div className="flex gap-2">
+        <span className="text-xs text-white/40 font-medium ml-1">사운드 설정</span>
+        <div className="flex gap-2 overflow-x-auto">
           <button
             disabled
-            className="flex-1 h-11 rounded-lg bg-surface border border-primary/10 text-xs text-white/40 cursor-not-allowed"
+            className="shrink-0 px-6 py-2.5 rounded-full bg-white/10 border border-white/10 text-xs text-slate-100 cursor-not-allowed"
           >
             나무 (Wood)
           </button>
           <button
             disabled
-            className="flex-1 h-11 rounded-lg bg-primary/20 border border-primary/50 text-primary text-xs cursor-not-allowed"
+            className="shrink-0 px-6 py-2.5 rounded-full bg-primary/20 border border-primary/50 text-primary text-xs cursor-not-allowed"
           >
             전자음 (Digital)
+          </button>
+          <button
+            disabled
+            className="shrink-0 px-6 py-2.5 rounded-full bg-white/10 border border-white/10 text-xs text-slate-100 cursor-not-allowed"
+          >
+            박수 (Clap)
+          </button>
+          <button
+            disabled
+            className="shrink-0 px-6 py-2.5 rounded-full bg-white/10 border border-white/10 text-xs text-slate-100 cursor-not-allowed"
+          >
+            틱 (Tick)
           </button>
         </div>
       </div>
@@ -135,10 +147,10 @@ export function MetronomeControl({
       <button
         onClick={isPlaying ? onStop : onStart}
         className={`
-          w-full h-14 rounded-xl flex items-center justify-center gap-3 transition-all font-bold text-lg tracking-wider
+          w-full py-5 rounded-2xl flex items-center justify-center gap-3 transition-all font-bold text-lg tracking-wider
           ${isPlaying
             ? 'bg-background-dark border-2 border-primary text-primary breathing-glow active:scale-[0.98]'
-            : 'bg-primary text-background-dark glow-primary-strong active:scale-[0.98] shadow-2xl shadow-primary/10'
+            : 'bg-primary text-background-dark shadow-[0px_25px_50px_-12px_rgba(13,242,242,0.1)] active:scale-[0.98]'
           }
         `}
       >

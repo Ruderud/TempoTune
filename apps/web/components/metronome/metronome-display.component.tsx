@@ -32,10 +32,9 @@ export function MetronomeDisplay({
   return (
     <div className="flex flex-col items-center justify-center space-y-4 lg:space-y-8">
       {/* Beat Indicators */}
-      <div className="flex items-center gap-3 lg:gap-6 py-1">
+      <div className="flex items-center gap-4 lg:gap-6 py-4">
         {beats.map((beat) => {
           const isCurrentBeat = isPlaying && beat === currentBeat;
-          const isAccent = beat === 1;
 
           return (
             <div key={beat} className="flex flex-col items-center gap-1">
@@ -43,16 +42,11 @@ export function MetronomeDisplay({
                 className={`
                   w-4 h-4 lg:w-6 lg:h-6 rounded-full transition-all duration-100
                   ${isCurrentBeat
-                    ? 'bg-primary glow-beat ring-4 ring-primary/20'
-                    : isAccent
-                      ? 'bg-surface border-2 border-primary/40'
-                      : 'bg-surface border border-primary/20'
+                    ? 'bg-primary ring-4 ring-primary/20'
+                    : 'bg-zinc-800'
                   }
                 `}
               />
-              {isAccent && isCurrentBeat && (
-                <span className="text-xs text-primary font-semibold hidden lg:block">DOWNBEAT</span>
-              )}
             </div>
           );
         })}
@@ -60,11 +54,11 @@ export function MetronomeDisplay({
 
       {/* BPM Display */}
       <div className="flex flex-col items-center">
-        <span className="text-8xl lg:text-[160px] font-bold tracking-tighter tabular-nums leading-none text-primary glow-text">
+        <span className="text-8xl lg:text-[160px] font-bold tracking-tighter tabular-nums leading-none text-[#f1f5f9]">
           {bpm}
         </span>
-        <span className="text-primary tracking-[0.4em] font-medium text-sm lg:text-xl mt-2 opacity-60">BPM</span>
-        <span className="text-xs lg:text-sm font-semibold tracking-[0.3em] text-text-muted mt-1">{tempoMarking}</span>
+        <span className="text-primary tracking-[0.4em] font-medium text-sm lg:text-xl mt-2">BPM</span>
+        <span className="text-xs lg:text-sm text-white/40 mt-1 uppercase">{tempoMarking}</span>
       </div>
     </div>
   );
