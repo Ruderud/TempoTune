@@ -2,6 +2,7 @@
 
 import type { TuningPreset } from '@tempo-tune/shared/types';
 import { ALL_TUNING_PRESETS } from '@tempo-tune/shared/constants';
+import { Icon } from '../common/icon.component';
 
 type TuningMode = 'auto' | 'manual';
 
@@ -26,19 +27,17 @@ export function TunerControl({
 }: TunerControlProps) {
   return (
     <div className="px-4 py-2 space-y-2">
-      {/* Mobile: Top bar with hamburger, logo and mic status */}
-      <div className="flex items-center justify-between lg:hidden">
-        <div className="flex items-center gap-3">
-          <button type="button" className="w-8 h-8 rounded-lg bg-surface border border-primary/10 flex items-center justify-center text-primary/60">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <path d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
-          <span className="text-xs font-bold tracking-[0.2em] text-primary uppercase">TEMPOTUNE</span>
-        </div>
-        <span className={`text-xs font-semibold tracking-wider uppercase ${isListening ? 'text-primary' : 'text-text-muted'}`}>
-          {isListening ? 'MIC ACTIVE' : 'MIC OFF'}
+      {/* Mobile: Top bar */}
+      <div className="flex items-center justify-between lg:hidden px-2 py-5">
+        <button type="button" className="p-2 rounded-lg bg-white/5 flex items-center justify-center text-primary/60">
+          <Icon src="/assets/icons/menu.svg" size={18} label="메뉴" />
+        </button>
+        <span className="text-lg font-bold tracking-[0.1em] text-primary">
+          TEMPOTUNE
         </span>
+        <button type="button" className="p-2 rounded-lg bg-white/5 flex items-center justify-center text-primary/60">
+          <Icon src="/assets/icons/settings.svg" size={20} label="설정" />
+        </button>
       </div>
 
       {/* Controls row */}
