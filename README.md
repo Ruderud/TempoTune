@@ -87,10 +87,25 @@ pnpm --filter @tempo-tune/mobile android
 ```bash
 pnpm dev              # 모든 앱 개발 서버 실행
 pnpm build            # 모든 프로젝트 빌드
-pnpm test             # 모든 프로젝트 테스트
+pnpm test             # 모든 프로젝트 테스트 (bridge 회귀 테스트 포함)
 pnpm lint             # 모든 프로젝트 린트
 pnpm type-check       # TypeScript 타입 체크
 pnpm format           # 코드 포맷팅 (Prettier)
+```
+
+### 로컬 검증 순서
+
+```bash
+# 1. 타입 체크
+pnpm -C apps/web exec tsc --noEmit
+pnpm --filter @tempo-tune/mobile type-check
+
+# 2. 린트 + 테스트 (bridge 회귀 테스트 포함)
+pnpm exec nx affected -t lint
+pnpm exec vitest run
+
+# 3. 웹 개발 서버 확인
+pnpm --filter @tempo-tune/web dev
 ```
 
 ## Audio Engine
@@ -133,6 +148,40 @@ tuner.onPitch((result) => {
 ```
 
 <!-- TODO: 메트로놈/튜너 동작 GIF 또는 스크린 녹화 추가 -->
+
+## Mobile Bridge Protocol
+
+모바일 앱은 WebView에 Next.js 앱을 임베드하고, JavaScript↔Native 간 메시지로 마이크/햅틱 기능을 연결합니다.
+
+### Message Types
+
+| Type | Direction | Description |
+|---|---|---|
+| `REQUEST_MIC_PERMISSION` | Web → Native | 마이크 권한 요청 |
+| `MIC_PERMISSION_RESPONSE` | Native → Web | 권한 결과 응답 (`{ status: "granted" \| "denied" }`) |
+| `START_LISTENING` | Web → Native | 피치 감지 시작 |
+| `STOP_LISTENING` | Web → Native | 피치 감지 중지 |
+| `PITCH_DETECTED` | Native → Web | 감지된 피치 데이터 전달 |
+| `PLAY_CLICK` | Web → Native | 메트로놈 클릭음 재생 |
+| `VIBRATE` | Web → Native | 햅틱 피드백 |
+| `ERROR` | Native → Web | 네이티브 오류 전달 |
+
+### Message Envelope Format
+
+```typescript
+// Web → Native (BridgeMessage)
+{ type: BridgeMessageType; data?: unknown; requestId?: string }
+
+// Native → Web (BridgeResponseEnvelope)
+{ type: BridgeMessageType; success: boolean; data?: unknown; error?: string; requestId?: string }
+```
+
+`requestId`로 요청-응답을 1:1 매핑합니다. `requestPermission()` 호출은 `MIC_PERMISSION_RESPONSE` envelope로 resolve/reject 됩니다.
+
+### Android 제약사항
+
+- **PitchDetectorModule 필수**: Android 네이티브 피치 감지는 `PitchDetectorModule`에 의존합니다. 모듈 미탑재 환경에서는 `ERROR` 메시지를 web에 전송하고 크래시 없이 graceful fallback합니다.
+- 모바일 튜너 기능을 사용하려면 Android 네이티브 모듈 빌드가 필요합니다.
 
 ## Deployment
 

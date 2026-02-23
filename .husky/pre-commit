@@ -1,6 +1,29 @@
-pnpm exec nx affected --target=type-check --base=HEAD~1 --head=HEAD
-pnpm exec nx affected --target=lint --base=HEAD~1 --head=HEAD
-pnpm exec nx affected --target=test --base=HEAD~1 --head=HEAD
+# Get staged files
+STAGED_FILES=$(git diff --cached --name-only)
+
+if [ -z "$STAGED_FILES" ]; then
+  echo "No staged files to check"
+  exit 0
+fi
+
+# Run quality checks on affected projects
+echo "Running type-check on affected projects..."
+pnpm exec nx affected --target=type-check --base=main || {
+  echo "Error: type-check failed on staged changes"
+  exit 1
+}
+
+echo "Running lint on affected projects..."
+pnpm exec nx affected --target=lint --base=main || {
+  echo "Error: lint failed on staged changes"
+  exit 1
+}
+
+echo "Running test on affected projects..."
+pnpm exec nx affected --target=test --base=main || {
+  echo "Error: test failed on staged changes"
+  exit 1
+}
 
 # Auto-bump web patch version on main branch
 if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then

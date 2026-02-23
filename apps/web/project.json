@@ -33,6 +33,13 @@
         "command": "pnpm --filter @tempo-tune/web type-check",
         "cwd": "apps/web"
       }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter @tempo-tune/web test",
+        "cwd": "apps/web"
+      }
     }
   }
 }

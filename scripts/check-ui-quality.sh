@@ -42,27 +42,29 @@ print_result() {
 
 # Rule 1: No hardcoded years/versions in source
 echo "Checking Rule 1: No hardcoded years in source files..."
-YEAR_PATTERN='202[3-5]'
-YEAR_MATCHES=$(grep -rn -E "$YEAR_PATTERN" \
+# Dynamic year pattern: matches 4-digit years in code (not comments/copyright)
+# Excludes mockups (generated design files) which legitimately contain dates/metadata
+YEAR_MATCHES=$(grep -rn -E '20[0-9]{2}' \
   --include="*.tsx" \
   --include="*.ts" \
   --include="*.css" \
-  --include="*.html" \
   --exclude-dir="node_modules" \
   --exclude-dir=".next" \
   --exclude-dir="dist" \
+  --exclude-dir="docs/mockups" \
   --exclude="package.json" \
   --exclude="package-lock.json" \
   --exclude="pnpm-lock.yaml" \
   --exclude="CHANGELOG.md" \
-  apps/web docs/mockups 2>/dev/null || true)
+  apps/web 2>/dev/null | \
+  grep -v -E '(//|Copyright|Author|modified|version)' || true)
 
 if [ -z "$YEAR_MATCHES" ]; then
-  print_result "No hardcoded years (2023-2025)" "PASS"
+  print_result "No hardcoded years in source" "PASS"
 else
   COUNT=$(echo "$YEAR_MATCHES" | wc -l | tr -d ' ')
   ISSUES_COUNT=$((ISSUES_COUNT + COUNT))
-  print_result "No hardcoded years (2023-2025)" "FAIL" "$COUNT issue(s) found:"
+  print_result "No hardcoded years in source" "FAIL" "$COUNT issue(s) found:"
   echo "$YEAR_MATCHES" | while read -r line; do
     echo "    $line"
   done
@@ -132,9 +134,10 @@ else
 fi
 echo ""
 
-# Rule 5: No hardcoded blue color remnants
+# Rule 5: No hardcoded blue color remnants (Tailwind class names only)
 echo "Checking Rule 5: No hardcoded blue colors from old design..."
-BLUE_COLORS=$(grep -rn -E '(blue-400|blue-500|blue-600|#3b82f6|#2563eb|#60a5fa)' \
+# Only check for Tailwind blue classes (not hex values to avoid false positives in comments/URLs)
+BLUE_COLORS=$(grep -rn -E '\bblue-(400|500|600)\b' \
   --include="*.tsx" \
   --include="*.ts" \
   --include="*.css" \

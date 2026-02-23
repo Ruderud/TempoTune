@@ -39,6 +39,13 @@
         "command": "pnpm --filter @tempo-tune/mobile type-check",
         "cwd": "apps/mobile"
       }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter @tempo-tune/mobile test",
+        "cwd": "apps/mobile"
+      }
     }
   }
 }
