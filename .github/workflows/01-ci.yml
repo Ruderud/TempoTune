@@ -1,0 +1,160 @@
+name: "01 CI"
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Affected 분석 — 변경된 프로젝트 감지 + BASE_SHA 결정
+  # ──────────────────────────────────────────────
+  affected:
+    name: "Detect affected"
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.check.outputs.web }}
+      mobile: ${{ steps.check.outputs.mobile }}
+      audio: ${{ steps.check.outputs.audio }}
+      shared: ${{ steps.check.outputs.shared }}
+      base-sha: ${{ steps.base.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      - name: Resolve base SHA
+        id: base
+        run: |
+          BASE_SHA="${{ github.event.before }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
+          fi
+
+          if [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ] || ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            if [ "${{ github.event_name }}" = "pull_request" ]; then
+              git fetch --no-tags --depth=1 origin "${{ github.event.pull_request.base.ref }}" || true
+              BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
+            else
+              BASE_SHA="$(git rev-parse HEAD~1 2>/dev/null || echo HEAD)"
+            fi
+          fi
+
+          if ! git cat-file -e "$BASE_SHA^{commit}" 2>/dev/null; then
+            echo "::error::Failed to resolve valid BASE_SHA: $BASE_SHA"
+            exit 1
+          fi
+
+          echo "sha=$BASE_SHA" >> $GITHUB_OUTPUT
+          echo "Resolved BASE_SHA: $BASE_SHA"
+
+      - name: Detect affected projects
+        id: check
+        run: |
+          AFFECTED=$(pnpm exec nx show projects --affected --base=${{ steps.base.outputs.sha }} --head=HEAD 2>/dev/null || echo "")
+          echo "Affected projects: $AFFECTED"
+
+          echo "web=$( echo "$AFFECTED" | grep -q '^web$' && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
+          echo "mobile=$( echo "$AFFECTED" | grep -q '^mobile$' && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
+          echo "audio=$( echo "$AFFECTED" | grep -q '^audio$' && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
+          echo "shared=$( echo "$AFFECTED" | grep -q '^shared$' && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
+
+      - name: Summary
+        run: |
+          echo "### Affected Projects" >> $GITHUB_STEP_SUMMARY
+          echo "| Project | Affected |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|----------|" >> $GITHUB_STEP_SUMMARY
+          echo "| web     | ${{ steps.check.outputs.web }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| mobile  | ${{ steps.check.outputs.mobile }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| audio   | ${{ steps.check.outputs.audio }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| shared  | ${{ steps.check.outputs.shared }} |" >> $GITHUB_STEP_SUMMARY
+
+  # ──────────────────────────────────────────────
+  # Type Check
+  # ──────────────────────────────────────────────
+  type-check:
+    name: "Type check"
+    needs: affected
+    if: needs.affected.outputs.web == 'true' || needs.affected.outputs.mobile == 'true' || needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      - name: Generate mobile dev config
+        if: needs.affected.outputs.mobile == 'true'
+        run: |
+          cat > apps/mobile/src/config.generated.ts << 'GENEOF'
+          // Auto-generated for CI
+          export const DEV_MACHINE_IP = '127.0.0.1';
+          export const DEV_SERVER_PORT = 3000;
+          export const PROD_WEB_URL = 'https://tempotune.rudbeckiaz.com';
+          export const ANDROID_EMULATOR_HOST = '10.0.2.2';
+          GENEOF
+
+      - name: Run type-check
+        run: pnpm exec nx affected --target=type-check --base=${{ needs.affected.outputs.base-sha }} --head=HEAD
+
+  # ──────────────────────────────────────────────
+  # Lint
+  # ──────────────────────────────────────────────
+  lint:
+    name: "Lint"
+    needs: affected
+    if: needs.affected.outputs.web == 'true' || needs.affected.outputs.mobile == 'true' || needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      - name: Run lint
+        run: pnpm exec nx affected --target=lint --base=${{ needs.affected.outputs.base-sha }} --head=HEAD
+
+  # ──────────────────────────────────────────────
+  # Test
+  # ──────────────────────────────────────────────
+  test:
+    name: "Test"
+    needs: affected
+    if: needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      - name: Run tests
+        run: pnpm exec nx affected --target=test --base=${{ needs.affected.outputs.base-sha }} --head=HEAD
+
+  # ──────────────────────────────────────────────
+  # UI Guardrails
+  # ──────────────────────────────────────────────
+  ui-guardrails:
+    name: "UI Guardrails"
+    needs: affected
+    if: needs.affected.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      - name: Run UI quality guardrails
+        run: bash scripts/check-ui-quality.sh

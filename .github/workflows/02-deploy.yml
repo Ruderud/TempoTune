@@ -1,0 +1,54 @@
+name: "02 Deploy"
+
+on:
+  workflow_run:
+    workflows: ["01 CI"]
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ──────────────────────────────────────────────
+  # Deploy Web — CI 성공 + main push 시에만 실행
+  # ──────────────────────────────────────────────
+  deploy-web:
+    name: "Deploy Web"
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
+    environment: github-action
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - uses: ./.github/actions/setup
+
+      - name: Check if web affected
+        id: check
+        run: |
+          AFFECTED=$(pnpm exec nx show projects --affected --base=HEAD~1 --head=HEAD 2>/dev/null || echo "")
+          WEB_AFFECTED=$(echo "$AFFECTED" | grep -q '^web$' && echo 'true' || echo 'false')
+          echo "web=$WEB_AFFECTED" >> $GITHUB_OUTPUT
+          echo "Web affected: $WEB_AFFECTED"
+
+      - name: Inject version
+        if: steps.check.outputs.web == 'true'
+        run: pnpm --filter @tempo-tune/web run version:inject
+
+      - name: Build & Deploy to Cloudflare
+        if: steps.check.outputs.web == 'true'
+        working-directory: apps/web
+        run: pnpm exec opennextjs-cloudflare build && pnpm exec wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
