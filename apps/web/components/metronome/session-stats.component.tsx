@@ -6,43 +6,17 @@ type SessionStatsProps = {
   currentBeat: number;
 };
 
-export function SessionStats({ isPlaying, bpm, currentBeat }: SessionStatsProps) {
+// TODO: 실제 세션 기록 저장 및 집계 기능 구현 후 활성화
+export function SessionStats({ isPlaying: _isPlaying, bpm: _bpm, currentBeat: _currentBeat }: SessionStatsProps) {
   return (
-    <div className="space-y-4">
-      {/* Recent History */}
-      <div className="glass-card rounded-xl p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-bold text-primary">최근 기록</h4>
-          <span className="text-xs text-text-muted">전체 보기</span>
-        </div>
-        <div className="space-y-2">
-          {[
-            { bpm: 128, label: '오전 11시34', sub: '20분30초 11,234', },
-            { bpm: 95, label: '오후 4시분09', sub: '26분 11,234', },
-            { bpm: 144, label: '오후 6시40', sub: '12분 8,640', },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center justify-between py-1.5 border-b border-primary/5 last:border-0">
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-white tabular-nums">{item.bpm}</span>
-                <span className="text-xs text-primary">BPM</span>
-              </div>
-              <span className="text-xs text-text-muted">{item.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Session Stats */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="glass-card rounded-xl p-4 text-center">
-          <span className="text-xs text-text-muted block mb-1">총 시간</span>
-          <span className="text-lg font-bold text-primary tabular-nums">02:45:12</span>
-        </div>
-        <div className="glass-card rounded-xl p-4 text-center">
-          <span className="text-xs text-text-muted block mb-1">총 비트 수</span>
-          <span className="text-lg font-bold text-primary tabular-nums">19,420</span>
-        </div>
-      </div>
+    <div className="glass-card rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center min-h-[120px]">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-primary/30">
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <line x1="16" y1="2" x2="16" y2="6" />
+        <line x1="8" y1="2" x2="8" y2="6" />
+        <line x1="3" y1="10" x2="21" y2="10" />
+      </svg>
+      <span className="text-xs text-text-muted">세션 기록은 준비 중입니다.</span>
     </div>
   );
 }

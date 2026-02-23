@@ -1,24 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { ToggleSwitch } from '../../../components/settings/toggle-switch.component';
 import { Icon } from '../../../components/common/icon.component';
 import { APP_NAME, APP_VERSION, COPYRIGHT_YEAR, LEGAL_ENTITY } from '../../../constants/app';
 
-type Sensitivity = 'stable' | 'balanced' | 'fast';
-
 export default function SettingsPage() {
-  const [a4Frequency, setA4Frequency] = useState(440);
-  const [sensitivity, setSensitivity] = useState<Sensitivity>('balanced');
-  const [noiseGate, setNoiseGate] = useState(33);
-  const [signalGain, setSignalGain] = useState(60);
-  const [visualFlash, setVisualFlash] = useState(true);
-  const [backgroundPlay, setBackgroundPlay] = useState(false);
-
-  const adjustFrequency = (delta: number) => {
-    setA4Frequency(prev => Math.max(400, Math.min(480, prev + delta)));
-  };
-
   return (
     <div className="h-full overflow-y-auto pb-4 lg:flex lg:overflow-hidden">
       {/* Desktop Sidebar */}
@@ -58,20 +43,6 @@ export default function SettingsPage() {
             </svg>
             <span className="font-medium text-sm">단축키</span>
           </button>
-
-          {/* Desktop: User badge at bottom */}
-          <div className="!mt-8 glass-card rounded-xl p-3 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </div>
-            <div>
-              <span className="text-xs font-semibold text-white block">Premium User</span>
-              <span className="text-xs text-primary/60">PRO LICENSE</span>
-            </div>
-          </div>
         </div>
       </aside>
 
@@ -89,127 +60,39 @@ export default function SettingsPage() {
             <div className="w-[34px]" />
           </div>
 
-          {/* A4 Reference Frequency */}
+          {/* Tuner Settings — TODO: connect to tuner engine */}
           <section>
             <h2 className="px-1 mb-1 text-xs font-semibold uppercase tracking-widest text-primary/60">
-              A4 기준 주파수
+              튜너 설정
             </h2>
-            <p className="px-1 mb-3 text-xs text-text-muted hidden lg:block">
-              표준 피치를 설정하여 튜너의 기준점을 조정합니다.
-            </p>
-            <div className="glass-card rounded-xl p-3 flex flex-col items-center">
-              <div className="flex items-center gap-5">
-                <button
-                  onClick={() => adjustFrequency(-1)}
-                  className="w-11 h-11 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center hover:bg-primary/30 active:scale-95 transition-all"
-                  aria-label="Decrease frequency"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                </button>
-                <div className="text-center">
-                  <span className="text-5xl font-bold text-white tabular-nums">{a4Frequency}</span>
-                  <span className="text-primary font-medium ml-1">Hz</span>
-                </div>
-                <button
-                  onClick={() => adjustFrequency(1)}
-                  className="w-11 h-11 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center hover:bg-primary/30 active:scale-95 transition-all"
-                  aria-label="Increase frequency"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-primary">
-                    <line x1="12" y1="5" x2="12" y2="19" />
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                  </svg>
-                </button>
-              </div>
+            <div className="glass-card rounded-xl p-4 flex items-center gap-3 text-text-muted">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-primary/40">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span className="text-xs">
+                {/* TODO: A4 기준 주파수·민감도·노이즈 게이트 설정은 튜너 엔진 연동 후 활성화됩니다. */}
+                튜너 설정은 준비 중입니다.
+              </span>
             </div>
           </section>
 
-          {/* Tuner Sensitivity */}
-          <section>
-            <h2 className="px-1 mb-1.5 text-xs font-semibold uppercase tracking-widest text-primary/60">
-              튜너 민감도
-            </h2>
-            <div className="glass-card p-1 rounded-xl flex">
-              {(['stable', 'balanced', 'fast'] as const).map((preset) => (
-                <button
-                  key={preset}
-                  onClick={() => setSensitivity(preset)}
-                  className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-all ${
-                    sensitivity === preset
-                      ? 'bg-primary text-background-dark font-bold shadow-[0_0_15px_rgba(13,242,242,0.3)]'
-                      : 'text-slate-400'
-                  }`}
-                >
-                  {preset === 'stable' ? '안정형' : preset === 'balanced' ? '균형형' : '빠른응답'}
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* Advanced Detection Settings */}
-          <section>
-            <h2 className="px-1 mb-1.5 text-xs font-semibold uppercase tracking-widest text-primary/60">
-              고급 감지 설정
-            </h2>
-            <div className="glass-card rounded-xl divide-y divide-white/5">
-              <div className="p-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">노이즈 게이트</span>
-                  <span className="text-xs font-bold text-primary">-{Math.round(60 - noiseGate * 0.6)}dB</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={noiseGate}
-                  onChange={(e) => setNoiseGate(parseInt(e.target.value))}
-                  className="w-full h-2 bg-surface rounded-full appearance-none cursor-pointer slider"
-                />
-              </div>
-              <div className="p-4 space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">신호 게인</span>
-                  <span className="text-xs font-bold text-primary">+{(signalGain * 0.24).toFixed(1)}</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={signalGain}
-                  onChange={(e) => setSignalGain(parseInt(e.target.value))}
-                  className="w-full h-2 bg-surface rounded-full appearance-none cursor-pointer slider"
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Metronome Options */}
+          {/* Metronome Settings — TODO: connect to metronome engine */}
           <section>
             <h2 className="px-1 mb-1.5 text-xs font-semibold uppercase tracking-widest text-primary/60">
               메트로놈 옵션
             </h2>
-            <div className="glass-card rounded-xl divide-y divide-white/5">
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400">
-                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-                  </svg>
-                  <span className="text-sm font-medium">시각적 플래시</span>
-                </div>
-                <ToggleSwitch enabled={visualFlash} onChange={setVisualFlash} />
-              </div>
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400">
-                    <circle cx="12" cy="12" r="10" />
-                    <polygon points="10 8 16 12 10 16 10 8" />
-                  </svg>
-                  <span className="text-sm font-medium">백그라운드 재생</span>
-                </div>
-                <ToggleSwitch enabled={backgroundPlay} onChange={setBackgroundPlay} />
-              </div>
+            <div className="glass-card rounded-xl p-4 flex items-center gap-3 text-text-muted">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-primary/40">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span className="text-xs">
+                {/* TODO: 시각적 플래시·백그라운드 재생 설정은 메트로놈 엔진 연동 후 활성화됩니다. */}
+                메트로놈 옵션은 준비 중입니다.
+              </span>
             </div>
           </section>
 
@@ -238,7 +121,7 @@ export default function SettingsPage() {
               가독성 및 테마
             </h2>
             <div className="glass-card rounded-xl divide-y divide-white/5">
-              <button className="w-full flex items-center justify-between p-4 text-left hover:bg-white/5 transition-colors">
+              <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
@@ -251,8 +134,8 @@ export default function SettingsPage() {
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </div>
-              </button>
-              <button className="w-full flex items-center justify-between p-4 text-left hover:bg-white/5 transition-colors">
+              </div>
+              <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400">
                     <polyline points="4 7 4 4 20 4 20 7" />
@@ -267,7 +150,7 @@ export default function SettingsPage() {
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </div>
-              </button>
+              </div>
             </div>
           </section>
 
@@ -282,12 +165,7 @@ export default function SettingsPage() {
                 </svg>
               </div>
               <div className="flex-1">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-base">{APP_NAME} Pro</h3>
-                  <span className="text-xs font-bold bg-primary/20 text-primary px-2 py-0.5 rounded-full">
-                    PREMIUM
-                  </span>
-                </div>
+                <h3 className="font-bold text-base">{APP_NAME}</h3>
                 <p className="text-xs text-slate-500 mt-0.5">버전 v{APP_VERSION}</p>
               </div>
             </div>
@@ -313,18 +191,19 @@ export default function SettingsPage() {
 
       {/* Desktop: Right utility panel */}
       <aside className="hidden xl:block w-72 border-l border-primary/10 bg-background-dark/40 backdrop-blur-md p-5 overflow-y-auto shrink-0">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-primary/60 mb-4">유틸리티 및 분석</h3>
+        <h3 className="text-xs font-bold uppercase tracking-widest text-primary/60 mb-4">유틸리티</h3>
 
         {/* Data management */}
         <div className="space-y-3 mb-6">
           <h4 className="text-xs text-text-muted font-semibold">데이터 관리</h4>
-          <button type="button" className="w-full min-h-[44px] rounded-lg bg-surface border border-primary/10 text-sm text-text-secondary hover:bg-primary/10 transition-colors">
+          {/* TODO: 데이터 가져오기/내보내기/초기화 기능 구현 필요 */}
+          <button type="button" disabled className="w-full min-h-[44px] rounded-lg bg-surface border border-primary/10 text-sm text-text-muted opacity-40 cursor-not-allowed">
             데이터 가져오기
           </button>
-          <button type="button" className="w-full min-h-[44px] rounded-lg bg-surface border border-primary/10 text-sm text-text-secondary hover:bg-primary/10 transition-colors">
+          <button type="button" disabled className="w-full min-h-[44px] rounded-lg bg-surface border border-primary/10 text-sm text-text-muted opacity-40 cursor-not-allowed">
             데이터 내보내기
           </button>
-          <button type="button" className="w-full min-h-[44px] rounded-lg bg-red-900/20 border border-red-700/20 text-sm text-red-400 hover:bg-red-900/30 transition-colors">
+          <button type="button" disabled className="w-full min-h-[44px] rounded-lg bg-red-900/20 border border-red-700/20 text-sm text-red-400 opacity-40 cursor-not-allowed">
             설정 초기화
           </button>
         </div>
@@ -339,14 +218,6 @@ export default function SettingsPage() {
             <div className="flex justify-between">
               <span className="text-text-muted">앱 버전</span>
               <span className="text-text-secondary">v{APP_VERSION}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-text-muted">연결 상태</span>
-              <span className="text-primary">● Operational</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-text-muted">CPU 사용량</span>
-              <span className="text-text-secondary">0.3%</span>
             </div>
           </div>
         </div>
