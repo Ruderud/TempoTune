@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import { Icon } from '../common/icon.component';
 
 type TapTempoProps = {
   onBpmDetected: (bpm: number) => void;
@@ -55,10 +56,7 @@ export function TapTempo({ onBpmDetected }: TapTempoProps) {
         onClick={handleTap}
         className="w-24 h-24 rounded-full bg-surface border-2 border-primary/30 flex items-center justify-center transition-all hover:border-primary/60 active:scale-95 active:bg-primary/20"
       >
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-primary">
-          <path d="M12 6v6l4 2" strokeLinecap="round" />
-          <circle cx="12" cy="12" r="10" />
-        </svg>
+        <Icon src="/assets/icons/clock.svg" size={32} className="text-primary" label="탭 템포" />
       </button>
 
       <div className="text-center">
