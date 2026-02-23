@@ -37,15 +37,7 @@ export function MetronomeControl({
       <div className="flex items-center justify-between gap-3">
         <button
           onClick={() => handleBpmChange(bpm - 1)}
-          disabled={isPlaying}
-          className={`
-            w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0
-            ${
-              isPlaying
-                ? 'bg-white/5 border border-white/5 text-white/20 cursor-not-allowed'
-                : 'bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95'
-            }
-          `}
+          className="w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0 bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95"
         >
           <span className="text-xl font-light">&minus;</span>
         </button>
@@ -57,7 +49,6 @@ export function MetronomeControl({
             max={MAX_BPM}
             value={bpm}
             onChange={(e) => handleBpmChange(Number(e.target.value))}
-            disabled={isPlaying}
             className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer slider"
             style={{
               background: `linear-gradient(to right, rgb(13, 242, 242) 0%, rgb(13, 242, 242) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgba(255, 255, 255, 0.1) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgba(255, 255, 255, 0.1) 100%)`,
@@ -75,15 +66,7 @@ export function MetronomeControl({
 
         <button
           onClick={() => handleBpmChange(bpm + 1)}
-          disabled={isPlaying}
-          className={`
-            w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0
-            ${
-              isPlaying
-                ? 'bg-white/5 border border-white/5 text-white/20 cursor-not-allowed'
-                : 'bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95'
-            }
-          `}
+          className="w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0 bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95"
         >
           <span className="text-xl font-light">+</span>
         </button>
@@ -104,15 +87,13 @@ export function MetronomeControl({
               <button
                 key={`${beats}/${noteValue}`}
                 onClick={() => onTimeSignatureChange(ts)}
-                disabled={isPlaying}
                 className={`
-                  flex-1 h-11 rounded-lg font-medium text-sm transition-all
+                  flex-1 h-11 rounded-lg font-medium text-sm transition-all cursor-pointer
                   ${
                     isActive
                       ? 'bg-primary text-background-dark font-bold shadow-lg shadow-primary/20'
                       : 'bg-surface border border-primary/20 text-white/80 hover:border-primary/50'
                   }
-                  ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 `}
               >
                 {beats}/{noteValue}
@@ -163,7 +144,7 @@ export function MetronomeControl({
           ${
             isPlaying
               ? 'bg-background-dark border-2 border-primary text-primary breathing-glow active:scale-[0.98]'
-              : 'bg-primary text-background-dark shadow-[0px_25px_50px_-12px_rgba(13,242,242,0.1)] active:scale-[0.98]'
+              : 'bg-primary border-2 border-transparent text-background-dark shadow-[0px_25px_50px_-12px_rgba(13,242,242,0.1)] active:scale-[0.98]'
           }
         `}
       >
