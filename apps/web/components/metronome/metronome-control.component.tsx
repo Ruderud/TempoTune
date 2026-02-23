@@ -1,6 +1,10 @@
 'use client';
 
-import { COMMON_TIME_SIGNATURES, MAX_BPM, MIN_BPM } from '@tempo-tune/shared/constants';
+import {
+  COMMON_TIME_SIGNATURES,
+  MAX_BPM,
+  MIN_BPM,
+} from '@tempo-tune/shared/constants';
 
 type MetronomeControlProps = {
   bpm: number;
@@ -36,9 +40,10 @@ export function MetronomeControl({
           disabled={isPlaying}
           className={`
             w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0
-            ${isPlaying
-              ? 'bg-white/5 border border-white/5 text-white/20 cursor-not-allowed'
-              : 'bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95'
+            ${
+              isPlaying
+                ? 'bg-white/5 border border-white/5 text-white/20 cursor-not-allowed'
+                : 'bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95'
             }
           `}
         >
@@ -55,7 +60,7 @@ export function MetronomeControl({
             disabled={isPlaying}
             className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer slider"
             style={{
-              background: `linear-gradient(to right, rgb(13, 242, 242) 0%, rgb(13, 242, 242) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgba(255, 255, 255, 0.1) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgba(255, 255, 255, 0.1) 100%)`
+              background: `linear-gradient(to right, rgb(13, 242, 242) 0%, rgb(13, 242, 242) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgba(255, 255, 255, 0.1) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgba(255, 255, 255, 0.1) 100%)`,
             }}
           />
           {/* Desktop: Tempo scale labels */}
@@ -73,9 +78,10 @@ export function MetronomeControl({
           disabled={isPlaying}
           className={`
             w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0
-            ${isPlaying
-              ? 'bg-white/5 border border-white/5 text-white/20 cursor-not-allowed'
-              : 'bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95'
+            ${
+              isPlaying
+                ? 'bg-white/5 border border-white/5 text-white/20 cursor-not-allowed'
+                : 'bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95'
             }
           `}
         >
@@ -85,11 +91,14 @@ export function MetronomeControl({
 
       {/* Time Signature Chips */}
       <div className="space-y-1.5">
-        <span className="text-xs text-text-muted font-medium ml-1">박자 선택</span>
+        <div className="text-xs text-text-muted font-medium ml-1 mb-3">
+          박자 선택
+        </div>
         <div className="flex gap-2">
           {COMMON_TIME_SIGNATURES.map((ts) => {
             const [beats, noteValue] = ts;
-            const isActive = timeSignature[0] === beats && timeSignature[1] === noteValue;
+            const isActive =
+              timeSignature[0] === beats && timeSignature[1] === noteValue;
 
             return (
               <button
@@ -98,9 +107,10 @@ export function MetronomeControl({
                 disabled={isPlaying}
                 className={`
                   flex-1 h-11 rounded-lg font-medium text-sm transition-all
-                  ${isActive
-                    ? 'bg-primary text-background-dark font-bold shadow-lg shadow-primary/20'
-                    : 'bg-surface border border-primary/20 text-white/80 hover:border-primary/50'
+                  ${
+                    isActive
+                      ? 'bg-primary text-background-dark font-bold shadow-lg shadow-primary/20'
+                      : 'bg-surface border border-primary/20 text-white/80 hover:border-primary/50'
                   }
                   ${isPlaying ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
                 `}
@@ -114,8 +124,10 @@ export function MetronomeControl({
 
       {/* Sound Presets */}
       <div className="space-y-1.5">
-        <span className="text-xs text-white/40 font-medium ml-1">사운드 설정</span>
-        <div className="flex gap-2 overflow-x-auto">
+        <div className="text-xs text-white/40 font-medium ml-1 mb-3">
+          사운드 설정
+        </div>
+        <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             disabled
             className="shrink-0 px-6 py-2.5 rounded-full bg-white/10 border border-white/10 text-xs text-slate-100 cursor-not-allowed"
@@ -148,9 +160,10 @@ export function MetronomeControl({
         onClick={isPlaying ? onStop : onStart}
         className={`
           w-full py-5 rounded-2xl flex items-center justify-center gap-3 transition-all font-bold text-lg tracking-wider
-          ${isPlaying
-            ? 'bg-background-dark border-2 border-primary text-primary breathing-glow active:scale-[0.98]'
-            : 'bg-primary text-background-dark shadow-[0px_25px_50px_-12px_rgba(13,242,242,0.1)] active:scale-[0.98]'
+          ${
+            isPlaying
+              ? 'bg-background-dark border-2 border-primary text-primary breathing-glow active:scale-[0.98]'
+              : 'bg-primary text-background-dark shadow-[0px_25px_50px_-12px_rgba(13,242,242,0.1)] active:scale-[0.98]'
           }
         `}
       >
