@@ -1,4 +1,4 @@
-name: "01 CI"
+name: CI/CD
 
 on:
   push:
@@ -7,21 +7,19 @@ on:
     branches: [main]
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  # ──────────────────────────────────────────────
-  # Affected 분석 — 변경된 프로젝트 감지 + BASE_SHA 결정
-  # ──────────────────────────────────────────────
   affected:
-    name: "Detect affected"
+    name: Detect affected projects
     runs-on: ubuntu-latest
     outputs:
       web: ${{ steps.check.outputs.web }}
       mobile: ${{ steps.check.outputs.mobile }}
       audio: ${{ steps.check.outputs.audio }}
       shared: ${{ steps.check.outputs.shared }}
+      any: ${{ steps.check.outputs.any }}
       base-sha: ${{ steps.base.outputs.sha }}
     steps:
       - uses: actions/checkout@v4
@@ -52,37 +50,45 @@ jobs:
             exit 1
           fi
 
-          echo "sha=$BASE_SHA" >> $GITHUB_OUTPUT
+          echo "sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
           echo "Resolved BASE_SHA: $BASE_SHA"
 
       - name: Detect affected projects
         id: check
         run: |
-          AFFECTED=$(pnpm exec nx show projects --affected --base=${{ steps.base.outputs.sha }} --head=HEAD 2>/dev/null || echo "")
+          AFFECTED="$(pnpm exec nx show projects --affected --base=${{ steps.base.outputs.sha }} --head=HEAD 2>/dev/null || true)"
           echo "Affected projects: $AFFECTED"
 
-          echo "web=$( echo "$AFFECTED" | grep -q '^web$' && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
-          echo "mobile=$( echo "$AFFECTED" | grep -q '^mobile$' && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
-          echo "audio=$( echo "$AFFECTED" | grep -q '^audio$' && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
-          echo "shared=$( echo "$AFFECTED" | grep -q '^shared$' && echo 'true' || echo 'false' )" >> $GITHUB_OUTPUT
+          WEB_AFFECTED="$(echo "$AFFECTED" | grep -q '^web$' && echo 'true' || echo 'false')"
+          MOBILE_AFFECTED="$(echo "$AFFECTED" | grep -q '^mobile$' && echo 'true' || echo 'false')"
+          AUDIO_AFFECTED="$(echo "$AFFECTED" | grep -q '^audio$' && echo 'true' || echo 'false')"
+          SHARED_AFFECTED="$(echo "$AFFECTED" | grep -q '^shared$' && echo 'true' || echo 'false')"
+
+          ANY_AFFECTED='false'
+          if [ "$WEB_AFFECTED" = 'true' ] || [ "$MOBILE_AFFECTED" = 'true' ] || [ "$AUDIO_AFFECTED" = 'true' ] || [ "$SHARED_AFFECTED" = 'true' ]; then
+            ANY_AFFECTED='true'
+          fi
+
+          echo "web=$WEB_AFFECTED" >> "$GITHUB_OUTPUT"
+          echo "mobile=$MOBILE_AFFECTED" >> "$GITHUB_OUTPUT"
+          echo "audio=$AUDIO_AFFECTED" >> "$GITHUB_OUTPUT"
+          echo "shared=$SHARED_AFFECTED" >> "$GITHUB_OUTPUT"
+          echo "any=$ANY_AFFECTED" >> "$GITHUB_OUTPUT"
 
       - name: Summary
         run: |
-          echo "### Affected Projects" >> $GITHUB_STEP_SUMMARY
-          echo "| Project | Affected |" >> $GITHUB_STEP_SUMMARY
-          echo "|---------|----------|" >> $GITHUB_STEP_SUMMARY
-          echo "| web     | ${{ steps.check.outputs.web }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| mobile  | ${{ steps.check.outputs.mobile }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| audio   | ${{ steps.check.outputs.audio }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| shared  | ${{ steps.check.outputs.shared }} |" >> $GITHUB_STEP_SUMMARY
+          echo "### Affected Projects" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Project | Affected |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---------|----------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| web     | ${{ steps.check.outputs.web }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| mobile  | ${{ steps.check.outputs.mobile }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| audio   | ${{ steps.check.outputs.audio }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| shared  | ${{ steps.check.outputs.shared }} |" >> "$GITHUB_STEP_SUMMARY"
 
-  # ──────────────────────────────────────────────
-  # Type Check
-  # ──────────────────────────────────────────────
   type-check:
-    name: "Type check"
+    name: Type check
     needs: affected
-    if: needs.affected.outputs.web == 'true' || needs.affected.outputs.mobile == 'true' || needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true'
+    if: needs.affected.outputs.any == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -105,13 +111,10 @@ jobs:
       - name: Run type-check
         run: pnpm exec nx affected --target=type-check --base=${{ needs.affected.outputs.base-sha }} --head=HEAD
 
-  # ──────────────────────────────────────────────
-  # Lint
-  # ──────────────────────────────────────────────
   lint:
-    name: "Lint"
+    name: Lint
     needs: affected
-    if: needs.affected.outputs.web == 'true' || needs.affected.outputs.mobile == 'true' || needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true'
+    if: needs.affected.outputs.any == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -123,11 +126,8 @@ jobs:
       - name: Run lint
         run: pnpm exec nx affected --target=lint --base=${{ needs.affected.outputs.base-sha }} --head=HEAD
 
-  # ──────────────────────────────────────────────
-  # Test
-  # ──────────────────────────────────────────────
   test:
-    name: "Test"
+    name: Test
     needs: affected
     if: needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true'
     runs-on: ubuntu-latest
@@ -141,11 +141,8 @@ jobs:
       - name: Run tests
         run: pnpm exec nx affected --target=test --base=${{ needs.affected.outputs.base-sha }} --head=HEAD
 
-  # ──────────────────────────────────────────────
-  # UI Guardrails
-  # ──────────────────────────────────────────────
   ui-guardrails:
-    name: "UI Guardrails"
+    name: UI Guardrails
     needs: affected
     if: needs.affected.outputs.web == 'true'
     runs-on: ubuntu-latest
@@ -158,3 +155,38 @@ jobs:
 
       - name: Run UI quality guardrails
         run: bash scripts/check-ui-quality.sh
+
+  deploy-web:
+    name: Deploy Web
+    needs: [affected, type-check, lint, ui-guardrails]
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      needs.affected.outputs.web == 'true' &&
+      (needs.type-check.result == 'success' || needs.type-check.result == 'skipped') &&
+      (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
+      (needs.ui-guardrails.result == 'success' || needs.ui-guardrails.result == 'skipped')
+    runs-on: ubuntu-latest
+    environment: github-action
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      - name: Inject version
+        run: pnpm --filter @tempo-tune/web run version:inject
+
+      - name: Build & Deploy to Cloudflare
+        working-directory: apps/web
+        run: pnpm exec opennextjs-cloudflare build && pnpm exec wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          NEXT_PUBLIC_SENTRY_DSN: ${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
