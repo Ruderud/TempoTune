@@ -6,62 +6,21 @@ import { A4_FREQUENCY, ALL_TUNING_PRESETS } from '@tempo-tune/shared/constants';
 import { TunerAudioService } from '../services/audio';
 import { AudioBridgeClient } from '../services/bridge/audio-bridge.client';
 import { isNativeEnvironment } from '../services/bridge/bridge-adapter';
-import { TunerEngine, type YinConfig } from '@tempo-tune/audio/tuner';
+import { TunerEngine } from '@tempo-tune/audio/tuner';
 import { clamp } from '@tempo-tune/shared/utils';
+import { useTunerDetectionSettings, toPitchDetectionConfig } from './use-tuner-detection-settings';
+import { useTunerHistory } from './use-tuner-history';
+import { useTunerSignalState } from './use-tuner-signal-state';
+import { isLatencyDebugEnabled } from '../utils/latency-debug';
 
 type TuningMode = 'auto' | 'manual';
-type SensitivityPreset = 'stable' | 'balanced' | 'fast' | 'custom';
-type PresetKey = Exclude<SensitivityPreset, 'custom'>;
-type TunerDetectionSettings = {
-  confidenceGate: number;
-  confidenceSmoothingAlpha: number;
-  probabilityThreshold: number;
-  rmsThreshold: number;
-  detectorSmoothingAlpha: number;
-  maxJumpCents: number;
-};
 
-const MAX_HISTORY_POINTS = 90;
 const MAX_HISTORY_CENTS = 50;
 const SAMPLE_INTERVAL_MS = 80;
-const SMOOTHING_WINDOW = 5;
 const SIGNAL_HOLD_MS = 240;
 const SILENCE_DECAY_FACTOR = 0.84;
 const SILENCE_EPSILON = 0.2;
 const LATENCY_LOG_THROTTLE_MS = 120;
-const DETECTOR_MIN_FREQUENCY = 55;
-const DETECTOR_MAX_FREQUENCY = 1400;
-const DETECTOR_MEDIAN_WINDOW_SIZE = 5;
-const DETECTION_SETTINGS_STORAGE_KEY = 'tempo_tuner_detection_settings_v1';
-
-const TUNER_SENSITIVITY_PRESETS: Record<PresetKey, TunerDetectionSettings> = {
-  stable: {
-    confidenceGate: 0.4,
-    confidenceSmoothingAlpha: 0.45,
-    probabilityThreshold: 0.3,
-    rmsThreshold: 0.012,
-    detectorSmoothingAlpha: 0.28,
-    maxJumpCents: 60,
-  },
-  balanced: {
-    confidenceGate: 0.3,
-    confidenceSmoothingAlpha: 0.35,
-    probabilityThreshold: 0.2,
-    rmsThreshold: 0.008,
-    detectorSmoothingAlpha: 0.2,
-    maxJumpCents: 80,
-  },
-  fast: {
-    confidenceGate: 0.22,
-    confidenceSmoothingAlpha: 0.24,
-    probabilityThreshold: 0.14,
-    rmsThreshold: 0.005,
-    detectorSmoothingAlpha: 0.14,
-    maxJumpCents: 120,
-  },
-};
-
-const DEFAULT_DETECTION_SETTINGS: TunerDetectionSettings = TUNER_SENSITIVITY_PRESETS.balanced;
 
 function isSameString(a: TuningString | null, b: TuningString | null): boolean {
   if (!a || !b) return false;
@@ -72,94 +31,6 @@ function getStringKey(target: TuningString | null): string | null {
   return target ? `${target.name}-${target.octave}` : null;
 }
 
-function average(values: number[]): number {
-  if (values.length === 0) return 0;
-  return values.reduce((sum, value) => sum + value, 0) / values.length;
-}
-
-function sanitizeDetectionSettings(settings: Partial<TunerDetectionSettings>): TunerDetectionSettings {
-  return {
-    confidenceGate: clamp(settings.confidenceGate ?? DEFAULT_DETECTION_SETTINGS.confidenceGate, 0.1, 0.75),
-    confidenceSmoothingAlpha: clamp(
-      settings.confidenceSmoothingAlpha ?? DEFAULT_DETECTION_SETTINGS.confidenceSmoothingAlpha,
-      0.05,
-      0.8,
-    ),
-    probabilityThreshold: clamp(
-      settings.probabilityThreshold ?? DEFAULT_DETECTION_SETTINGS.probabilityThreshold,
-      0.05,
-      0.8,
-    ),
-    rmsThreshold: clamp(settings.rmsThreshold ?? DEFAULT_DETECTION_SETTINGS.rmsThreshold, 0.001, 0.05),
-    detectorSmoothingAlpha: clamp(
-      settings.detectorSmoothingAlpha ?? DEFAULT_DETECTION_SETTINGS.detectorSmoothingAlpha,
-      0.05,
-      0.6,
-    ),
-    maxJumpCents: clamp(settings.maxJumpCents ?? DEFAULT_DETECTION_SETTINGS.maxJumpCents, 30, 300),
-  };
-}
-
-function toPitchDetectionConfig(settings: TunerDetectionSettings): Partial<YinConfig> {
-  return {
-    minFrequency: DETECTOR_MIN_FREQUENCY,
-    maxFrequency: DETECTOR_MAX_FREQUENCY,
-    probabilityThreshold: settings.probabilityThreshold,
-    rmsThreshold: settings.rmsThreshold,
-    smoothingAlpha: settings.detectorSmoothingAlpha,
-    medianWindowSize: DETECTOR_MEDIAN_WINDOW_SIZE,
-    maxJumpCents: settings.maxJumpCents,
-  };
-}
-
-function getSensitivityPreset(settings: TunerDetectionSettings): SensitivityPreset {
-  const presetEntries = Object.entries(TUNER_SENSITIVITY_PRESETS) as Array<[PresetKey, TunerDetectionSettings]>;
-  for (const [presetKey, preset] of presetEntries) {
-    if (
-      settings.confidenceGate === preset.confidenceGate &&
-      settings.confidenceSmoothingAlpha === preset.confidenceSmoothingAlpha &&
-      settings.probabilityThreshold === preset.probabilityThreshold &&
-      settings.rmsThreshold === preset.rmsThreshold &&
-      settings.detectorSmoothingAlpha === preset.detectorSmoothingAlpha &&
-      settings.maxJumpCents === preset.maxJumpCents
-    ) {
-      return presetKey;
-    }
-  }
-
-  return 'custom';
-}
-
-function getInitialDetectionSettings(): TunerDetectionSettings {
-  if (typeof window === 'undefined') {
-    return { ...DEFAULT_DETECTION_SETTINGS };
-  }
-
-  try {
-    const raw = window.localStorage.getItem(DETECTION_SETTINGS_STORAGE_KEY);
-    if (!raw) return { ...DEFAULT_DETECTION_SETTINGS };
-    const parsed = JSON.parse(raw) as Partial<TunerDetectionSettings>;
-    return sanitizeDetectionSettings(parsed);
-  } catch {
-    return { ...DEFAULT_DETECTION_SETTINGS };
-  }
-}
-
-function isLatencyDebugEnabled(): boolean {
-  if (typeof window === 'undefined') return false;
-
-  try {
-    if (window.localStorage.getItem('tempo_tuner_latency_debug') === '1') return true;
-  } catch {
-    // ignore storage errors
-  }
-
-  try {
-    return new URLSearchParams(window.location.search).get('tunerDebug') === '1';
-  } catch {
-    return false;
-  }
-}
 
 export function useTuner() {
   const [isListening, setIsListening] = useState(false);
@@ -167,16 +38,8 @@ export function useTuner() {
   const [closestString, setClosestString] = useState<TuningString | null>(null);
   const [targetString, setTargetStringState] = useState<TuningString | null>(null);
   const [tuningMode, setTuningModeState] = useState<TuningMode>('auto');
-  const [hasSignal, setHasSignal] = useState(false);
-  const [pitchConfidence, setPitchConfidence] = useState(0);
-  const [isLowConfidence, setIsLowConfidence] = useState(false);
-  const [centsFromTarget, setCentsFromTarget] = useState(0);
-  const [centsHistory, setCentsHistory] = useState<number[]>([]);
   const [currentPreset, setCurrentPresetState] = useState<TuningPreset>(ALL_TUNING_PRESETS[0]);
   const [referenceFrequency, setReferenceFrequencyState] = useState(A4_FREQUENCY);
-  const [detectionSettings, setDetectionSettingsState] = useState<TunerDetectionSettings>(() =>
-    getInitialDetectionSettings(),
-  );
   const [error, setError] = useState<string | null>(null);
 
   const serviceRef = useRef<TunerAudioService | null>(null);
@@ -186,16 +49,42 @@ export function useTuner() {
   const closestStringRef = useRef<TuningString | null>(null);
   const detectedNoteRef = useRef<TunerNote | null>(null);
   const tuningModeRef = useRef<TuningMode>('auto');
-  const hasSignalRef = useRef(false);
-  const confidenceRef = useRef(0);
-  const detectionSettingsRef = useRef<TunerDetectionSettings>(detectionSettings);
-  const lastSignalAtRef = useRef<number | null>(null);
-  const latestSmoothedCentsRef = useRef(0);
-  const graphCursorCentsRef = useRef(0);
   const latencyDebugEnabledRef = useRef(false);
   const lastLatencyLogAtRef = useRef(0);
-  const smoothingBufferRef = useRef<number[]>([]);
-  const activeTargetForSmoothingRef = useRef<string | null>(null);
+
+  const {
+    detectionSettings,
+    detectionSettingsRef,
+    sensitivityPreset,
+    setDetectionSettings,
+    applySensitivityPreset,
+  } = useTunerDetectionSettings();
+
+  const {
+    centsHistory,
+    graphCursorCentsRef,
+    latestSmoothedCentsRef,
+    activeTargetForSmoothingRef,
+    clearSmoothingState,
+    clearHistory,
+    appendHistoryPoint,
+    pushToSmoothingBuffer,
+  } = useTunerHistory();
+
+  const {
+    hasSignal,
+    pitchConfidence,
+    isLowConfidence,
+    centsFromTarget,
+    hasSignalRef,
+    confidenceRef,
+    lastSignalAtRef,
+    setHasSignal,
+    setPitchConfidence,
+    setIsLowConfidence,
+    setCentsFromTarget,
+    clearSignalState,
+  } = useTunerSignalState(clearSmoothingState);
 
   useEffect(() => {
     targetStringRef.current = targetString;
@@ -210,64 +99,7 @@ export function useTuner() {
   }, [tuningMode]);
 
   useEffect(() => {
-    hasSignalRef.current = hasSignal;
-  }, [hasSignal]);
-
-  useEffect(() => {
-    confidenceRef.current = pitchConfidence;
-  }, [pitchConfidence]);
-
-  useEffect(() => {
-    detectionSettingsRef.current = detectionSettings;
-  }, [detectionSettings]);
-
-  useEffect(() => {
     latencyDebugEnabledRef.current = isLatencyDebugEnabled();
-  }, []);
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    try {
-      window.localStorage.setItem(
-        DETECTION_SETTINGS_STORAGE_KEY,
-        JSON.stringify(detectionSettings),
-      );
-    } catch {
-      // ignore storage write errors
-    }
-  }, [detectionSettings]);
-
-  const clearSmoothingState = useCallback(() => {
-    smoothingBufferRef.current = [];
-    activeTargetForSmoothingRef.current = null;
-    latestSmoothedCentsRef.current = 0;
-  }, []);
-
-  const clearHistory = useCallback(() => {
-    setCentsHistory([]);
-    graphCursorCentsRef.current = 0;
-    clearSmoothingState();
-  }, [clearSmoothingState]);
-
-  const clearSignalState = useCallback(() => {
-    setHasSignal(false);
-    hasSignalRef.current = false;
-    setPitchConfidence(0);
-    confidenceRef.current = 0;
-    setIsLowConfidence(false);
-    lastSignalAtRef.current = null;
-    graphCursorCentsRef.current = 0;
-    latestSmoothedCentsRef.current = 0;
-    clearSmoothingState();
-  }, [clearSmoothingState]);
-
-  const appendHistoryPoint = useCallback((value: number) => {
-    setCentsHistory((prev) => {
-      const next = [...prev, clamp(value, -MAX_HISTORY_CENTS, MAX_HISTORY_CENTS)];
-      if (next.length > MAX_HISTORY_POINTS) next.shift();
-      return next;
-    });
   }, []);
 
   const getClosestString = useCallback((frequency: number): TuningString | null => {
@@ -320,7 +152,6 @@ export function useTuner() {
 
       lastSignalAtRef.current = performance.now();
       if (!hasSignalRef.current) {
-        hasSignalRef.current = true;
         setHasSignal(true);
       }
 
@@ -364,16 +195,27 @@ export function useTuner() {
         activeTargetForSmoothingRef.current = targetKey;
       }
 
-      smoothingBufferRef.current.push(clampedCents);
-      if (smoothingBufferRef.current.length > SMOOTHING_WINDOW) {
-        smoothingBufferRef.current.shift();
-      }
-
-      const smoothedCents = average(smoothingBufferRef.current);
+      const smoothedCents = pushToSmoothingBuffer(clampedCents);
       latestSmoothedCentsRef.current = smoothedCents;
       graphCursorCentsRef.current = smoothedCents;
     },
-    [clearSmoothingState, getCentsFromTarget, getClosestString],
+    [
+      activeTargetForSmoothingRef,
+      clearSmoothingState,
+      confidenceRef,
+      detectionSettingsRef,
+      getCentsFromTarget,
+      getClosestString,
+      graphCursorCentsRef,
+      hasSignalRef,
+      lastSignalAtRef,
+      latestSmoothedCentsRef,
+      pushToSmoothingBuffer,
+      setCentsFromTarget,
+      setHasSignal,
+      setIsLowConfidence,
+      setPitchConfidence,
+    ],
   );
 
   useEffect(() => {
@@ -386,11 +228,9 @@ export function useTuner() {
 
       const wasSignalLive = hasSignalRef.current;
       if (isSignalLive !== hasSignalRef.current) {
-        hasSignalRef.current = isSignalLive;
         setHasSignal(isSignalLive);
         if (!isSignalLive && wasSignalLive) {
           setPitchConfidence(0);
-          confidenceRef.current = 0;
           setIsLowConfidence(false);
           setDetectedNote(null);
           detectedNoteRef.current = null;
@@ -415,7 +255,18 @@ export function useTuner() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [appendHistoryPoint, isListening]);
+  }, [
+    appendHistoryPoint,
+    graphCursorCentsRef,
+    hasSignalRef,
+    isListening,
+    lastSignalAtRef,
+    latestSmoothedCentsRef,
+    setCentsFromTarget,
+    setHasSignal,
+    setIsLowConfidence,
+    setPitchConfidence,
+  ]);
 
   useEffect(() => {
     const pitchConfig = toPitchDetectionConfig(detectionSettingsRef.current);
@@ -430,9 +281,14 @@ export function useTuner() {
       engineRef.current = engine;
 
       const unsubPitch = bridge.onPitchDetected((note) => processDetectedNote(note));
+      const unsubError = bridge.onError((err) => {
+        setError(err.message || 'An error occurred. Please try again.');
+        setIsListening(false);
+      });
 
       return () => {
         unsubPitch();
+        unsubError();
         bridge.dispose();
         engine.dispose();
       };
@@ -443,9 +299,14 @@ export function useTuner() {
     serviceRef.current.setReferenceFrequency(A4_FREQUENCY);
     serviceRef.current.setPitchDetectionConfig(pitchConfig);
     const unsubscribe = serviceRef.current.onNoteDetected(processDetectedNote);
+    const unsubError = serviceRef.current.onError((err) => {
+      setError(err.message || 'An error occurred. Please try again.');
+      setIsListening(false);
+    });
 
     return () => {
       unsubscribe();
+      unsubError();
       serviceRef.current?.dispose();
     };
   }, [processDetectedNote]);
@@ -477,7 +338,7 @@ export function useTuner() {
       setError(msg);
       setIsListening(false);
     }
-  }, [clearHistory, clearSignalState]);
+  }, [clearHistory, clearSignalState, setCentsFromTarget]);
 
   const stop = useCallback(() => {
     if (bridgeRef.current) {
@@ -493,7 +354,7 @@ export function useTuner() {
     closestStringRef.current = null;
     setCentsFromTarget(0);
     clearHistory();
-  }, [clearHistory, clearSignalState]);
+  }, [clearHistory, clearSignalState, setCentsFromTarget]);
 
   const setPreset = useCallback((preset: TuningPreset) => {
     setCurrentPresetState(preset);
@@ -543,20 +404,12 @@ export function useTuner() {
     setCentsFromTarget(clamped);
     latestSmoothedCentsRef.current = clamped;
     graphCursorCentsRef.current = clamped;
-  }, [clearHistory, clearSignalState, getCentsFromTarget]);
+  }, [clearHistory, clearSignalState, getCentsFromTarget, graphCursorCentsRef, latestSmoothedCentsRef, setCentsFromTarget]);
 
   const setReferenceFrequency = useCallback((freq: number) => {
     setReferenceFrequencyState(freq);
     engineRef.current?.setReferenceFrequency(freq);
     serviceRef.current?.setReferenceFrequency(freq);
-  }, []);
-
-  const setDetectionSettings = useCallback((patch: Partial<TunerDetectionSettings>) => {
-    setDetectionSettingsState((prev) => sanitizeDetectionSettings({ ...prev, ...patch }));
-  }, []);
-
-  const applySensitivityPreset = useCallback((preset: PresetKey) => {
-    setDetectionSettingsState({ ...TUNER_SENSITIVITY_PRESETS[preset] });
   }, []);
 
   const setTargetString = useCallback((target: TuningString) => {
@@ -574,7 +427,7 @@ export function useTuner() {
     setCentsFromTarget(clamped);
     latestSmoothedCentsRef.current = clamped;
     graphCursorCentsRef.current = clamped;
-  }, [clearHistory, getCentsFromTarget]);
+  }, [clearHistory, getCentsFromTarget, graphCursorCentsRef, latestSmoothedCentsRef, setCentsFromTarget]);
 
   const setTuningMode = useCallback(
     (mode: TuningMode) => {
@@ -622,10 +475,8 @@ export function useTuner() {
       latestSmoothedCentsRef.current = clamped;
       graphCursorCentsRef.current = clamped;
     },
-    [clearHistory, clearSignalState, currentPreset, getCentsFromTarget],
+    [clearHistory, clearSignalState, currentPreset, getCentsFromTarget, graphCursorCentsRef, latestSmoothedCentsRef, setCentsFromTarget],
   );
-
-  const sensitivityPreset = getSensitivityPreset(detectionSettings);
 
   return {
     isListening,

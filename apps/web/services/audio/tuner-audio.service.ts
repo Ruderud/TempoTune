@@ -3,6 +3,7 @@ import { DEFAULT_FFT_SIZE } from '@tempo-tune/shared/constants';
 import { frequencyToNote } from '@tempo-tune/shared/utils';
 import { TunerEngine, type YinConfig } from '@tempo-tune/audio/tuner';
 import { getAudioContext, resumeAudioContext } from './audio-context.service';
+import { isLatencyDebugEnabled } from '../../utils/latency-debug';
 
 const ANALYSIS_FFT_SIZE = Math.max(1024, DEFAULT_FFT_SIZE / 2);
 const LATENCY_LOG_THROTTLE_MS = 120;
@@ -16,21 +17,6 @@ const DEFAULT_PITCH_DETECTION_CONFIG: Partial<YinConfig> = {
   maxJumpCents: 80,
 };
 
-function isLatencyDebugEnabled(): boolean {
-  if (typeof window === 'undefined') return false;
-
-  try {
-    if (window.localStorage.getItem('tempo_tuner_latency_debug') === '1') return true;
-  } catch {
-    // ignore storage errors
-  }
-
-  try {
-    return new URLSearchParams(window.location.search).get('tunerDebug') === '1';
-  } catch {
-    return false;
-  }
-}
 
 export class TunerAudioService {
   private engine: TunerEngine;
@@ -42,6 +28,7 @@ export class TunerAudioService {
   private isListening = false;
   private lastLatencyLogAt = 0;
   private noteCallbacks: Set<(note: TunerNote | null) => void> = new Set();
+  private errorCallbacks: Set<(error: Error) => void> = new Set();
   private pitchDetectionConfig: Partial<YinConfig> = DEFAULT_PITCH_DETECTION_CONFIG;
 
   constructor() {
@@ -111,6 +98,11 @@ export class TunerAudioService {
     return () => { this.noteCallbacks.delete(callback); };
   }
 
+  onError(callback: (error: Error) => void): () => void {
+    this.errorCallbacks.add(callback);
+    return () => { this.errorCallbacks.delete(callback); };
+  }
+
   setPreset(preset: TuningPreset): void {
     this.engine.setPreset(preset);
   }
@@ -142,46 +134,55 @@ export class TunerAudioService {
   dispose(): void {
     this.stop();
     this.noteCallbacks.clear();
+    this.errorCallbacks.clear();
     this.engine.dispose();
   }
 
   private processAudio(): void {
     if (!this.isListening || !this.analyserNode) return;
 
-    const frameStartMs = performance.now();
-    const bufferLength = this.analyserNode.fftSize;
-    if (!this.timeDomainBuffer || this.timeDomainBuffer.length !== bufferLength) {
-      this.timeDomainBuffer = new Float32Array(bufferLength) as Float32Array<ArrayBuffer>;
-    }
-    const dataArray = this.timeDomainBuffer;
-    this.analyserNode.getFloatTimeDomainData(dataArray);
-
-    const pitch = this.engine.detectPitch(dataArray);
-    const noteWithDebug = pitch
-      ? {
-          ...frequencyToNote(pitch.frequency, this.engine.getReferenceFrequency()),
-          confidence: pitch.confidence,
-          rms: pitch.rms,
-          detectedAtMs: Date.now(),
-          debugSource: 'web' as const,
-        }
-      : null;
-
-    if (isLatencyDebugEnabled()) {
-      const now = performance.now();
-      if (noteWithDebug || now - this.lastLatencyLogAt >= LATENCY_LOG_THROTTLE_MS) {
-        const processMs = now - frameStartMs;
-        const noteLabel = noteWithDebug ? `${noteWithDebug.name}${noteWithDebug.octave}` : '-';
-        const confidenceLabel = noteWithDebug?.confidence ? `${(noteWithDebug.confidence * 100).toFixed(0)}%` : '-';
-        console.info(
-          `[tuner-latency:web] process=${processMs.toFixed(2)}ms fft=${bufferLength} note=${noteLabel} conf=${confidenceLabel}`,
-        );
-        this.lastLatencyLogAt = now;
+    try {
+      const frameStartMs = performance.now();
+      const bufferLength = this.analyserNode.fftSize;
+      if (!this.timeDomainBuffer || this.timeDomainBuffer.length !== bufferLength) {
+        this.timeDomainBuffer = new Float32Array(bufferLength) as Float32Array<ArrayBuffer>;
       }
-    }
+      const dataArray = this.timeDomainBuffer;
+      this.analyserNode.getFloatTimeDomainData(dataArray);
 
-    for (const callback of this.noteCallbacks) {
-      callback(noteWithDebug);
+      const pitch = this.engine.detectPitch(dataArray);
+      const noteWithDebug = pitch
+        ? {
+            ...frequencyToNote(pitch.frequency, this.engine.getReferenceFrequency()),
+            confidence: pitch.confidence,
+            rms: pitch.rms,
+            detectedAtMs: Date.now(),
+            debugSource: 'web' as const,
+          }
+        : null;
+
+      if (isLatencyDebugEnabled()) {
+        const now = performance.now();
+        if (noteWithDebug || now - this.lastLatencyLogAt >= LATENCY_LOG_THROTTLE_MS) {
+          const processMs = now - frameStartMs;
+          const noteLabel = noteWithDebug ? `${noteWithDebug.name}${noteWithDebug.octave}` : '-';
+          const confidenceLabel = noteWithDebug?.confidence ? `${(noteWithDebug.confidence * 100).toFixed(0)}%` : '-';
+          console.info(
+            `[tuner-latency:web] process=${processMs.toFixed(2)}ms fft=${bufferLength} note=${noteLabel} conf=${confidenceLabel}`,
+          );
+          this.lastLatencyLogAt = now;
+        }
+      }
+
+      for (const callback of this.noteCallbacks) {
+        callback(noteWithDebug);
+      }
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err));
+      for (const cb of this.errorCallbacks) {
+        cb(error);
+      }
+      return;
     }
 
     this.animationFrameId = requestAnimationFrame(() => this.processAudio());

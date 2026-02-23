@@ -1,6 +1,5 @@
 'use client';
 
-import { useCallback, useSyncExternalStore } from 'react';
 import {
   TunerControl,
   GuitarHeadstock,
@@ -10,43 +9,13 @@ import {
   InstrumentSelector,
   NeedleGauge,
 } from '../../../components/tuner';
-import type { HeadstockLayout } from '../../../components/tuner/guitar-headstock.component';
 import { useTuner } from '../../../hooks/use-tuner';
-
-const HEADSTOCK_LAYOUT_STORAGE_KEY = 'tempo_tuner_headstock_layout_v1';
-const DEFAULT_LAYOUT: HeadstockLayout = 'three-plus-three';
-
-const layoutSubscribers = new Set<() => void>();
-
-function subscribeLayout(callback: () => void) {
-  layoutSubscribers.add(callback);
-  return () => { layoutSubscribers.delete(callback); };
-}
-
-function getLayoutSnapshot(): HeadstockLayout {
-  const saved = window.localStorage.getItem(HEADSTOCK_LAYOUT_STORAGE_KEY);
-  if (saved === 'three-plus-three' || saved === 'six-inline') return saved;
-  return DEFAULT_LAYOUT;
-}
-
-function getServerLayoutSnapshot(): HeadstockLayout {
-  return DEFAULT_LAYOUT;
-}
+import { useTunerLayout } from '../../../hooks/use-tuner-layout';
 
 export default function TunerPage() {
   const tuner = useTuner();
   const activeTarget = tuner.targetString ?? tuner.closestString;
-
-  const headstockLayout = useSyncExternalStore(
-    subscribeLayout,
-    getLayoutSnapshot,
-    getServerLayoutSnapshot,
-  );
-
-  const handleHeadstockLayoutChange = useCallback((layout: HeadstockLayout) => {
-    window.localStorage.setItem(HEADSTOCK_LAYOUT_STORAGE_KEY, layout);
-    layoutSubscribers.forEach((cb) => cb());
-  }, []);
+  const { headstockLayout, setHeadstockLayout } = useTunerLayout();
 
   const isAutoMode = tuner.tuningMode === 'auto';
 
@@ -192,7 +161,7 @@ export default function TunerPage() {
                 sensitivityPreset={tuner.sensitivityPreset}
                 onSensitivityPresetChange={tuner.applySensitivityPreset}
                 headstockLayout={headstockLayout}
-                onHeadstockLayoutChange={handleHeadstockLayoutChange}
+                onHeadstockLayoutChange={setHeadstockLayout}
               />
             </div>
           </div>
@@ -309,7 +278,7 @@ export default function TunerPage() {
                 sensitivityPreset={tuner.sensitivityPreset}
                 onSensitivityPresetChange={tuner.applySensitivityPreset}
                 headstockLayout={headstockLayout}
-                onHeadstockLayoutChange={handleHeadstockLayoutChange}
+                onHeadstockLayoutChange={setHeadstockLayout}
                 variant="inline"
               />
             </aside>
@@ -398,7 +367,7 @@ export default function TunerPage() {
                 sensitivityPreset={tuner.sensitivityPreset}
                 onSensitivityPresetChange={tuner.applySensitivityPreset}
                 headstockLayout={headstockLayout}
-                onHeadstockLayoutChange={handleHeadstockLayoutChange}
+                onHeadstockLayoutChange={setHeadstockLayout}
                 variant="inline"
               />
               <div className="border-t border-primary/10 pt-3">
