@@ -5,6 +5,7 @@ import {
   MAX_BPM,
   MIN_BPM,
 } from '@tempo-tune/shared/constants';
+import { clamp } from '@tempo-tune/shared/utils';
 
 type MetronomeControlProps = {
   bpm: number;
@@ -27,7 +28,7 @@ export function MetronomeControl({
   onStop,
 }: MetronomeControlProps) {
   const handleBpmChange = (newBpm: number) => {
-    const clampedBpm = Math.max(MIN_BPM, Math.min(MAX_BPM, newBpm));
+    const clampedBpm = clamp(newBpm, MIN_BPM, MAX_BPM);
     onBpmChange(clampedBpm);
   };
 

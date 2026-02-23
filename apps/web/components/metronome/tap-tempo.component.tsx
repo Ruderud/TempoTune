@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
+import { MIN_BPM, MAX_BPM } from '@tempo-tune/shared/constants';
+import { clamp } from '@tempo-tune/shared/utils';
 import { Icon } from '../common/icon.component';
 
 type TapTempoProps = {
@@ -34,7 +36,7 @@ export function TapTempo({ onBpmDetected }: TapTempoProps) {
       }
       const avgInterval = intervals.reduce((a, b) => a + b, 0) / intervals.length;
       const bpm = Math.round(60000 / avgInterval);
-      const clampedBpm = Math.max(20, Math.min(300, bpm));
+      const clampedBpm = clamp(bpm, MIN_BPM, MAX_BPM);
       setDetectedBpm(clampedBpm);
       onBpmDetected(clampedBpm);
     }

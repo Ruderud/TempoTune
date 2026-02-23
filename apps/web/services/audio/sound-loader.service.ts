@@ -21,25 +21,28 @@ export async function loadSoundFromFile(file: File): Promise<AudioBuffer> {
   return audioBuffer;
 }
 
-export function playSynthesizedClick(isAccent: boolean, volume = 0.8): void {
+export function playSynthesizedClick(isAccent: boolean, volume = 0.8, scheduledTime?: number): void {
   const ctx = getAudioContext();
   const oscillator = ctx.createOscillator();
   const gainNode = ctx.createGain();
 
+  // Use the provided AudioContext time if given, otherwise play immediately.
+  const startTime = scheduledTime !== undefined ? scheduledTime : ctx.currentTime;
+
   oscillator.type = 'sine';
   oscillator.frequency.value = isAccent ? 1000 : 800;
 
-  gainNode.gain.setValueAtTime(volume, ctx.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+  gainNode.gain.setValueAtTime(volume, startTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + 0.05);
 
   oscillator.connect(gainNode);
   gainNode.connect(ctx.destination);
 
-  oscillator.start(ctx.currentTime);
-  oscillator.stop(ctx.currentTime + 0.05);
+  oscillator.start(startTime);
+  oscillator.stop(startTime + 0.05);
 }
 
-export function playAudioBuffer(buffer: AudioBuffer, volume = 0.8): void {
+export function playAudioBuffer(buffer: AudioBuffer, volume = 0.8, scheduledTime?: number): void {
   const ctx = getAudioContext();
   const source = ctx.createBufferSource();
   const gainNode = ctx.createGain();
@@ -50,7 +53,9 @@ export function playAudioBuffer(buffer: AudioBuffer, volume = 0.8): void {
   source.connect(gainNode);
   gainNode.connect(ctx.destination);
 
-  source.start();
+  // Use the provided AudioContext time if given, otherwise play immediately.
+  const startTime = scheduledTime !== undefined ? scheduledTime : ctx.currentTime;
+  source.start(startTime);
 }
 
 export function clearSoundCache(): void {

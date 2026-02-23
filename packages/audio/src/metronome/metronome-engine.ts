@@ -96,9 +96,20 @@ export class MetronomeEngine {
       this.isFirstTick = false;
     }
 
-    while (this.nextTickTime <= now) {
-      const subdivisionInterval = bpmToMs(this.config.bpm) / this.config.subdivision;
+    const subdivisionInterval = bpmToMs(this.config.bpm) / this.config.subdivision;
 
+    // If the gap is larger than 3 beat intervals (e.g. tab was backgrounded),
+    // reset scheduling from now instead of catching up.
+    const maxGapMs = subdivisionInterval * 3;
+    if (now - this.nextTickTime > maxGapMs) {
+      this.nextTickTime = now;
+    }
+
+    // Cap burst recovery: process at most 3 ticks per scheduling cycle.
+    const MAX_TICKS_PER_CYCLE = 3;
+    let ticksThisCycle = 0;
+
+    while (this.nextTickTime <= now && ticksThisCycle < MAX_TICKS_PER_CYCLE) {
       const isMainBeat = this.currentSubdivision === 0;
       const isAccent = isMainBeat && this.currentBeat === 0 && this.config.accentFirst;
 
@@ -118,6 +129,7 @@ export class MetronomeEngine {
       }
 
       this.nextTickTime += subdivisionInterval;
+      ticksThisCycle++;
     }
   }
 

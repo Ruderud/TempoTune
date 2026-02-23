@@ -1,6 +1,6 @@
 import type { MetronomeEvent, TimeSignature } from '@tempo-tune/shared/types';
 import { MetronomeEngine } from '@tempo-tune/audio/metronome';
-import { resumeAudioContext } from './audio-context.service';
+import { resumeAudioContext, getAudioContext } from './audio-context.service';
 import { playSynthesizedClick, loadSoundFromFile, playAudioBuffer } from './sound-loader.service';
 
 export class MetronomeAudioService {
@@ -66,12 +66,20 @@ export class MetronomeAudioService {
   private handleTick(event: MetronomeEvent): void {
     // 메인 비트에서만 소리 재생 (subdivision 0)
     if (event.subdivision === 0) {
+      // Convert the engine's performance.now() timestamp to AudioContext time.
+      // AudioContext.currentTime and performance.now() share the same epoch, so
+      // the delta gives us precise scheduling even when the callback fires late.
+      const ctx = getAudioContext();
+      const offsetSec = (event.timestamp - performance.now()) / 1000;
+      // Clamp to ctx.currentTime in case the tick is already overdue.
+      const audioScheduledTime = Math.max(ctx.currentTime, ctx.currentTime + offsetSec);
+
       if (event.isAccent && this.customAccentSound) {
-        playAudioBuffer(this.customAccentSound);
+        playAudioBuffer(this.customAccentSound, 0.8, audioScheduledTime);
       } else if (!event.isAccent && this.customNormalSound) {
-        playAudioBuffer(this.customNormalSound);
+        playAudioBuffer(this.customNormalSound, 0.8, audioScheduledTime);
       } else {
-        playSynthesizedClick(event.isAccent);
+        playSynthesizedClick(event.isAccent, 0.8, audioScheduledTime);
       }
     }
 
