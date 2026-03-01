@@ -9,6 +9,7 @@ import {
   handleVibrate,
 } from './bridge';
 import { nativeAudioService } from './services/native-audio.service';
+import { nativeMetronomeService } from './services/native-metronome.service';
 import {
   DEV_MACHINE_IP,
   DEV_SERVER_PORT,
@@ -83,10 +84,56 @@ function App(): React.JSX.Element {
     });
     bridge.registerHandler('PLAY_CLICK', handlePlayClick);
     bridge.registerHandler('VIBRATE', handleVibrate);
+
+    // Native metronome handlers
+    bridge.registerHandler('START_NATIVE_METRONOME', async (data) => {
+      const { bpm, beatsPerMeasure, accentFirst } = data as {
+        bpm: number;
+        beatsPerMeasure: number;
+        accentFirst: boolean;
+      };
+      nativeMetronomeService.start(
+        bpm,
+        beatsPerMeasure,
+        accentFirst,
+        (tickData) => {
+          bridge.sendToWebView({
+            type: 'NATIVE_METRONOME_TICK',
+            data: tickData,
+          });
+        },
+        (stateData) => {
+          bridge.sendToWebView({
+            type: 'NATIVE_METRONOME_STATE',
+            data: stateData,
+          });
+        },
+      );
+      return { success: true };
+    });
+
+    bridge.registerHandler('STOP_NATIVE_METRONOME', async () => {
+      nativeMetronomeService.stop();
+      return { success: true };
+    });
+
+    bridge.registerHandler('SET_METRONOME_BPM', async (data) => {
+      const { bpm } = data as { bpm: number };
+      nativeMetronomeService.setBpm(bpm);
+      return { success: true };
+    });
+
+    bridge.registerHandler('SET_METRONOME_TIME_SIG', async (data) => {
+      const { beatsPerMeasure } = data as { beatsPerMeasure: number };
+      nativeMetronomeService.setTimeSignature(beatsPerMeasure);
+      return { success: true };
+    });
+
     bridgeRef.current = bridge;
 
     return () => {
       nativeAudioService.stop();
+      nativeMetronomeService.stop();
       bridge.dispose();
     };
   }, []);

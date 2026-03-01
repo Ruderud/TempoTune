@@ -6,7 +6,13 @@ export type BridgeMessageType =
   | 'PITCH_DETECTED'
   | 'PLAY_CLICK'
   | 'VIBRATE'
-  | 'ERROR';
+  | 'ERROR'
+  | 'START_NATIVE_METRONOME'
+  | 'STOP_NATIVE_METRONOME'
+  | 'SET_METRONOME_BPM'
+  | 'SET_METRONOME_TIME_SIG'
+  | 'NATIVE_METRONOME_TICK'
+  | 'NATIVE_METRONOME_STATE';
 
 export type BridgeMessage<T = unknown> = {
   type: BridgeMessageType;
