@@ -29,3 +29,11 @@ pnpm exec nx affected --target=test --base=main || {
 if [ "$(git rev-parse --abbrev-ref HEAD)" = "main" ]; then
   node apps/web/scripts/bump-patch.js
 fi
+
+# Auto-bump iOS version when native files changed
+IOS_NATIVE_CHANGES=$(echo "$STAGED_FILES" | grep -E '^apps/mobile/ios/.*\.(swift|m|h|plist|entitlements)$' || true)
+if [ -n "$IOS_NATIVE_CHANGES" ]; then
+  echo "Native iOS changes detected — bumping iOS version..."
+  ./scripts/bump-ios-version.sh patch
+  git add apps/mobile/ios/TempoTune.xcodeproj/project.pbxproj
+fi

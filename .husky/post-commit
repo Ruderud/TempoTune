@@ -1,0 +1,11 @@
+# Auto TestFlight upload when iOS native changes were committed
+COMMITTED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD)
+IOS_NATIVE=$(echo "$COMMITTED_FILES" | grep -E '^apps/mobile/ios/.*\.(swift|m|h|plist|entitlements)$' || true)
+
+if [ -n "$IOS_NATIVE" ]; then
+  echo "[post-commit] iOS native changes detected — starting TestFlight upload in background..."
+  mkdir -p apps/mobile/ios/build
+  nohup ./scripts/ios-testflight.sh > apps/mobile/ios/build/testflight-upload.log 2>&1 &
+  echo "[post-commit] TestFlight build running in background (PID: $!)"
+  echo "[post-commit] Check progress: tail -f apps/mobile/ios/build/testflight-upload.log"
+fi
