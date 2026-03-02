@@ -8,7 +8,13 @@ CONFIG_FILE="$SCRIPT_DIR/../src/config.generated.ts"
 # Defaults
 PROD_WEB_URL="https://your-production-url.com"
 DEV_SERVER_PORT="3000"
-ANDROID_EMULATOR_HOST="10.0.2.2"
+
+# Auto-detect: physical device (adb) → localhost, emulator → 10.0.2.2
+if command -v adb &>/dev/null && adb devices 2>/dev/null | grep -q "device$"; then
+  ANDROID_EMULATOR_HOST="localhost"
+else
+  ANDROID_EMULATOR_HOST="10.0.2.2"
+fi
 
 # Read .env if it exists
 if [ -f "$ENV_FILE" ]; then
