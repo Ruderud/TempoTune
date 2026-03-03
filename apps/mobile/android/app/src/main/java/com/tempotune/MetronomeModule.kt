@@ -14,6 +14,7 @@ import android.os.Handler
 import android.os.Looper
 import kotlin.math.PI
 import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sin
 
 class MetronomeModule(private val reactContext: ReactApplicationContext) :
@@ -21,6 +22,16 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
 
     companion object {
         private const val TAG = "MetronomeModule"
+
+        /** Static reference for BroadcastReceiver / Widget / MediaSession access. */
+        @Volatile
+        var instance: MetronomeModule? = null
+            private set
+    }
+
+    init {
+        instance = this
+        MetronomeState.init(reactContext)
     }
 
     override fun getName(): String = "MetronomeModule"
@@ -47,6 +58,9 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
 
     // Event emission
     private var hasListeners = false
+
+    /** Expose playing state for external callers (MediaSession, etc.) */
+    fun isCurrentlyPlaying(): Boolean = isPlaying
 
     private fun sendEvent(eventName: String, params: com.facebook.react.bridge.WritableMap?) {
         if (!hasListeners) return
@@ -80,7 +94,8 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
         stopAudioThread()
         startAudioThread()
 
-        MetronomeForegroundService.start(reactContext, bpm.toInt(), "$beatsPerMeasure/$beatDenominator")
+        syncState()
+        MetronomeForegroundService.start(reactContext)
         emitStateChanged()
     }
 
@@ -93,6 +108,7 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
 
         pendingServiceUpdate?.let { mainHandler.removeCallbacks(it) }
         pendingStateEmit?.let { mainHandler.removeCallbacks(it) }
+        syncState()
         MetronomeForegroundService.stop(reactContext)
         emitStateChanged()
     }
@@ -111,8 +127,61 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
         this.beatsPerMeasure = beatsPerMeasure
         this.currentBeat = 0
         if (isPlaying) {
-            MetronomeForegroundService.update(reactContext, bpm.toInt(), "$beatsPerMeasure/$beatDenominator", true)
+            syncState()
+            MetronomeNotificationManager.update(reactContext)
+            MetronomeWidgetProvider.updateAll(reactContext)
+            MetronomeMediaSessionManager.updateState()
         }
+    }
+
+    // ── Public action methods (called from BroadcastReceiver, Widget, MediaSession) ──
+
+    fun actionToggle() {
+        if (isPlaying) {
+            stop()
+        } else {
+            start(bpm, beatsPerMeasure, accentFirst)
+        }
+    }
+
+    fun actionIncreaseBpm(delta: Int) {
+        val newBpm = min(300.0, bpm + delta)
+        this.bpm = newBpm
+        syncState()
+        MetronomeNotificationManager.update(reactContext)
+        MetronomeWidgetProvider.updateAll(reactContext)
+        MetronomeMediaSessionManager.updateState()
+        emitStateChanged()
+    }
+
+    fun actionDecreaseBpm(delta: Int) {
+        val newBpm = max(20.0, bpm - delta)
+        this.bpm = newBpm
+        syncState()
+        MetronomeNotificationManager.update(reactContext)
+        MetronomeWidgetProvider.updateAll(reactContext)
+        MetronomeMediaSessionManager.updateState()
+        emitStateChanged()
+    }
+
+    fun actionSetTimeSignature(beats: Int, denominator: Int) {
+        this.beatsPerMeasure = beats
+        this.beatDenominator = denominator
+        this.currentBeat = 0
+        syncState()
+        MetronomeNotificationManager.update(reactContext)
+        MetronomeWidgetProvider.updateAll(reactContext)
+        MetronomeMediaSessionManager.updateState()
+        emitStateChanged()
+    }
+
+    // ── Sync state to SharedPreferences / Notification / Widget / MediaSession ──
+
+    private fun syncState() {
+        MetronomeState.bpm = bpm.toInt()
+        MetronomeState.beatsPerMeasure = beatsPerMeasure
+        MetronomeState.beatDenominator = beatDenominator
+        MetronomeState.isPlaying = isPlaying
     }
 
     // Audio thread: generates sine wave clicks via AudioTrack
@@ -280,7 +349,10 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
         pendingServiceUpdate?.let { mainHandler.removeCallbacks(it) }
         pendingServiceUpdate = Runnable {
             if (isPlaying) {
-                MetronomeForegroundService.update(reactContext, bpm.toInt(), "$beatsPerMeasure/$beatDenominator", true)
+                syncState()
+                MetronomeNotificationManager.update(reactContext)
+                MetronomeWidgetProvider.updateAll(reactContext)
+                MetronomeMediaSessionManager.updateState()
             }
         }.also { mainHandler.postDelayed(it, SERVICE_THROTTLE_MS) }
     }
