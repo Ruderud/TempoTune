@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TempoTune</string>
+    <string name="widget_label">Metronome</string>
+    <string name="widget_description">Control BPM, time signature, and playback from your home screen</string>
 </resources>
