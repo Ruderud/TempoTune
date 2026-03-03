@@ -1,0 +1,54 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingStart="16dp"
+    android:paddingEnd="12dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="8dp">
+
+    <!-- BPM + Time Signature -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/text_bpm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="120 BPM"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFFFF" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" · "
+            android:textSize="14sp"
+            android:textColor="#99FFFFFF" />
+
+        <TextView
+            android:id="@+id/text_time_sig"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4/4"
+            android:textSize="14sp"
+            android:textColor="#CCFFFFFF" />
+    </LinearLayout>
+
+    <!-- Play/Pause button -->
+    <ImageView
+        android:id="@+id/btn_toggle"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:src="@drawable/ic_play"
+        android:scaleType="centerInside"
+        android:background="@drawable/bg_circle_subtle"
+        android:contentDescription="Play/Pause"
+        android:padding="8dp" />
+</LinearLayout>

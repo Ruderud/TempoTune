@@ -1,0 +1,209 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_widget"
+    android:paddingStart="16dp"
+    android:paddingEnd="16dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp">
+
+    <!-- TEMPO label -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TEMPO"
+        android:textSize="9sp"
+        android:textColor="#4DFFFFFF"
+        android:letterSpacing="0.15"
+        android:fontFamily="sans-serif-medium" />
+
+    <!-- BPM display -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="bottom"
+        android:layout_marginTop="2dp">
+
+        <TextView
+            android:id="@+id/text_bpm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="120"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFFFF"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="-0.03" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" BPM"
+            android:textSize="14sp"
+            android:textColor="#66FFFFFF"
+            android:layout_marginBottom="2dp" />
+    </LinearLayout>
+
+    <!-- Time signature pills row -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+
+        <TextView
+            android:id="@+id/btn_ts_2_4"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:gravity="center"
+            android:text="2/4"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFFFF"
+            android:background="@drawable/bg_pill_subtle"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp" />
+
+        <TextView
+            android:id="@+id/btn_ts_3_4"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:gravity="center"
+            android:text="3/4"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFFFF"
+            android:background="@drawable/bg_pill_subtle"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:layout_marginStart="8dp" />
+
+        <TextView
+            android:id="@+id/btn_ts_4_4"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:gravity="center"
+            android:text="4/4"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFFFF"
+            android:background="@drawable/bg_pill_subtle"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:layout_marginStart="8dp" />
+
+        <TextView
+            android:id="@+id/btn_ts_6_8"
+            android:layout_width="wrap_content"
+            android:layout_height="28dp"
+            android:gravity="center"
+            android:text="6/8"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFFFF"
+            android:background="@drawable/bg_pill_subtle"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:layout_marginStart="8dp" />
+    </LinearLayout>
+
+    <!-- Control row: -10  -1  Play/Pause  +1  +10 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="8dp">
+
+        <!-- -10 -->
+        <FrameLayout
+            android:id="@+id/btn_bpm_minus_10"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_circle_subtle">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="-10"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFFFF" />
+        </FrameLayout>
+
+        <!-- -1 (minus icon) -->
+        <FrameLayout
+            android:id="@+id/btn_bpm_minus_1"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_circle_subtle">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="−"
+                android:textSize="18sp"
+                android:textColor="#FFFFFFFF" />
+        </FrameLayout>
+
+        <!-- Spacer -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            android:orientation="horizontal" />
+
+        <!-- Play/Pause (white capsule, dark icon) -->
+        <ImageView
+            android:id="@+id/btn_toggle"
+            android:layout_width="56dp"
+            android:layout_height="44dp"
+            android:src="@drawable/ic_play_dark"
+            android:scaleType="centerInside"
+            android:background="@drawable/bg_capsule_white"
+            android:contentDescription="Play/Pause"
+            android:padding="10dp" />
+
+        <!-- Spacer -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            android:orientation="horizontal" />
+
+        <!-- +1 (plus icon) -->
+        <FrameLayout
+            android:id="@+id/btn_bpm_plus_1"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_circle_subtle">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="+"
+                android:textSize="18sp"
+                android:textColor="#FFFFFFFF" />
+        </FrameLayout>
+
+        <!-- +10 -->
+        <FrameLayout
+            android:id="@+id/btn_bpm_plus_10"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/bg_circle_subtle">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="+10"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textColor="#FFFFFFFF" />
+        </FrameLayout>
+    </LinearLayout>
+</LinearLayout>
