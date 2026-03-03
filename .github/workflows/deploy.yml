@@ -129,7 +129,7 @@ jobs:
   test:
     name: Test
     needs: affected
-    if: needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true'
+    if: needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true' || needs.affected.outputs.mobile == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
