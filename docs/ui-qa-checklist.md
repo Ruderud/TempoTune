@@ -227,16 +227,24 @@ Requires connected device or simulator + Appium drivers:
 
 ```bash
 pnpm qa:setup:device          # Install Appium 2-compatible Android + iOS drivers
+pnpm qa:setup:device:android-emu  # Install Android emulator Appium driver set
+pnpm qa:setup:device:android-real # Install Android real-device Appium driver set
 pnpm qa:setup:device:ios-sim  # Install iOS simulator-only Appium driver
 pnpm qa:setup:device:ios-real # Install iOS real-device Appium driver set
 pnpm qa:device                # Preflight + bootstrap + Appium smoke tests
+pnpm qa:device:android-emu    # Android emulator only, boot emulator if needed, build/install app, run Appium smoke, then shut emulator down
+pnpm qa:device:android-real   # Connected Android device only, build/install QA app, run Appium smoke, then close the app
 pnpm qa:device:ios-sim        # Booted iOS simulator only, build/install app, run Appium smoke, then shut simulator down
 pnpm qa:device:ios-real       # Connected iPhone only, build/install QA app, verify WDA signing, run Appium smoke, then close the app
 pnpm qa:full                  # Layer 2 + Layer 3
 ```
 
+For Android local QA, the Android path now uses a Release APK with embedded JS so Metro is not required.
+If you use a local web server instead of `QA_WEB_URL`, the runner will still set `adb reverse` for port `3000`.
+
 For the current local setup, `pnpm qa:device:ios-sim` is the fastest path when an iOS simulator is already booted.
 If you already have a connected iPhone, `pnpm qa:device:ios-real` will now build/install the QA app, run the Appium smoke suite, and then terminate the app so a stale WebView error screen is not left open.
+If you already have a connected Android phone, `pnpm qa:device:android-real` will build/install the QA app, run the Appium smoke suite, and then force-stop the app.
 
 **Appium tests** (`apps/mobile/appium/specs/`):
 
@@ -315,6 +323,9 @@ QA_WEB_URL=https://your-reachable-tempotune-url.example
 | `QA_DEVICE_MODE`      | `booted`, `connected`, `all`, `allowlist` | `all`   | Device filter      |
 | `QA_DEVICE_ALLOWLIST` | comma-separated UDIDs                     | —       | For allowlist mode |
 | `QA_WEB_URL`          | full URL                                  | —       | Override WebView URL for real-device QA when local IP is unreachable |
+| `QA_ANDROID_APP_PACKAGE` | Android application id                 | `com.tempotune` | Installed-app launch target |
+| `QA_ANDROID_APP_ACTIVITY` | Android launch activity               | `com.tempotune.MainActivity` | Installed-app launch activity |
+| `QA_ANDROID_SHUTDOWN_EMULATOR_AFTER_RUN` | `0`, `1`           | `0`     | Shut Android emulators down after Appium finishes |
 | `QA_IOS_SHUTDOWN_SIMULATOR_AFTER_RUN` | `0`, `1`                    | `0`     | Shut booted simulators down after Appium finishes |
 
 ---

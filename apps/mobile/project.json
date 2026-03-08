@@ -54,6 +54,20 @@
         "cwd": "apps/mobile"
       }
     },
+    "e2e-device-android-emu": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx ../../scripts/qa/run-android-emulator.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-android-real": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx ../../scripts/qa/run-android-real-device.ts",
+        "cwd": "apps/mobile"
+      }
+    },
     "e2e-device-ios-sim": {
       "executor": "nx:run-commands",
       "options": {
@@ -79,6 +93,20 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "tsx ../../scripts/qa/check-mobile-preflight.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-preflight-android-emu": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "QA_PLATFORM=android QA_DEVICE_MODE=booted QA_REQUIRED_APPIUM_DRIVERS=uiautomator2 tsx ../../scripts/qa/check-mobile-preflight.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-preflight-android-real": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "QA_PLATFORM=android QA_DEVICE_MODE=connected QA_REQUIRED_APPIUM_DRIVERS=uiautomator2 tsx ../../scripts/qa/check-mobile-preflight.ts",
         "cwd": "apps/mobile"
       }
     },
@@ -110,10 +138,31 @@
         "cwd": "apps/mobile"
       }
     },
+    "e2e-device-prepare-android": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "QA_PLATFORM=android tsx ../../scripts/qa/prepare-android-app.ts",
+        "cwd": "apps/mobile"
+      }
+    },
     "e2e-device-setup": {
       "executor": "nx:run-commands",
       "options": {
         "command": "tsx ../../scripts/qa/setup-appium-drivers.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-setup-android-emu": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "QA_PLATFORM=android tsx ../../scripts/qa/setup-appium-drivers.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-setup-android-real": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "QA_PLATFORM=android tsx ../../scripts/qa/setup-appium-drivers.ts",
         "cwd": "apps/mobile"
       }
     },
