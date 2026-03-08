@@ -8,6 +8,9 @@ CONFIG_FILE="$SCRIPT_DIR/../src/config.generated.ts"
 # Defaults
 PROD_WEB_URL="https://your-production-url.com"
 DEV_SERVER_PORT="3000"
+QA_USE_DEV_WEB_URL="${QA_USE_DEV_WEB_URL:-0}"
+QA_ENABLE_WEBVIEW_DEBUGGING="${QA_ENABLE_WEBVIEW_DEBUGGING:-0}"
+QA_WEB_URL="${QA_WEB_URL:-}"
 
 # Auto-detect: physical device (adb) → localhost, emulator → 10.0.2.2
 if command -v adb &>/dev/null && adb devices 2>/dev/null | grep -q "device$"; then
@@ -28,6 +31,7 @@ if [ -f "$ENV_FILE" ]; then
       PROD_WEB_URL) PROD_WEB_URL="$value" ;;
       DEV_SERVER_PORT) DEV_SERVER_PORT="$value" ;;
       ANDROID_EMULATOR_HOST) ANDROID_EMULATOR_HOST="$value" ;;
+      QA_WEB_URL) QA_WEB_URL="$value" ;;
     esac
   done < "$ENV_FILE"
 fi
@@ -47,6 +51,9 @@ export const DEV_MACHINE_IP = '$DEV_MACHINE_IP';
 export const DEV_SERVER_PORT = $DEV_SERVER_PORT;
 export const PROD_WEB_URL = '$PROD_WEB_URL';
 export const ANDROID_EMULATOR_HOST = '$ANDROID_EMULATOR_HOST';
+export const QA_USE_DEV_WEB_URL = $([ "$QA_USE_DEV_WEB_URL" = "1" ] && echo "true" || echo "false");
+export const QA_ENABLE_WEBVIEW_DEBUGGING = $([ "$QA_ENABLE_WEBVIEW_DEBUGGING" = "1" ] && echo "true" || echo "false");
+export const QA_WEB_URL = '$QA_WEB_URL';
 EOF
 
-echo "Generated dev config: IP=$DEV_MACHINE_IP PORT=$DEV_SERVER_PORT PROD=$PROD_WEB_URL"
+echo "Generated dev config: IP=$DEV_MACHINE_IP PORT=$DEV_SERVER_PORT PROD=$PROD_WEB_URL QA_USE_DEV_WEB_URL=$QA_USE_DEV_WEB_URL QA_ENABLE_WEBVIEW_DEBUGGING=$QA_ENABLE_WEBVIEW_DEBUGGING QA_WEB_URL=$QA_WEB_URL"

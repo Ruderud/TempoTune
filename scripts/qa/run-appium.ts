@@ -11,7 +11,7 @@
  * - QA_IOS_APP: path to iOS .app bundle
  */
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -25,6 +25,9 @@ const MOBILE_DIR = resolve(ROOT, 'apps/mobile');
 const APPIUM_HOME = resolve(ROOT, '.appium');
 const REPORT_DIR = resolve(ROOT, 'reports/qa/device');
 const passthroughArgs = process.argv.slice(2);
+const normalizedPassthroughArgs =
+  passthroughArgs[0] === '--' ? passthroughArgs.slice(1) : passthroughArgs;
+const MOBILE_SPECS_DIR = resolve(MOBILE_DIR, 'appium/specs');
 
 type SpecSummary = {
   passed: number;
@@ -45,6 +48,19 @@ type TargetRunResult = {
 };
 
 type ReportStatus = 'passed' | 'failed' | 'blocked';
+
+type FailureHint = {
+  title: string;
+  steps: string[];
+};
+
+type WdioExecution = {
+  success: boolean;
+  command: string;
+  output: string;
+  logPath: string;
+  specSummary: SpecSummary | null;
+};
 
 function filterTargets(targets: MobileTarget[]): MobileTarget[] {
   const platform = process.env.QA_PLATFORM || 'all';
@@ -125,12 +141,87 @@ function parseSpecSummary(output: string): SpecSummary | null {
   };
 }
 
+function detectFailureHints(output: string, target: MobileTarget): FailureHint[] {
+  const hints: FailureHint[] = [];
+
+  if (
+    target.platform === 'ios' &&
+    target.type === 'device' &&
+    output.includes('XCTDaemonErrorDomain Code=41') &&
+    output.includes('Not authorized for performing UI testing actions')
+  ) {
+    hints.push({
+      title: 'iOS real-device UI testing authorization is disabled',
+      steps: [
+        'On the iPhone, enable Settings > Privacy & Security > Developer Mode and reboot if prompted.',
+        'After Developer Mode is enabled, open Settings > Developer and turn on Enable UI Automation.',
+        'For WebView tests, open Settings > Safari > Advanced and turn on Web Inspector and Remote Automation.',
+        'Keep the device unlocked while starting Appium, and reconnect/trust the Mac again if the trust prompt appears.',
+        'If it still fails, delete the existing WebDriverAgent app from the iPhone and retry with QA_IOS_USE_NEW_WDA=1.',
+      ],
+    });
+  }
+
+  if (
+    target.platform === 'ios' &&
+    output.includes('invalid code signature') &&
+    output.includes('VPN & Device Management')
+  ) {
+    hints.push({
+      title: 'Developer certificate is not trusted on the device',
+      steps: [
+        'Open Settings > General > VPN & Device Management on the iPhone.',
+        'Select your Apple Development profile and trust it.',
+      ],
+    });
+  }
+
+  return hints;
+}
+
 function buildReportPaths(timestamp: string) {
   return {
     timestampedMarkdown: resolve(REPORT_DIR, `${timestamp}-device-report.md`),
     timestampedJson: resolve(REPORT_DIR, `${timestamp}-device-report.json`),
     latestMarkdown: resolve(REPORT_DIR, 'latest-device-report.md'),
     latestJson: resolve(REPORT_DIR, 'latest-device-report.json'),
+  };
+}
+
+function getDefaultSpecFiles(): string[] {
+  return readdirSync(MOBILE_SPECS_DIR)
+    .filter((file) => file.endsWith('.spec.ts'))
+    .sort()
+    .map((file) => `appium/specs/${file}`);
+}
+
+function splitSpecArgs(args: string[]) {
+  const passthroughWithoutSpec: string[] = [];
+  const specArgs: string[] = [];
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    if (arg === '--spec') {
+      const next = args[i + 1];
+      if (next) {
+        specArgs.push(next);
+        i += 1;
+      }
+      continue;
+    }
+
+    if (arg.startsWith('--spec=')) {
+      specArgs.push(arg.slice('--spec='.length));
+      continue;
+    }
+
+    passthroughWithoutSpec.push(arg);
+  }
+
+  return {
+    passthroughWithoutSpec,
+    specArgs,
   };
 }
 
@@ -151,7 +242,7 @@ function writeDeviceReport(options: {
     (result) => result.success
   ).length;
   const failedTargets = targetCount - passedTargets;
-  const specFilter = passthroughArgs.join(' ').trim() || null;
+  const specFilter = normalizedPassthroughArgs.join(' ').trim() || null;
 
   const jsonReport = {
     generatedAt,
@@ -249,12 +340,18 @@ function writeBlockedReport(startedAt: string, reason: string): never {
   process.exit(1);
 }
 
-function runWdio(target: MobileTarget, portOffset: number): TargetRunResult {
+function executeWdio(
+  target: MobileTarget,
+  portOffset: number,
+  args: string[],
+  logSuffix?: string
+): WdioExecution {
   const env: Record<string, string> = {
     ...(process.env as Record<string, string>),
     APPIUM_HOME,
     QA_PLATFORM: target.platform,
     QA_DEVICE_UDID: target.udid,
+    ...(target.osVersion ? { QA_DEVICE_OS_VERSION: target.osVersion } : {}),
   };
 
   if (target.platform === 'android') {
@@ -270,12 +367,10 @@ function runWdio(target: MobileTarget, portOffset: number): TargetRunResult {
   console.log(`    UDID: ${target.udid}`);
   console.log(`    OS: ${target.osVersion || 'unknown'}\n`);
 
-  const command =
-    `pnpm exec wdio run wdio.conf.ts ${passthroughArgs.join(' ')}`.trim();
-  const startedAt = new Date();
+  const command = `pnpm exec wdio run wdio.conf.ts ${args.join(' ')}`.trim();
   const child = spawnSync(
     'pnpm',
-    ['exec', 'wdio', 'run', 'wdio.conf.ts', ...passthroughArgs],
+    ['exec', 'wdio', 'run', 'wdio.conf.ts', ...args],
     {
       cwd: MOBILE_DIR,
       env,
@@ -296,17 +391,90 @@ function runWdio(target: MobileTarget, portOffset: number): TargetRunResult {
 
   ensureReportDir();
   const logFileName = [
-    startedAt.toISOString().replace(/[:.]/g, '-'),
+    new Date().toISOString().replace(/[:.]/g, '-'),
     target.platform,
     sanitizeSegment(target.name),
+    ...(logSuffix ? [sanitizeSegment(logSuffix)] : []),
     'wdio.log',
   ].join('-');
   const logPath = resolve(REPORT_DIR, logFileName);
   writeFileSync(logPath, combinedOutput);
 
-  const success = child.status === 0;
+  return {
+    success: child.status === 0,
+    command,
+    logPath,
+    output: combinedOutput,
+    specSummary: parseSpecSummary(combinedOutput),
+  };
+}
+
+function runWdio(target: MobileTarget, portOffset: number): TargetRunResult {
+  const startedAt = new Date();
+  const { passthroughWithoutSpec, specArgs } = splitSpecArgs(
+    normalizedPassthroughArgs
+  );
+  const shouldRunSequentialSpecs =
+    target.platform === 'ios' && target.type === 'device';
+
+  const executions = shouldRunSequentialSpecs
+    ? (specArgs.length > 0 ? specArgs : getDefaultSpecFiles()).map((specPath) => ({
+        specPath,
+        execution: executeWdio(
+          target,
+          portOffset,
+          [...passthroughWithoutSpec, '--spec', specPath],
+          specPath
+        ),
+      }))
+    : [
+        {
+          specPath: null,
+          execution: executeWdio(target, portOffset, normalizedPassthroughArgs),
+        },
+      ];
+
+  const finishedAt = new Date();
+  const combinedOutput = executions
+    .map(({ specPath, execution }) =>
+      specPath ? `# ${specPath}\n\n${execution.output}` : execution.output
+    )
+    .join('\n\n');
+  const success = executions.every(({ execution }) => execution.success);
+  const aggregateSummary = executions.reduce<SpecSummary | null>((acc, item) => {
+    if (!item.execution.specSummary) return acc;
+    if (!acc) {
+      return { ...item.execution.specSummary };
+    }
+
+    acc.passed += item.execution.specSummary.passed;
+    acc.failed += item.execution.specSummary.failed;
+    acc.total += item.execution.specSummary.total;
+    return acc;
+  }, null);
+
+  ensureReportDir();
+  const aggregateLogPath = resolve(
+    REPORT_DIR,
+    [
+      startedAt.toISOString().replace(/[:.]/g, '-'),
+      target.platform,
+      sanitizeSegment(target.name),
+      shouldRunSequentialSpecs ? 'aggregate' : 'single',
+      'wdio.log',
+    ].join('-')
+  );
+  writeFileSync(aggregateLogPath, combinedOutput);
+
   if (!success) {
     console.error(`✗ Tests failed on ${target.name}`);
+    const failureHints = detectFailureHints(combinedOutput, target);
+    for (const hint of failureHints) {
+      console.error(`  → ${hint.title}`);
+      for (const step of hint.steps) {
+        console.error(`    - ${step}`);
+      }
+    }
   }
 
   return {
@@ -315,9 +483,9 @@ function runWdio(target: MobileTarget, portOffset: number): TargetRunResult {
     startedAt: startedAt.toISOString(),
     finishedAt: finishedAt.toISOString(),
     durationMs: finishedAt.getTime() - startedAt.getTime(),
-    command,
-    logPath,
-    specSummary: parseSpecSummary(combinedOutput),
+    command: executions.map(({ execution }) => execution.command).join('\n'),
+    logPath: aggregateLogPath,
+    specSummary: aggregateSummary,
   };
 }
 

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { Platform, SafeAreaView, StyleSheet } from 'react-native';
+import { Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import WebView from 'react-native-webview';
 import type { WebViewMessageEvent } from 'react-native-webview';
 import {
@@ -15,20 +15,33 @@ import {
   DEV_SERVER_PORT,
   PROD_WEB_URL,
   ANDROID_EMULATOR_HOST,
+  QA_USE_DEV_WEB_URL,
+  QA_ENABLE_WEBVIEW_DEBUGGING,
+  QA_WEB_URL,
 } from './config.generated';
 
 const DEBUG_TUNER_LATENCY = __DEV__;
+const WEBVIEW_DEBUGGING_ENABLED = __DEV__ || QA_ENABLE_WEBVIEW_DEBUGGING;
+const SHOW_QA_DEBUG_BANNER = WEBVIEW_DEBUGGING_ENABLED || Boolean(QA_WEB_URL);
+
+const getDevWebUrl = (): string => {
+  if (Platform.OS === 'ios') {
+    return `http://${DEV_MACHINE_IP}:${DEV_SERVER_PORT}`;
+  }
+
+  return `http://${ANDROID_EMULATOR_HOST}:${DEV_SERVER_PORT}`;
+};
 
 const getWebUrl = (): string => {
-  if (!__DEV__) {
+  if (QA_WEB_URL) {
+    return QA_WEB_URL;
+  }
+
+  if (!__DEV__ && !QA_USE_DEV_WEB_URL) {
     return PROD_WEB_URL;
   }
 
-  if (Platform.OS === 'ios') {
-    return `http://${DEV_MACHINE_IP}:${DEV_SERVER_PORT}`;
-  } else {
-    return `http://${ANDROID_EMULATOR_HOST}:${DEV_SERVER_PORT}`;
-  }
+  return getDevWebUrl();
 };
 
 const WEB_URL = getWebUrl();
@@ -151,13 +164,42 @@ function App(): React.JSX.Element {
         ref={webViewRef}
         source={{ uri: WEB_URL }}
         onMessage={handleMessage}
+        testID="app-webview"
         style={styles.webview}
-        webviewDebuggingEnabled={__DEV__}
+        webviewDebuggingEnabled={WEBVIEW_DEBUGGING_ENABLED}
         allowsInlineMediaPlayback
         mediaPlaybackRequiresUserAction={false}
         mediaCapturePermissionGrantType="grantIfSameHostElsePrompt"
         javaScriptEnabled
+        onLoadStart={(event) => {
+          console.info(`[webview] load-start ${event.nativeEvent.url}`);
+        }}
+        onLoadEnd={(event) => {
+          console.info(`[webview] load-end ${event.nativeEvent.url}`);
+        }}
+        onHttpError={(event) => {
+          console.error(
+            `[webview] http-error ${event.nativeEvent.statusCode} ${event.nativeEvent.description}`
+          );
+        }}
+        onError={(event) => {
+          console.error(
+            `[webview] load-error ${event.nativeEvent.code} ${event.nativeEvent.description}`
+          );
+        }}
       />
+      {SHOW_QA_DEBUG_BANNER ? (
+        <View style={styles.qaBanner}>
+          <Text
+            accessibilityLabel={`QA URL ${WEB_URL}`}
+            selectable
+            style={styles.qaBannerText}
+            testID="qa-web-url-banner"
+          >
+            {WEB_URL}
+          </Text>
+        </View>
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -169,6 +211,24 @@ const styles = StyleSheet.create({
   },
   webview: {
     flex: 1,
+  },
+  qaBanner: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    right: 8,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.72)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  qaBannerText: {
+    color: '#fff',
+    fontSize: 11,
+    fontFamily: Platform.select({
+      ios: 'Menlo',
+      default: 'monospace',
+    }),
   },
 });
 

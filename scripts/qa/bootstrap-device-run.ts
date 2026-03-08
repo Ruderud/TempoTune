@@ -43,6 +43,19 @@ async function checkPort(port: number): Promise<boolean> {
 }
 
 async function main() {
+  const requireWebServer =
+    process.env.QA_REQUIRE_WEB_SERVER === '1' ||
+    process.env.QA_REQUIRE_WEB_SERVER === 'true';
+  const explicitQaWebUrl = process.env.QA_WEB_URL?.trim();
+  const usingExternalQaWebUrl =
+    !!explicitQaWebUrl &&
+    !/^https?:\/\/(?:localhost|127\.0\.0\.1|192\.168\.|10\.|172\.(?:1[6-9]|2\d|3[0-1])\.)/i.test(
+      explicitQaWebUrl
+    );
+  const skipMetroRequirement =
+    process.env.QA_SKIP_METRO_REQUIREMENT === '1' ||
+    process.env.QA_SKIP_METRO_REQUIREMENT === 'true';
+
   console.log('Bootstrapping local-dev-attached mode...\n');
 
   // Step 1: Generate dev config
@@ -60,8 +73,14 @@ async function main() {
   const nextRunning = await checkPort(3000);
   if (nextRunning) {
     console.log('   ✓ Next.js dev server running on :3000');
+  } else if (usingExternalQaWebUrl) {
+    console.log(`   ○ Skipping local web-server check (QA_WEB_URL=${explicitQaWebUrl})`);
   } else {
     console.log('   ○ Not running. Start it with: pnpm --filter @tempo-tune/web dev');
+    if (requireWebServer) {
+      console.log('   ✗ This QA path requires the web server to be running');
+      process.exit(1);
+    }
     console.log('   ⚠ Device tests may fail without the web server');
   }
 
@@ -70,6 +89,8 @@ async function main() {
   const metroRunning = await checkPort(8081);
   if (metroRunning) {
     console.log('   ✓ Metro bundler running on :8081');
+  } else if (skipMetroRequirement) {
+    console.log('   ○ Not required for embedded-JS iOS real-device QA build');
   } else {
     console.log('   ○ Not running. Will be started by react-native run commands');
   }
