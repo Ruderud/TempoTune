@@ -230,13 +230,13 @@ pnpm qa:setup:device          # Install Appium 2-compatible Android + iOS driver
 pnpm qa:setup:device:ios-sim  # Install iOS simulator-only Appium driver
 pnpm qa:setup:device:ios-real # Install iOS real-device Appium driver set
 pnpm qa:device                # Preflight + bootstrap + Appium smoke tests
-pnpm qa:device:ios-sim        # Booted iOS simulator only, build/install app, run Appium smoke
-pnpm qa:device:ios-real       # Connected iPhone only, build/install QA app, verify WDA signing, run Appium smoke
+pnpm qa:device:ios-sim        # Booted iOS simulator only, build/install app, run Appium smoke, then shut simulator down
+pnpm qa:device:ios-real       # Connected iPhone only, build/install QA app, verify WDA signing, run Appium smoke, then close the app
 pnpm qa:full                  # Layer 2 + Layer 3
 ```
 
 For the current local setup, `pnpm qa:device:ios-sim` is the fastest path when an iOS simulator is already booted.
-If you already have a connected iPhone, `pnpm qa:device:ios-real` will now build/install the QA app and then run the Appium smoke suite.
+If you already have a connected iPhone, `pnpm qa:device:ios-real` will now build/install the QA app, run the Appium smoke suite, and then terminate the app so a stale WebView error screen is not left open.
 
 **Appium tests** (`apps/mobile/appium/specs/`):
 
@@ -315,6 +315,7 @@ QA_WEB_URL=https://your-reachable-tempotune-url.example
 | `QA_DEVICE_MODE`      | `booted`, `connected`, `all`, `allowlist` | `all`   | Device filter      |
 | `QA_DEVICE_ALLOWLIST` | comma-separated UDIDs                     | —       | For allowlist mode |
 | `QA_WEB_URL`          | full URL                                  | —       | Override WebView URL for real-device QA when local IP is unreachable |
+| `QA_IOS_SHUTDOWN_SIMULATOR_AFTER_RUN` | `0`, `1`                    | `0`     | Shut booted simulators down after Appium finishes |
 
 ---
 

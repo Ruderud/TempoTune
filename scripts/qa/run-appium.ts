@@ -14,6 +14,7 @@ import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { cleanupMobileTargets } from './cleanup-mobile-targets';
 import {
   discoverAllTargets,
   type MobileTarget,
@@ -61,6 +62,24 @@ type WdioExecution = {
   logPath: string;
   specSummary: SpecSummary | null;
 };
+
+let cleanupCompleted = false;
+
+function runCleanup(targets: MobileTarget[]) {
+  if (cleanupCompleted || targets.length === 0) return;
+  cleanupCompleted = true;
+
+  console.log('\n═══ Cleanup ═══');
+  const outcomes = cleanupMobileTargets(targets);
+
+  for (const outcome of outcomes) {
+    const summary =
+      outcome.actions.length > 0 ? outcome.actions.join(', ') : 'nothing to clean up';
+    console.log(
+      `  ${outcome.target.name} (${outcome.target.platform}/${outcome.target.type}): ${summary}`
+    );
+  }
+}
 
 function filterTargets(targets: MobileTarget[]): MobileTarget[] {
   const platform = process.env.QA_PLATFORM || 'all';
@@ -496,6 +515,14 @@ console.log('Appium Device Test Runner\n');
 const allTargets = discoverAllTargets();
 const targets = filterTargets(allTargets);
 
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+  process.once(signal, () => {
+    console.log(`\n⚠ Received ${signal}; cleaning up active mobile targets...`);
+    runCleanup(targets);
+    process.exit(signal === 'SIGINT' ? 130 : 143);
+  });
+}
+
 console.log(
   `Discovered: ${allTargets.length} total, ${targets.length} after filters`
 );
@@ -546,23 +573,30 @@ if (needsIos && !iosBundleId && !existsSync(iosApp)) {
 let passed = 0;
 let failed = 0;
 const results: TargetRunResult[] = [];
+let exitCode = 0;
 
-for (let i = 0; i < targets.length; i++) {
-  const result = runWdio(targets[i], i);
-  results.push(result);
-  if (result.success) passed++;
-  else failed++;
+try {
+  for (let i = 0; i < targets.length; i++) {
+    const result = runWdio(targets[i], i);
+    results.push(result);
+    if (result.success) passed++;
+    else failed++;
+  }
+
+  console.log(`\n═══ Results ═══`);
+  console.log(`  Passed: ${passed}/${targets.length}`);
+  console.log(`  Failed: ${failed}/${targets.length}`);
+
+  writeDeviceReport({
+    status: failed > 0 ? 'failed' : 'passed',
+    startedAt: runStartedAt,
+    finishedAt: new Date().toISOString(),
+    results,
+  });
+
+  exitCode = failed > 0 ? 1 : 0;
+} finally {
+  runCleanup(targets);
 }
 
-console.log(`\n═══ Results ═══`);
-console.log(`  Passed: ${passed}/${targets.length}`);
-console.log(`  Failed: ${failed}/${targets.length}`);
-
-writeDeviceReport({
-  status: failed > 0 ? 'failed' : 'passed',
-  startedAt: runStartedAt,
-  finishedAt: new Date().toISOString(),
-  results,
-});
-
-process.exit(failed > 0 ? 1 : 0);
+process.exit(exitCode);

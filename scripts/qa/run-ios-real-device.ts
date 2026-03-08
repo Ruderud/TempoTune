@@ -45,6 +45,8 @@ const env: Record<string, string> = {
   QA_ENABLE_WEBVIEW_DEBUGGING: '1',
   QA_REQUIRE_WEB_SERVER: '1',
   QA_SKIP_METRO_REQUIREMENT: '1',
+  QA_IOS_SHUTDOWN_SIMULATOR_AFTER_RUN:
+    process.env.QA_IOS_SHUTDOWN_SIMULATOR_AFTER_RUN || '1',
 };
 
 if (signing.teamId) {
