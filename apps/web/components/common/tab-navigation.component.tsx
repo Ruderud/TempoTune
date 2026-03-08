@@ -33,7 +33,7 @@ export function TabNavigation() {
   return (
     <>
       {/* Mobile: Bottom Tab Bar */}
-      <nav className="order-last glass-nav tab-bar-safe-area lg:hidden">
+      <nav data-testid="tab-bar-mobile" className="order-last glass-nav tab-bar-safe-area lg:hidden">
         <div className="flex justify-around max-w-md mx-auto px-4 pt-2 pb-2">
           {tabs.map((tab) => {
             const active = tab.match(pathname);
@@ -41,6 +41,7 @@ export function TabNavigation() {
               <Link
                 key={tab.href}
                 href={tab.href}
+                data-testid={`tab-${tab.href.slice(1)}`}
                 className={`flex flex-col items-center justify-center gap-1 min-h-[48px] min-w-[64px] transition-colors duration-200 ${
                   active
                     ? 'text-primary'
@@ -73,6 +74,7 @@ export function TabNavigation() {
                   <Link
                     key={tab.href}
                     href={tab.href}
+                    data-testid={`tab-desktop-${tab.href.slice(1)}`}
                     className={`flex items-center gap-2 px-4 py-1.5 rounded-lg transition-all text-sm font-medium ${
                       active
                         ? 'text-primary bg-primary/10 border border-primary/20'

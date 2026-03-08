@@ -49,6 +49,7 @@ export function TunerControl({
         >
           <span className="text-xs text-primary">⚙</span>
           <select
+            data-testid="tuner-preset-select"
             value={`${currentPreset.instrument}-${currentPreset.name}`}
             onChange={(e) => {
               const preset = ALL_TUNING_PRESETS.find(
@@ -74,6 +75,7 @@ export function TunerControl({
         {/* Mode toggle */}
         <div className="flex-1 bg-surface border border-primary/20 p-1 rounded-lg flex items-center">
           <button
+            data-testid="tuner-mode-auto"
             type="button"
             onClick={() => onTuningModeChange('auto')}
             className={`flex-1 min-h-[36px] rounded-md text-xs font-bold transition-colors ${
@@ -85,6 +87,7 @@ export function TunerControl({
             자동
           </button>
           <button
+            data-testid="tuner-mode-manual"
             type="button"
             onClick={() => onTuningModeChange('manual')}
             className={`flex-1 min-h-[36px] rounded-md text-xs font-bold transition-colors ${
@@ -99,6 +102,7 @@ export function TunerControl({
 
         {/* Start/Stop button */}
         <button
+          data-testid="tuner-play-stop"
           onClick={isListening ? onStop : onStart}
           className="px-5 min-h-[44px] rounded-lg font-bold text-sm shadow-lg flex items-center gap-2 transition-all bg-primary text-background-dark shadow-primary/20"
         >

@@ -54,6 +54,7 @@ export function TapTempo({ onBpmDetected }: TapTempoProps) {
       <p className="text-xs text-text-muted text-center">리듬에 맞춰 버튼을 눌러주세요</p>
 
       <button
+        data-testid="tap-tempo-button"
         type="button"
         onClick={handleTap}
         className="w-24 h-24 rounded-full bg-surface border-2 border-primary/30 flex items-center justify-center transition-all hover:border-primary/60 active:scale-95 active:bg-primary/20"

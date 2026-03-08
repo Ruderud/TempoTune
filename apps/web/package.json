@@ -1,6 +1,6 @@
 {
   "name": "@tempo-tune/web",
-  "version": "0.1.46",
+  "version": "0.1.47",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "^1.16.4",
+    "@playwright/test": "^1.50.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.10",

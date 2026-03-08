@@ -47,10 +47,13 @@ function App(): React.JSX.Element {
       nativeAudioService.start(
         (pitchData) => {
           const bridgeSentAtMs = Date.now();
-          if (DEBUG_TUNER_LATENCY && typeof pitchData.detectedAtMs === 'number') {
+          if (
+            DEBUG_TUNER_LATENCY &&
+            typeof pitchData.detectedAtMs === 'number'
+          ) {
             const nativeToBridgeMs = bridgeSentAtMs - pitchData.detectedAtMs;
             console.info(
-              `[tuner-latency:native->bridge] ${nativeToBridgeMs}ms seq=${pitchData.debugSeq ?? '-'} note=${pitchData.name}${pitchData.octave}`,
+              `[tuner-latency:native->bridge] ${nativeToBridgeMs}ms seq=${pitchData.debugSeq ?? '-'} note=${pitchData.name}${pitchData.octave}`
             );
           }
 
@@ -74,7 +77,7 @@ function App(): React.JSX.Element {
             type: 'ERROR',
             error,
           });
-        },
+        }
       );
       return { success: true };
     });
@@ -107,7 +110,7 @@ function App(): React.JSX.Element {
             type: 'NATIVE_METRONOME_STATE',
             data: stateData,
           });
-        },
+        }
       );
       return { success: true };
     });
@@ -149,6 +152,7 @@ function App(): React.JSX.Element {
         source={{ uri: WEB_URL }}
         onMessage={handleMessage}
         style={styles.webview}
+        webviewDebuggingEnabled={__DEV__}
         allowsInlineMediaPlayback
         mediaPlaybackRequiresUserAction={false}
         mediaCapturePermissionGrantType="grantIfSameHostElsePrompt"

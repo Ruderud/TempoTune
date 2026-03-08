@@ -37,6 +37,7 @@ export function MetronomeControl({
       {/* BPM Precision Controls */}
       <div className="flex items-center justify-between gap-3">
         <button
+          data-testid="bpm-decrement"
           onClick={() => handleBpmChange(bpm - 1)}
           className="w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0 bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95"
         >
@@ -45,6 +46,7 @@ export function MetronomeControl({
 
         <div className="flex-1">
           <input
+            data-testid="bpm-slider"
             type="range"
             min={MIN_BPM}
             max={MAX_BPM}
@@ -66,6 +68,7 @@ export function MetronomeControl({
         </div>
 
         <button
+          data-testid="bpm-increment"
           onClick={() => handleBpmChange(bpm + 1)}
           className="w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0 bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95"
         >
@@ -87,6 +90,7 @@ export function MetronomeControl({
             return (
               <button
                 key={`${beats}/${noteValue}`}
+                data-testid={`time-sig-${beats}-${noteValue}`}
                 onClick={() => onTimeSignatureChange(ts)}
                 className={`
                   flex-1 h-11 rounded-lg font-medium text-sm transition-all cursor-pointer
@@ -139,6 +143,7 @@ export function MetronomeControl({
 
       {/* Play/Stop Action */}
       <button
+        data-testid="metronome-play-stop"
         onClick={isPlaying ? onStop : onStart}
         className={`
           w-full py-5 rounded-2xl flex items-center justify-center gap-3 transition-all font-bold text-lg tracking-wider
