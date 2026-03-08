@@ -43,6 +43,8 @@ async function checkPort(port: number): Promise<boolean> {
 }
 
 async function main() {
+  const targetPlatform = process.env.QA_PLATFORM || 'all';
+  const deviceMode = process.env.QA_DEVICE_MODE || 'all';
   const requireWebServer =
     process.env.QA_REQUIRE_WEB_SERVER === '1' ||
     process.env.QA_REQUIRE_WEB_SERVER === 'true';
@@ -55,6 +57,12 @@ async function main() {
   const skipMetroRequirement =
     process.env.QA_SKIP_METRO_REQUIREMENT === '1' ||
     process.env.QA_SKIP_METRO_REQUIREMENT === 'true';
+  const shouldHandleAndroid =
+    targetPlatform === 'all' || targetPlatform === 'android';
+  const shouldHandleIos = targetPlatform === 'all' || targetPlatform === 'ios';
+  const shouldBootAndroidEmulator = shouldHandleAndroid && deviceMode !== 'connected';
+  const shouldBootIosSimulator =
+    shouldHandleIos && deviceMode !== 'connected';
 
   console.log('Bootstrapping local-dev-attached mode...\n');
 
@@ -96,7 +104,9 @@ async function main() {
   }
 
   // Step 4: Android — adb reverse (per-device)
-  if (which('adb')) {
+  if (!shouldHandleAndroid) {
+    console.log('4. Android: not requested for this QA run, skipping');
+  } else if (which('adb')) {
     console.log('4. Setting up Android adb reverse...');
     const devices = exec('adb devices');
     const deviceLines = devices ? devices.split('\n').filter((l) => l.includes('\tdevice')) : [];
@@ -108,7 +118,7 @@ async function main() {
         exec(`adb -s ${serial} reverse tcp:8081 tcp:8081`);
         console.log(`   ✓ adb reverse set for ${serial} (3000, 8081)`);
       }
-    } else {
+    } else if (shouldBootAndroidEmulator) {
       // Try to launch emulator
       const emulators = exec('emulator -list-avds');
       if (emulators && emulators.trim().length > 0) {
@@ -119,13 +129,17 @@ async function main() {
       } else {
         console.log('   ○ No Android devices/emulators available');
       }
+    } else {
+      console.log('   ○ No Android devices connected and emulator bootstrap is disabled for connected-only runs');
     }
   } else {
     console.log('4. Android: adb not found, skipping');
   }
 
   // Step 5: iOS — check simulator
-  if (which('xcrun')) {
+  if (!shouldHandleIos) {
+    console.log('5. iOS: not requested for this QA run, skipping');
+  } else if (which('xcrun')) {
     console.log('5. Checking iOS simulators...');
     const simJson = exec('xcrun simctl list devices booted --json');
     let bootedSims: Array<{ name: string; udid: string }> = [];
@@ -140,6 +154,8 @@ async function main() {
 
     if (bootedSims.length > 0) {
       console.log(`   ✓ ${bootedSims.length} simulator(s) booted: ${bootedSims.map((s) => s.name).join(', ')}`);
+    } else if (!shouldBootIosSimulator) {
+      console.log('   ○ Simulator bootstrap not required for connected-only iOS runs');
     } else {
       // Try to boot a default iPhone simulator
       const allSims = exec('xcrun simctl list devices available --json');
