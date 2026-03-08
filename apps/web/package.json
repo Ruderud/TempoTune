@@ -1,6 +1,6 @@
 {
   "name": "@tempo-tune/web",
-  "version": "0.1.45",
+  "version": "0.1.46",
   "private": true,
   "scripts": {
     "dev": "next dev",

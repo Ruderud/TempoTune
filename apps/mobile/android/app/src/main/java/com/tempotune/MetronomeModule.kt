@@ -50,6 +50,32 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
     private var audioTrack: AudioTrack? = null
     private var audioThread: Thread? = null
 
+    // Pre-rendered tone buffers (generated once at start)
+    private var accentTone: ShortArray = ShortArray(0)
+    private var normalTone: ShortArray = ShortArray(0)
+
+    private fun preRenderTones() {
+        val frames = (sampleRate * toneDuration).toInt()
+        val fadeSamples = (sampleRate * 0.005).toInt()
+        accentTone = renderTone(1000.0, frames, fadeSamples)
+        normalTone = renderTone(800.0, frames, fadeSamples)
+    }
+
+    private fun renderTone(freq: Double, frames: Int, fadeSamples: Int): ShortArray {
+        val buf = ShortArray(frames)
+        val sr = sampleRate.toDouble()
+        for (i in 0 until frames) {
+            val envelope: Float = when {
+                i < fadeSamples -> i.toFloat() / fadeSamples.toFloat()
+                i > frames - fadeSamples -> (frames - i).toFloat() / fadeSamples.toFloat()
+                else -> 1.0f
+            }
+            val sample = (sin(2.0 * PI * freq * i.toDouble() / sr) * 0.8 * envelope).toFloat()
+            buf[i] = (sample * Short.MAX_VALUE).toInt().toShort()
+        }
+        return buf
+    }
+
     // Throttle for foreground service updates
     private val mainHandler = Handler(Looper.getMainLooper())
     private var pendingServiceUpdate: Runnable? = null
@@ -186,6 +212,8 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
 
     // Audio thread: generates sine wave clicks via AudioTrack
     private fun startAudioThread() {
+        preRenderTones()
+
         val minBufSize = AudioTrack.getMinBufferSize(
             sampleRate,
             AudioFormat.CHANNEL_OUT_MONO,
@@ -229,15 +257,15 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
         val chunkFrames = 256
         val buffer = ShortArray(chunkFrames)
         var sampleTime: Long = 0
-        var lastEmittedBeat: Long = -1
+        var beatCounter: Int = 0
+        var nextBeatAt: Long = 0 // absolute sample position of current beat
+        val toneLen = accentTone.size
 
         try {
             while (isPlaying && track.state == AudioTrack.STATE_INITIALIZED) {
                 val spb = (sampleRate * 60.0 / bpm).toLong()
-                val tf = (sampleRate * toneDuration).toLong()
                 val bpMeasure = beatsPerMeasure
                 val accent = accentFirst
-                val sr = sampleRate.toDouble()
 
                 if (spb <= 0) {
                     buffer.fill(0)
@@ -251,34 +279,24 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
                 var detectedIsAccent = false
 
                 for (i in 0 until chunkFrames) {
-                    val currentSample = sampleTime + i
-                    val posInBeat = currentSample % spb
+                    val cs = sampleTime + i
 
-                    if (posInBeat < tf) {
-                        val globalBeat = currentSample / spb
-                        val beatIdx = (globalBeat % bpMeasure).toInt()
+                    // Advance beats while current sample is past the next beat boundary
+                    while (cs >= nextBeatAt + spb) {
+                        nextBeatAt += spb
+                        beatCounter++
+                    }
+
+                    val posInTone = (cs - nextBeatAt).toInt()
+                    if (posInTone in 0 until toneLen) {
+                        val beatIdx = beatCounter % bpMeasure
                         val isAcc = accent && beatIdx == 0
-                        val freq = if (isAcc) 1000.0 else 800.0
-                        val t = posInBeat.toDouble() / sr
+                        buffer[i] = if (isAcc) accentTone[posInTone] else normalTone[posInTone]
 
-                        val fadeSamples = (sr * 0.005).toLong()
-                        val envelope: Float = when {
-                            posInBeat < fadeSamples -> posInBeat.toFloat() / fadeSamples.toFloat()
-                            posInBeat > tf - fadeSamples -> (tf - posInBeat).toFloat() / fadeSamples.toFloat()
-                            else -> 1.0f
-                        }
-
-                        val sample = (sin(2.0 * PI * freq * t) * 0.8 * envelope).toFloat()
-                        buffer[i] = (sample * Short.MAX_VALUE).toInt().toShort()
-
-                        if (posInBeat == 0L) {
-                            val beatNum = currentSample / spb
-                            if (beatNum > lastEmittedBeat) {
-                                lastEmittedBeat = beatNum
-                                newBeatDetected = true
-                                detectedBeatIndex = beatIdx
-                                detectedIsAccent = isAcc
-                            }
+                        if (posInTone == 0) {
+                            newBeatDetected = true
+                            detectedBeatIndex = beatIdx
+                            detectedIsAccent = isAcc
                         }
                     } else {
                         buffer[i] = 0
@@ -287,8 +305,6 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
 
                 sampleTime += chunkFrames
 
-                // write() blocks until buffer space is available — tick emits after write
-                // so the event is closer to actual playback time
                 val written = track.write(buffer, 0, chunkFrames)
                 if (written < 0) break
 

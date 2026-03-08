@@ -27,8 +27,12 @@ class MetronomeModule: RCTEventEmitter {
   private let toneDuration: Double = 0.05 // 50ms sine wave
   private var sampleTime: Int64 = 0
   private var samplesPerBeat: Int64 = 0
-  private var toneFrames: Int64 = 0
-  private var lastEmittedBeat: Int64 = -1
+  private var nextBeatAt: Int64 = 0
+  private var beatCounter: Int = 0
+
+  // Pre-rendered tone buffers
+  private var accentTone: [Float] = []
+  private var normalTone: [Float] = []
 
   // MARK: - Live Activity
 
@@ -67,10 +71,11 @@ class MetronomeModule: RCTEventEmitter {
     self.accentFirst = accentFirst
     self.currentBeat = 0
     self.sampleTime = 0
-    self.lastEmittedBeat = -1
+    self.nextBeatAt = 0
+    self.beatCounter = 0
     self.samplesPerBeat = Int64(sampleRate * 60.0 / bpm)
-    self.toneFrames = Int64(sampleRate * toneDuration)
 
+    preRenderTones()
     setupAudioSession()
     setupAudioEngine()
 
@@ -106,6 +111,31 @@ class MetronomeModule: RCTEventEmitter {
     }
   }
 
+  // MARK: - Pre-render tone buffers
+
+  private func preRenderTones() {
+    let frames = Int(sampleRate * toneDuration)
+    let fadeSamples = Int(sampleRate * 0.005)
+    accentTone = renderTone(freq: 1000.0, frames: frames, fadeSamples: fadeSamples)
+    normalTone = renderTone(freq: 800.0, frames: frames, fadeSamples: fadeSamples)
+  }
+
+  private func renderTone(freq: Double, frames: Int, fadeSamples: Int) -> [Float] {
+    var buf = [Float](repeating: 0, count: frames)
+    for i in 0..<frames {
+      let envelope: Float
+      if i < fadeSamples {
+        envelope = Float(i) / Float(fadeSamples)
+      } else if i > frames - fadeSamples {
+        envelope = Float(frames - i) / Float(fadeSamples)
+      } else {
+        envelope = 1.0
+      }
+      buf[i] = Float(sin(2.0 * .pi * freq * Double(i) / sampleRate)) * 0.8 * envelope
+    }
+    return buf
+  }
+
   // MARK: - Audio Session
 
   private func setupAudioSession() {
@@ -139,13 +169,11 @@ class MetronomeModule: RCTEventEmitter {
 
       let frames = Int(frameCount)
       let spb = self.samplesPerBeat
-      let tf = self.toneFrames
       let bpMeasure = self.beatsPerMeasure
       let accent = self.accentFirst
-      let sr = self.sampleRate
+      let toneLen = self.accentTone.count
 
-      guard spb > 0 else {
-        // Zero-fill if not yet configured
+      guard spb > 0, toneLen > 0 else {
         for i in 0..<frames { data[i] = 0.0 }
         return noErr
       }
@@ -155,49 +183,32 @@ class MetronomeModule: RCTEventEmitter {
       var detectedIsAccent = false
 
       for i in 0..<frames {
-        let currentSample = self.sampleTime + Int64(i)
-        let posInBeat = currentSample % spb
+        let cs = self.sampleTime + Int64(i)
 
-        if posInBeat < tf {
-          // Generate click tone
-          let globalBeat = currentSample / spb
-          let beatIdx = Int(globalBeat % Int64(bpMeasure))
+        // Advance beats while current sample is past the next beat boundary
+        while cs >= self.nextBeatAt + spb {
+          self.nextBeatAt += spb
+          self.beatCounter += 1
+        }
+
+        let posInTone = Int(cs - self.nextBeatAt)
+        if posInTone >= 0 && posInTone < toneLen {
+          let beatIdx = self.beatCounter % bpMeasure
           let isAcc = accent && beatIdx == 0
-          let freq = isAcc ? 1000.0 : 800.0
-          let t = Double(posInBeat) / sr
+          data[i] = isAcc ? self.accentTone[posInTone] : self.normalTone[posInTone]
 
-          // Fade envelope (5ms)
-          let fadeSamples = Int64(sr * 0.005)
-          let envelope: Float
-          if posInBeat < fadeSamples {
-            envelope = Float(posInBeat) / Float(fadeSamples)
-          } else if posInBeat > tf - fadeSamples {
-            envelope = Float(tf - posInBeat) / Float(fadeSamples)
-          } else {
-            envelope = 1.0
-          }
-
-          data[i] = Float(sin(2.0 * .pi * freq * t)) * 0.8 * envelope
-
-          // Detect beat boundary (first sample of a new beat)
-          if posInBeat == 0 {
-            let beatNum = currentSample / spb
-            if beatNum > self.lastEmittedBeat {
-              self.lastEmittedBeat = beatNum
-              newBeatDetected = true
-              detectedBeatIndex = beatIdx
-              detectedIsAccent = isAcc
-            }
+          if posInTone == 0 {
+            newBeatDetected = true
+            detectedBeatIndex = beatIdx
+            detectedIsAccent = isAcc
           }
         } else {
-          // Silence between clicks (keeps audio stream alive)
           data[i] = 0.0
         }
       }
 
       self.sampleTime += Int64(frames)
 
-      // Emit tick event off audio thread
       if newBeatDetected {
         let beatIdx = detectedBeatIndex
         let isAcc = detectedIsAccent
