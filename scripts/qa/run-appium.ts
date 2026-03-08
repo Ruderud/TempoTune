@@ -545,6 +545,14 @@ const needsIos = targets.some((t) => t.platform === 'ios');
 const androidApk =
   process.env.QA_ANDROID_APK ||
   resolve(MOBILE_DIR, 'android/app/build/outputs/apk/debug/app-debug.apk');
+const androidAppPackage =
+  process.env.QA_ANDROID_APP_PACKAGE ||
+  process.env.QA_ANDROID_APP_ID ||
+  '';
+const useInstalledAndroidApp =
+  process.env.QA_ANDROID_USE_INSTALLED_APP === '1' ||
+  process.env.QA_ANDROID_USE_INSTALLED_APP === 'true' ||
+  !!androidAppPackage;
 const iosApp =
   process.env.QA_IOS_APP ||
   resolve(
@@ -553,7 +561,7 @@ const iosApp =
   );
 const iosBundleId = process.env.QA_IOS_BUNDLE_ID;
 
-if (needsAndroid && !existsSync(androidApk)) {
+if (needsAndroid && !useInstalledAndroidApp && !existsSync(androidApk)) {
   console.error(`\n✗ Android APK not found: ${androidApk}`);
   console.error('  Build it first: cd apps/mobile && pnpm android');
   console.error('  Or set QA_ANDROID_APK to point to an existing APK');

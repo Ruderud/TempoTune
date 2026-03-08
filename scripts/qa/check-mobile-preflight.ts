@@ -18,6 +18,10 @@ const setupCommand =
     ? deviceMode === 'connected'
       ? 'pnpm qa:setup:device:ios-real'
       : 'pnpm qa:setup:device:ios-sim'
+    : targetPlatform === 'android'
+      ? deviceMode === 'connected'
+        ? 'pnpm qa:setup:device:android-real'
+        : 'pnpm qa:setup:device:android-emu'
     : 'pnpm qa:setup:device';
 const requiredDrivers = (
   process.env.QA_REQUIRED_APPIUM_DRIVERS ||

@@ -13,7 +13,9 @@ QA_ENABLE_WEBVIEW_DEBUGGING="${QA_ENABLE_WEBVIEW_DEBUGGING:-0}"
 QA_WEB_URL="${QA_WEB_URL:-}"
 
 # Auto-detect: physical device (adb) → localhost, emulator → 10.0.2.2
-if command -v adb &>/dev/null && adb devices 2>/dev/null | grep -q "device$"; then
+if [ -n "${ANDROID_EMULATOR_HOST:-}" ]; then
+  ANDROID_EMULATOR_HOST="$ANDROID_EMULATOR_HOST"
+elif command -v adb &>/dev/null && adb devices 2>/dev/null | grep -q "device$"; then
   ANDROID_EMULATOR_HOST="localhost"
 else
   ANDROID_EMULATOR_HOST="10.0.2.2"

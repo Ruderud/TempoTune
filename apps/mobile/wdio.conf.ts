@@ -6,6 +6,8 @@ loadQaEnv();
 
 const APPIUM_HOME = resolve(__dirname, '../../.appium');
 const DEFAULT_IOS_BUNDLE_ID = 'com.rud.tempotune';
+const DEFAULT_ANDROID_APP_PACKAGE = 'com.tempotune';
+const DEFAULT_ANDROID_APP_ACTIVITY = 'com.tempotune.MainActivity';
 
 const baseCapabilities = {
   'appium:noReset': true,
@@ -19,12 +21,35 @@ function getCapabilities(): WebdriverIO.Capabilities[] {
   const caps: WebdriverIO.Capabilities[] = [];
 
   if (platform === 'android' || platform === 'all') {
+    const androidAppPackage =
+      process.env.QA_ANDROID_APP_PACKAGE ||
+      process.env.QA_ANDROID_APP_ID ||
+      DEFAULT_ANDROID_APP_PACKAGE;
+    const androidAppActivity =
+      process.env.QA_ANDROID_APP_ACTIVITY || DEFAULT_ANDROID_APP_ACTIVITY;
+    const useInstalledAndroidApp =
+      process.env.QA_ANDROID_USE_INSTALLED_APP === '1' ||
+      process.env.QA_ANDROID_USE_INSTALLED_APP === 'true' ||
+      !!process.env.QA_ANDROID_APP_PACKAGE;
     caps.push({
       platformName: 'Android',
       'appium:automationName': 'UiAutomator2',
-      'appium:app':
-        process.env.QA_ANDROID_APK ||
-        resolve(__dirname, 'android/app/build/outputs/apk/debug/app-debug.apk'),
+      ...(useInstalledAndroidApp
+        ? {
+            'appium:appPackage': androidAppPackage,
+            'appium:appActivity': androidAppActivity,
+            'appium:appWaitActivity': '*',
+          }
+        : {
+            'appium:app':
+              process.env.QA_ANDROID_APK ||
+              resolve(
+                __dirname,
+                'android/app/build/outputs/apk/debug/app-debug.apk'
+              ),
+          }),
+      'appium:autoGrantPermissions': true,
+      'appium:chromedriverAutodownload': true,
       'appium:systemPort': Number(process.env.QA_SYSTEM_PORT) || 8200,
       'appium:chromedriverPort':
         Number(process.env.QA_CHROMEDRIVER_PORT) || 9515,

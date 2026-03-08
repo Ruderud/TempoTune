@@ -59,7 +59,7 @@ export function discoverAndroidTargets(): MobileTarget[] {
       name,
       udid: serial,
       osVersion,
-      status: 'connected',
+      status: isEmulator ? 'booted' : 'connected',
     });
   }
 

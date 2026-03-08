@@ -12,6 +12,7 @@ type CleanupOptions = {
   androidAppId?: string;
   iosAppBundleId?: string;
   iosWdaBundleId?: string;
+  shutdownAndroidEmulators?: boolean;
   shutdownSimulators?: boolean;
   terminateApp?: boolean;
   terminateWda?: boolean;
@@ -86,7 +87,8 @@ function cleanupIosTarget(
 function cleanupAndroidTarget(
   target: MobileTarget,
   androidAppId: string,
-  terminateApp: boolean
+  terminateApp: boolean,
+  shutdownAndroidEmulators: boolean
 ): string[] {
   const actions: string[] = [];
 
@@ -95,6 +97,14 @@ function cleanupAndroidTarget(
     exec(`adb -s ${target.udid} shell am force-stop ${androidAppId}`)
   ) {
     actions.push(`force-stopped ${androidAppId}`);
+  }
+
+  if (
+    shutdownAndroidEmulators &&
+    target.type === 'emulator' &&
+    exec(`adb -s ${target.udid} emu kill`)
+  ) {
+    actions.push('shutdown emulator');
   }
 
   return actions;
@@ -120,6 +130,9 @@ export function cleanupMobileTargets(
     options.terminateApp ?? getBooleanEnv('QA_CLEANUP_APP_AFTER_RUN', true);
   const terminateWda =
     options.terminateWda ?? getBooleanEnv('QA_CLEANUP_WDA_AFTER_RUN', true);
+  const shutdownAndroidEmulators =
+    options.shutdownAndroidEmulators ??
+    getBooleanEnv('QA_ANDROID_SHUTDOWN_EMULATOR_AFTER_RUN', false);
   const shutdownSimulators =
     options.shutdownSimulators ??
     getBooleanEnv('QA_IOS_SHUTDOWN_SIMULATOR_AFTER_RUN', false);
@@ -135,7 +148,12 @@ export function cleanupMobileTargets(
             terminateWda,
             shutdownSimulators
           )
-        : cleanupAndroidTarget(target, androidAppId, terminateApp);
+        : cleanupAndroidTarget(
+            target,
+            androidAppId,
+            terminateApp,
+            shutdownAndroidEmulators
+          );
 
     return { target, actions };
   });
