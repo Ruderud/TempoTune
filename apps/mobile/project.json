@@ -61,6 +61,13 @@
         "cwd": "apps/mobile"
       }
     },
+    "e2e-device-ios-real": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx ../../scripts/qa/run-ios-real-device.ts",
+        "cwd": "apps/mobile"
+      }
+    },
     "e2e-device-discover": {
       "executor": "nx:run-commands",
       "options": {
@@ -79,6 +86,13 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "QA_PLATFORM=ios QA_DEVICE_MODE=booted QA_REQUIRED_APPIUM_DRIVERS=xcuitest tsx ../../scripts/qa/check-mobile-preflight.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-preflight-ios-real": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "QA_PLATFORM=ios QA_DEVICE_MODE=connected QA_REQUIRED_APPIUM_DRIVERS=xcuitest tsx ../../scripts/qa/check-mobile-preflight.ts",
         "cwd": "apps/mobile"
       }
     },
@@ -104,6 +118,13 @@
       }
     },
     "e2e-device-setup-ios-sim": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "QA_PLATFORM=ios tsx ../../scripts/qa/setup-appium-drivers.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-setup-ios-real": {
       "executor": "nx:run-commands",
       "options": {
         "command": "QA_PLATFORM=ios tsx ../../scripts/qa/setup-appium-drivers.ts",

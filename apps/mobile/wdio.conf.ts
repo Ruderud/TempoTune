@@ -1,7 +1,11 @@
 import type { Options } from '@wdio/types';
 import { resolve } from 'node:path';
+import { loadQaEnv } from '../../scripts/qa/load-qa-env';
+
+loadQaEnv();
 
 const APPIUM_HOME = resolve(__dirname, '../../.appium');
+const DEFAULT_IOS_BUNDLE_ID = 'com.rud.tempotune';
 
 const baseCapabilities = {
   'appium:noReset': true,
@@ -30,8 +34,25 @@ function getCapabilities(): WebdriverIO.Capabilities[] {
 
   if (platform === 'ios' || platform === 'all') {
     const iosBundleId = process.env.QA_IOS_BUNDLE_ID;
+    const deviceMode = process.env.QA_DEVICE_MODE || 'all';
+    const isConnectedRealDevice = deviceMode === 'connected';
+    const xcodeOrgId =
+      process.env.QA_IOS_XCODE_ORG_ID || process.env.QA_IOS_TEAM_ID;
+    const xcodeSigningId =
+      process.env.QA_IOS_XCODE_SIGNING_ID ||
+      process.env.QA_IOS_SIGNING_ID ||
+      'Apple Development';
+    const platformVersion = process.env.QA_DEVICE_OS_VERSION;
+    const useNewWda =
+      process.env.QA_IOS_USE_NEW_WDA === '1' ||
+      process.env.QA_IOS_USE_NEW_WDA === 'true';
+    const updatedWdaBundleId =
+      process.env.QA_IOS_UPDATED_WDA_BUNDLE_ID ||
+      process.env.QA_IOS_WDA_BUNDLE_ID ||
+      `${iosBundleId || DEFAULT_IOS_BUNDLE_ID}.wda`;
     caps.push({
       platformName: 'iOS',
+      ...(platformVersion ? { 'appium:platformVersion': platformVersion } : {}),
       'appium:automationName': 'XCUITest',
       ...(iosBundleId
         ? { 'appium:bundleId': iosBundleId }
@@ -46,6 +67,18 @@ function getCapabilities(): WebdriverIO.Capabilities[] {
       'appium:autoAcceptAlerts': true,
       'appium:wdaLocalPort': Number(process.env.QA_WDA_PORT) || 8100,
       'appium:webviewConnectTimeout': 10000,
+      ...(isConnectedRealDevice
+        ? {
+            'appium:showXcodeLog': true,
+            'appium:allowProvisioningDeviceRegistration': true,
+            'appium:updatedWDABundleId': updatedWdaBundleId,
+            ...(useNewWda ? { 'appium:useNewWDA': true } : {}),
+            ...(xcodeOrgId ? { 'appium:xcodeOrgId': xcodeOrgId } : {}),
+            ...(xcodeSigningId
+              ? { 'appium:xcodeSigningId': xcodeSigningId }
+              : {}),
+          }
+        : {}),
       ...baseCapabilities,
     });
   }

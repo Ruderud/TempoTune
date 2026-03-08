@@ -20,10 +20,12 @@
     "qa:web": "pnpm run qa && pnpm exec nx run web:e2e",
     "qa:device": "tsx scripts/qa/check-mobile-preflight.ts && tsx scripts/qa/bootstrap-device-run.ts && tsx scripts/qa/run-appium.ts",
     "qa:device:ios-sim": "QA_PLATFORM=ios QA_DEVICE_MODE=booted QA_REQUIRED_APPIUM_DRIVERS=xcuitest QA_IOS_BUNDLE_ID=com.rud.tempotune tsx scripts/qa/check-mobile-preflight.ts && QA_PLATFORM=ios QA_DEVICE_MODE=booted QA_IOS_BUNDLE_ID=com.rud.tempotune tsx scripts/qa/bootstrap-device-run.ts && QA_PLATFORM=ios QA_DEVICE_MODE=booted QA_IOS_BUNDLE_ID=com.rud.tempotune tsx scripts/qa/prepare-ios-simulator-app.ts && QA_PLATFORM=ios QA_DEVICE_MODE=booted QA_IOS_BUNDLE_ID=com.rud.tempotune tsx scripts/qa/run-appium.ts",
+    "qa:device:ios-real": "tsx scripts/qa/run-ios-real-device.ts",
     "qa:full": "pnpm run qa:web && pnpm run qa:device",
     "qa:setup:web": "pnpm --filter @tempo-tune/web exec playwright install --with-deps",
     "qa:setup:device": "tsx scripts/qa/setup-appium-drivers.ts",
-    "qa:setup:device:ios-sim": "QA_PLATFORM=ios tsx scripts/qa/setup-appium-drivers.ts"
+    "qa:setup:device:ios-sim": "QA_PLATFORM=ios tsx scripts/qa/setup-appium-drivers.ts",
+    "qa:setup:device:ios-real": "QA_PLATFORM=ios tsx scripts/qa/setup-appium-drivers.ts"
   },
   "keywords": [
     "metronome",

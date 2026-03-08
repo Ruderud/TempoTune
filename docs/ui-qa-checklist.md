@@ -228,12 +228,15 @@ Requires connected device or simulator + Appium drivers:
 ```bash
 pnpm qa:setup:device          # Install Appium 2-compatible Android + iOS drivers
 pnpm qa:setup:device:ios-sim  # Install iOS simulator-only Appium driver
+pnpm qa:setup:device:ios-real # Install iOS real-device Appium driver set
 pnpm qa:device                # Preflight + bootstrap + Appium smoke tests
 pnpm qa:device:ios-sim        # Booted iOS simulator only, build/install app, run Appium smoke
+pnpm qa:device:ios-real       # Connected iPhone only, build/install QA app, verify WDA signing, run Appium smoke
 pnpm qa:full                  # Layer 2 + Layer 3
 ```
 
 For the current local setup, `pnpm qa:device:ios-sim` is the fastest path when an iOS simulator is already booted.
+If you already have a connected iPhone, `pnpm qa:device:ios-real` will now build/install the QA app and then run the Appium smoke suite.
 
 **Appium tests** (`apps/mobile/appium/specs/`):
 
@@ -266,8 +269,36 @@ pnpm exec tsx scripts/qa/check-regression.ts         # Git diff → affected fea
 - Xcode + command line tools installed
 - Simulator available (`xcrun simctl list devices`)
 - For simulator-only smoke: a booted simulator is enough, and `pnpm qa:device:ios-sim` will build/install the app automatically
+- For real devices: `pnpm qa:device:ios-real` now builds and installs a Release QA build via `xcodebuild` + `devicectl`
 - For real devices: Web Inspector enabled (Settings → Safari → Advanced → Web Inspector)
+- For real devices: Xcode must have the Apple ID account for the WDA signing team added in Xcode > Settings > Accounts
 - WDA signing: Xcode must have a valid signing identity for `WebDriverAgentRunner`
+- If the iPhone cannot reach your Mac's local IP, set `QA_WEB_URL` to a reachable URL (for example a tunnel URL or a deployed preview URL)
+
+If multiple Apple Development teams exist locally, you can override the auto-selected team:
+
+```bash
+QA_IOS_XCODE_ORG_ID=<TEAM_ID> pnpm qa:device:ios-real
+```
+
+If WDA provisioning needs a different bundle identifier, override it explicitly:
+
+```bash
+QA_IOS_UPDATED_WDA_BUNDLE_ID=com.example.tempotune.wda pnpm qa:device:ios-real
+```
+
+Recommended local setup: save your personal signing config in `.env.qa.local`.
+
+```bash
+QA_IOS_TEAM_ID=YOUR_TEAM_ID
+QA_IOS_SIGNING_ID="Apple Development"
+QA_IOS_BUNDLE_ID=com.rud.tempotune
+QA_IOS_WDA_BUNDLE_ID=com.rud.tempotune.wda
+# Optional: if the iPhone cannot reach http://<local-ip>:3000
+QA_WEB_URL=https://your-reachable-tempotune-url.example
+```
+
+`pnpm qa:device:ios-real` will automatically read `.env.qa.local`, `.env.local`, then `.env` in that order.
 
 ### Android
 
@@ -283,6 +314,7 @@ pnpm exec tsx scripts/qa/check-regression.ts         # Git diff → affected fea
 | `QA_PLATFORM`         | `ios`, `android`, `all`                   | `all`   | Target platform    |
 | `QA_DEVICE_MODE`      | `booted`, `connected`, `all`, `allowlist` | `all`   | Device filter      |
 | `QA_DEVICE_ALLOWLIST` | comma-separated UDIDs                     | —       | For allowlist mode |
+| `QA_WEB_URL`          | full URL                                  | —       | Override WebView URL for real-device QA when local IP is unreachable |
 
 ---
 

@@ -72,6 +72,8 @@ android/app/release
 # iOS
 ios/Pods
 ios/build
+apps/mobile/ios/build-qa/
+apps/mobile/ios/ios/
 *.pbxuser
 !default.pbxuser
 *.mode1v3

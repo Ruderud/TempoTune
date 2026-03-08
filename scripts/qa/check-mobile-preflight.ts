@@ -12,9 +12,12 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '../..');
 const APPIUM_HOME = resolve(ROOT, '.appium');
 const targetPlatform = process.env.QA_PLATFORM || 'all';
+const deviceMode = process.env.QA_DEVICE_MODE || 'all';
 const setupCommand =
   targetPlatform === 'ios'
-    ? 'pnpm qa:setup:device:ios-sim'
+    ? deviceMode === 'connected'
+      ? 'pnpm qa:setup:device:ios-real'
+      : 'pnpm qa:setup:device:ios-sim'
     : 'pnpm qa:setup:device';
 const requiredDrivers = (
   process.env.QA_REQUIRED_APPIUM_DRIVERS ||
