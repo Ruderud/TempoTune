@@ -11,5 +11,6 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
+    exclude: ['appium/**', 'node_modules/**'],
   },
 });

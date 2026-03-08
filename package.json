@@ -14,7 +14,16 @@
     "clean": "nx reset && nx run-many --target=clean --all",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "prepare": "husky"
+    "prepare": "husky",
+    "qa": "pnpm exec nx run-many -t type-check lint test && tsx scripts/qa/validate-feature-docs.ts && tsx scripts/qa/check-regression.ts",
+    "qa:affected": "pnpm exec nx affected -t type-check lint test && tsx scripts/qa/validate-feature-docs.ts && tsx scripts/qa/check-regression.ts",
+    "qa:web": "pnpm run qa && pnpm exec nx run web:e2e",
+    "qa:device": "tsx scripts/qa/check-mobile-preflight.ts && tsx scripts/qa/bootstrap-device-run.ts && tsx scripts/qa/run-appium.ts",
+    "qa:device:ios-sim": "QA_PLATFORM=ios QA_DEVICE_MODE=booted QA_REQUIRED_APPIUM_DRIVERS=xcuitest QA_IOS_BUNDLE_ID=com.rud.tempotune tsx scripts/qa/check-mobile-preflight.ts && QA_PLATFORM=ios QA_DEVICE_MODE=booted QA_IOS_BUNDLE_ID=com.rud.tempotune tsx scripts/qa/bootstrap-device-run.ts && QA_PLATFORM=ios QA_DEVICE_MODE=booted QA_IOS_BUNDLE_ID=com.rud.tempotune tsx scripts/qa/prepare-ios-simulator-app.ts && QA_PLATFORM=ios QA_DEVICE_MODE=booted QA_IOS_BUNDLE_ID=com.rud.tempotune tsx scripts/qa/run-appium.ts",
+    "qa:full": "pnpm run qa:web && pnpm run qa:device",
+    "qa:setup:web": "pnpm --filter @tempo-tune/web exec playwright install --with-deps",
+    "qa:setup:device": "tsx scripts/qa/setup-appium-drivers.ts",
+    "qa:setup:device:ios-sim": "QA_PLATFORM=ios tsx scripts/qa/setup-appium-drivers.ts"
   },
   "keywords": [
     "metronome",
@@ -37,9 +46,13 @@
     "@nx/workspace": "^22.4.0",
     "@types/node": "^24.0.0",
     "eslint": "^9.0.0",
+    "glob": "^11.0.0",
+    "gray-matter": "^4.0.3",
     "husky": "^9.1.7",
+    "minimatch": "^10.0.0",
     "nx": "^22.4.0",
     "prettier": "^3.0.0",
+    "tsx": "^4.19.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.55.0"
   }

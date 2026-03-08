@@ -46,6 +46,69 @@
         "command": "pnpm --filter @tempo-tune/mobile test",
         "cwd": "apps/mobile"
       }
+    },
+    "e2e-device": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx ../../scripts/qa/run-appium.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-ios-sim": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "QA_PLATFORM=ios QA_DEVICE_MODE=booted QA_IOS_BUNDLE_ID=com.rud.tempotune tsx ../../scripts/qa/run-appium.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-discover": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx ../../scripts/qa/discover-mobile-targets.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-preflight": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx ../../scripts/qa/check-mobile-preflight.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-preflight-ios-sim": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "QA_PLATFORM=ios QA_DEVICE_MODE=booted QA_REQUIRED_APPIUM_DRIVERS=xcuitest tsx ../../scripts/qa/check-mobile-preflight.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-bootstrap": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx ../../scripts/qa/bootstrap-device-run.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-prepare-ios-sim": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "QA_PLATFORM=ios QA_DEVICE_MODE=booted QA_IOS_BUNDLE_ID=com.rud.tempotune tsx ../../scripts/qa/prepare-ios-simulator-app.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-setup": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx ../../scripts/qa/setup-appium-drivers.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-setup-ios-sim": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "QA_PLATFORM=ios tsx ../../scripts/qa/setup-appium-drivers.ts",
+        "cwd": "apps/mobile"
+      }
     }
   }
 }

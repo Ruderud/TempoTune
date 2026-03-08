@@ -40,6 +40,13 @@
         "command": "pnpm --filter @tempo-tune/web test",
         "cwd": "apps/web"
       }
+    },
+    "e2e": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm exec playwright test",
+        "cwd": "apps/web"
+      }
     }
   }
 }

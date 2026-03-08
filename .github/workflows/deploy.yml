@@ -129,7 +129,7 @@ jobs:
   test:
     name: Test
     needs: affected
-    if: needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true' || needs.affected.outputs.mobile == 'true'
+    if: needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true' || needs.affected.outputs.mobile == 'true' || needs.affected.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -156,9 +156,53 @@ jobs:
       - name: Run UI quality guardrails
         run: bash scripts/check-ui-quality.sh
 
+  e2e-web:
+    name: Web E2E (Playwright)
+    needs: [affected, type-check, lint]
+    if: needs.affected.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @tempo-tune/web exec playwright install --with-deps chromium
+
+      - name: Run Playwright E2E tests
+        run: pnpm exec nx run web:e2e
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report/
+          retention-days: 14
+
+  regression-report:
+    name: Regression Report
+    needs: affected
+    if: needs.affected.outputs.any == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      - name: Validate feature docs
+        run: pnpm exec tsx scripts/qa/validate-feature-docs.ts
+
+      - name: Check regression impact
+        run: pnpm exec tsx scripts/qa/check-regression.ts --base=${{ needs.affected.outputs.base-sha }}
+
   deploy-web:
     name: Deploy Web
-    needs: [affected, type-check, lint, ui-guardrails]
+    needs: [affected, type-check, lint, test, ui-guardrails, e2e-web, regression-report]
     if: |
       always() &&
       github.event_name == 'push' &&
@@ -166,7 +210,10 @@ jobs:
       needs.affected.outputs.web == 'true' &&
       (needs.type-check.result == 'success' || needs.type-check.result == 'skipped') &&
       (needs.lint.result == 'success' || needs.lint.result == 'skipped') &&
-      (needs.ui-guardrails.result == 'success' || needs.ui-guardrails.result == 'skipped')
+      (needs.test.result == 'success' || needs.test.result == 'skipped') &&
+      (needs.ui-guardrails.result == 'success' || needs.ui-guardrails.result == 'skipped') &&
+      (needs.e2e-web.result == 'success' || needs.e2e-web.result == 'skipped') &&
+      (needs.regression-report.result == 'success' || needs.regression-report.result == 'skipped')
     runs-on: ubuntu-latest
     environment: github-action
     permissions:

@@ -96,6 +96,15 @@ version.generated.ts
 .screenshots/
 test-results/
 
+# Playwright
+playwright-report/
+blob-report/
+
+# Appium
+.appium/
+appium-logs/
+reports/qa/
+
 # Claude Code & OMC
 .claude/
 .omc/

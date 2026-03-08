@@ -179,14 +179,110 @@ Before merging any UI changes:
 
 ## Continuous Integration
 
-The CI pipeline will automatically run:
+The CI pipeline automatically runs on every PR:
 
-- `pnpm exec tsc --noEmit` (type-check)
-- `pnpm exec nx affected -t lint`
-- `pnpm exec vitest run`
-- `bash scripts/check-ui-quality.sh` ← **UI guardrails**
+| Job                   | Trigger                          | What it does                              |
+| --------------------- | -------------------------------- | ----------------------------------------- |
+| **type-check**        | any project affected             | `nx affected -t type-check`               |
+| **lint**              | any project affected             | `nx affected -t lint`                     |
+| **test**              | audio/shared/mobile/web affected | `nx affected -t test` (Vitest)            |
+| **ui-guardrails**     | web affected                     | `bash scripts/check-ui-quality.sh`        |
+| **e2e-web**           | web affected                     | Playwright smoke suite (15 tests)         |
+| **regression-report** | any project affected             | Feature docs validate + regression impact |
 
-All steps must pass before merge is allowed.
+All jobs must pass before merge is allowed.
+
+---
+
+## QA Execution Layers
+
+### Layer 1: Static QA (`pnpm qa`)
+
+Runs without any browser or device. Safe for CI and local dev:
+
+```bash
+pnpm qa          # type-check + lint + test + feature docs validate + regression report
+pnpm qa:affected  # nx affected 기반 선별 QA
+```
+
+### Layer 2: Web E2E (`pnpm qa:web`)
+
+Requires Playwright browsers installed:
+
+```bash
+pnpm qa:setup:web   # Install Playwright chromium browser
+pnpm qa:web         # Layer 1 + Playwright E2E tests
+```
+
+**Playwright tests** (`apps/web/e2e/`):
+
+- `navigation.spec.ts` — Tab navigation (5 tests)
+- `metronome-bpm.spec.ts` — BPM controls, time sig, play/stop (5 tests)
+- `tuner-shell.spec.ts` — Tuner controls, presets, modes (3 tests)
+- `settings.spec.ts` — Settings page load (2 tests)
+
+### Layer 3: Device E2E (`pnpm qa:device`)
+
+Requires connected device or simulator + Appium drivers:
+
+```bash
+pnpm qa:setup:device          # Install Appium 2-compatible Android + iOS drivers
+pnpm qa:setup:device:ios-sim  # Install iOS simulator-only Appium driver
+pnpm qa:device                # Preflight + bootstrap + Appium smoke tests
+pnpm qa:device:ios-sim        # Booted iOS simulator only, build/install app, run Appium smoke
+pnpm qa:full                  # Layer 2 + Layer 3
+```
+
+For the current local setup, `pnpm qa:device:ios-sim` is the fastest path when an iOS simulator is already booted.
+
+**Appium tests** (`apps/mobile/appium/specs/`):
+
+- `launch.smoke.spec.ts` — App launch
+- `webview-load.smoke.spec.ts` — WebView content load
+- `metronome-bridge.smoke.spec.ts` — Metronome start/stop via bridge
+- `tuner-permission.smoke.spec.ts` — Mic permission flow
+
+**Device QA reports**:
+
+- `reports/qa/device/latest-device-report.md`
+- `reports/qa/device/latest-device-report.json`
+- per-target raw WDIO logs are saved in the same directory
+
+### Layer 4: Feature Docs & Regression (`docs/features/`)
+
+Feature docs with YAML frontmatter drive automated regression detection:
+
+```bash
+pnpm exec tsx scripts/qa/validate-feature-docs.ts   # Schema validation
+pnpm exec tsx scripts/qa/check-regression.ts         # Git diff → affected features
+```
+
+---
+
+## Device Testing Prerequisites
+
+### iOS
+
+- Xcode + command line tools installed
+- Simulator available (`xcrun simctl list devices`)
+- For simulator-only smoke: a booted simulator is enough, and `pnpm qa:device:ios-sim` will build/install the app automatically
+- For real devices: Web Inspector enabled (Settings → Safari → Advanced → Web Inspector)
+- WDA signing: Xcode must have a valid signing identity for `WebDriverAgentRunner`
+
+### Android
+
+- Android Studio + SDK + platform-tools
+- `adb` in PATH, device/emulator visible (`adb devices`)
+- Debug APK built and installed
+- For WebView debugging: `WebView.setWebContentsDebuggingEnabled(true)` in app
+
+### Environment Variables (Device E2E)
+
+| Variable              | Values                                    | Default | Description        |
+| --------------------- | ----------------------------------------- | ------- | ------------------ |
+| `QA_PLATFORM`         | `ios`, `android`, `all`                   | `all`   | Target platform    |
+| `QA_DEVICE_MODE`      | `booted`, `connected`, `all`, `allowlist` | `all`   | Device filter      |
+| `QA_DEVICE_ALLOWLIST` | comma-separated UDIDs                     | —       | For allowlist mode |
 
 ---
 
@@ -196,3 +292,5 @@ All steps must pass before merge is allowed.
 - **Manual viewport tests** can use browser DevTools responsive mode
 - **Touch target verification** can use browser accessibility overlays (Chrome DevTools → More tools → Rendering → Show hit-test borders)
 - **Contrast ratio** can be checked with browser DevTools color picker or https://webaim.org/resources/contrastchecker/
+- **Playwright reports** are uploaded as CI artifacts (14-day retention)
+- **Appium device tests** are local/self-hosted only — not included in CI
