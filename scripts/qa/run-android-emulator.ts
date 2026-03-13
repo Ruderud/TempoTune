@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadQaEnv } from './load-qa-env';
+import { stopManagedWebDevServer } from './web-dev-server';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '../..');
@@ -22,7 +23,9 @@ function runStep(label: string, args: string[], env: Record<string, string>) {
   });
 
   if (result.status !== 0) {
-    process.exit(result.status ?? 1);
+    const error = new Error(`${label} failed`) as Error & { exitCode?: number };
+    error.exitCode = result.status ?? 1;
+    throw error;
   }
 }
 
@@ -30,10 +33,7 @@ const env: Record<string, string> = {
   QA_PLATFORM: 'android',
   QA_DEVICE_MODE: 'booted',
   QA_REQUIRED_APPIUM_DRIVERS: 'uiautomator2',
-  QA_ANDROID_APP_PACKAGE:
-    process.env.QA_ANDROID_APP_PACKAGE ||
-    process.env.QA_ANDROID_APP_ID ||
-    'com.tempotune',
+  QA_ANDROID_APP_PACKAGE: process.env.QA_ANDROID_APP_PACKAGE || 'com.tempotune',
   QA_ANDROID_APP_ACTIVITY:
     process.env.QA_ANDROID_APP_ACTIVITY || 'com.tempotune.MainActivity',
   QA_ANDROID_USE_INSTALLED_APP: '1',
@@ -50,23 +50,48 @@ console.log('Android Emulator QA Runner\n');
 console.log(`App package: ${env.QA_ANDROID_APP_PACKAGE}`);
 console.log(`App activity: ${env.QA_ANDROID_APP_ACTIVITY}\n`);
 
-runStep(
-  'Mobile preflight',
-  ['exec', 'tsx', 'scripts/qa/check-mobile-preflight.ts'],
-  env
-);
-runStep(
-  'Bootstrap local-dev-attached',
-  ['exec', 'tsx', 'scripts/qa/bootstrap-device-run.ts'],
-  env
-);
-runStep(
-  'Prepare Android QA app',
-  ['exec', 'tsx', 'scripts/qa/prepare-android-app.ts'],
-  env
-);
-runStep(
-  'Appium emulator smoke',
-  ['exec', 'tsx', 'scripts/qa/run-appium.ts', ...passthroughArgs],
-  env
-);
+let exitCode = 0;
+
+try {
+  runStep(
+    'Mobile preflight',
+    ['exec', 'tsx', 'scripts/qa/check-mobile-preflight.ts'],
+    env
+  );
+  runStep(
+    'Bootstrap local-dev-attached',
+    ['exec', 'tsx', 'scripts/qa/bootstrap-device-run.ts'],
+    env
+  );
+  runStep(
+    'Prepare Android QA app',
+    ['exec', 'tsx', 'scripts/qa/prepare-android-app.ts'],
+    env
+  );
+  runStep(
+    'Appium emulator smoke',
+    ['exec', 'tsx', 'scripts/qa/run-appium.ts', ...passthroughArgs],
+    env
+  );
+} catch (error) {
+  exitCode =
+    typeof error === 'object' &&
+    error !== null &&
+    'exitCode' in error &&
+    typeof error.exitCode === 'number'
+      ? error.exitCode
+      : 1;
+
+  if (error instanceof Error) {
+    console.error(`\n✗ ${error.message}`);
+  } else {
+    console.error(`\n✗ ${String(error)}`);
+  }
+} finally {
+  const managedServer = stopManagedWebDevServer();
+  if (managedServer.stopped) {
+    console.log('\n→ Stopped managed Next.js dev server');
+  }
+}
+
+process.exit(exitCode);

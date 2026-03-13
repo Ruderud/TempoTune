@@ -22,9 +22,7 @@ function getCapabilities(): WebdriverIO.Capabilities[] {
 
   if (platform === 'android' || platform === 'all') {
     const androidAppPackage =
-      process.env.QA_ANDROID_APP_PACKAGE ||
-      process.env.QA_ANDROID_APP_ID ||
-      DEFAULT_ANDROID_APP_PACKAGE;
+      process.env.QA_ANDROID_APP_PACKAGE || DEFAULT_ANDROID_APP_PACKAGE;
     const androidAppActivity =
       process.env.QA_ANDROID_APP_ACTIVITY || DEFAULT_ANDROID_APP_ACTIVITY;
     const useInstalledAndroidApp =
@@ -75,6 +73,12 @@ function getCapabilities(): WebdriverIO.Capabilities[] {
       process.env.QA_IOS_UPDATED_WDA_BUNDLE_ID ||
       process.env.QA_IOS_WDA_BUNDLE_ID ||
       `${iosBundleId || DEFAULT_IOS_BUNDLE_ID}.wda`;
+    const additionalWebviewBundleIds = (
+      process.env.QA_IOS_ADDITIONAL_WEBVIEW_BUNDLE_IDS || '*'
+    )
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
     caps.push({
       platformName: 'iOS',
       ...(platformVersion ? { 'appium:platformVersion': platformVersion } : {}),
@@ -92,6 +96,14 @@ function getCapabilities(): WebdriverIO.Capabilities[] {
       'appium:autoAcceptAlerts': true,
       'appium:wdaLocalPort': Number(process.env.QA_WDA_PORT) || 8100,
       'appium:webviewConnectTimeout': 10000,
+      'appium:webviewConnectRetries':
+        Number(process.env.QA_IOS_WEBVIEW_CONNECT_RETRIES) || 40,
+      ...(additionalWebviewBundleIds.length > 0
+        ? {
+            'appium:additionalWebviewBundleIds':
+              additionalWebviewBundleIds,
+          }
+        : {}),
       ...(isConnectedRealDevice
         ? {
             'appium:showXcodeLog': true,

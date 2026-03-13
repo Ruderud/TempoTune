@@ -8,18 +8,11 @@ CONFIG_FILE="$SCRIPT_DIR/../src/config.generated.ts"
 # Defaults
 PROD_WEB_URL="https://your-production-url.com"
 DEV_SERVER_PORT="3000"
+ENV_ANDROID_DEV_HOST=""
+RUNTIME_ANDROID_DEV_HOST="${ANDROID_EMULATOR_HOST:-}"
 QA_USE_DEV_WEB_URL="${QA_USE_DEV_WEB_URL:-0}"
 QA_ENABLE_WEBVIEW_DEBUGGING="${QA_ENABLE_WEBVIEW_DEBUGGING:-0}"
 QA_WEB_URL="${QA_WEB_URL:-}"
-
-# Auto-detect: physical device (adb) → localhost, emulator → 10.0.2.2
-if [ -n "${ANDROID_EMULATOR_HOST:-}" ]; then
-  ANDROID_EMULATOR_HOST="$ANDROID_EMULATOR_HOST"
-elif command -v adb &>/dev/null && adb devices 2>/dev/null | grep -q "device$"; then
-  ANDROID_EMULATOR_HOST="localhost"
-else
-  ANDROID_EMULATOR_HOST="10.0.2.2"
-fi
 
 # Read .env if it exists
 if [ -f "$ENV_FILE" ]; then
@@ -32,7 +25,7 @@ if [ -f "$ENV_FILE" ]; then
     case "$key" in
       PROD_WEB_URL) PROD_WEB_URL="$value" ;;
       DEV_SERVER_PORT) DEV_SERVER_PORT="$value" ;;
-      ANDROID_EMULATOR_HOST) ANDROID_EMULATOR_HOST="$value" ;;
+      ANDROID_EMULATOR_HOST) ENV_ANDROID_DEV_HOST="$value" ;;
       QA_WEB_URL) QA_WEB_URL="$value" ;;
     esac
   done < "$ENV_FILE"
@@ -44,6 +37,49 @@ DEV_MACHINE_IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>
 if [ -z "$DEV_MACHINE_IP" ]; then
   echo "Warning: Could not detect local IP. Falling back to localhost."
   DEV_MACHINE_IP="localhost"
+fi
+
+detect_android_dev_host() {
+  if ! command -v adb &>/dev/null; then
+    echo "10.0.2.2"
+    return
+  fi
+
+  local devices
+  local has_emulator=0
+  local has_physical_device=0
+
+  devices="$(adb devices -l 2>/dev/null || true)"
+
+  while IFS= read -r line; do
+    [[ -z "$line" || "$line" =~ ^List ]] && continue
+    [[ "$line" != *$'\tdevice'* ]] && continue
+
+    local serial
+    serial="${line%%[[:space:]]*}"
+
+    if [[ "$serial" == emulator-* ]] || [[ "$line" == *"emulator"* ]]; then
+      has_emulator=1
+    else
+      has_physical_device=1
+    fi
+  done <<< "$devices"
+
+  if [ "$has_emulator" -eq 1 ]; then
+    echo "10.0.2.2"
+  elif [ "$has_physical_device" -eq 1 ]; then
+    echo "$DEV_MACHINE_IP"
+  else
+    echo "10.0.2.2"
+  fi
+}
+
+if [ -n "$RUNTIME_ANDROID_DEV_HOST" ]; then
+  ANDROID_EMULATOR_HOST="$RUNTIME_ANDROID_DEV_HOST"
+elif [ -n "$ENV_ANDROID_DEV_HOST" ]; then
+  ANDROID_EMULATOR_HOST="$ENV_ANDROID_DEV_HOST"
+else
+  ANDROID_EMULATOR_HOST="$(detect_android_dev_host)"
 fi
 
 cat > "$CONFIG_FILE" <<EOF

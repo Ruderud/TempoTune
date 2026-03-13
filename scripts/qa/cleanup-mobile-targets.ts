@@ -123,6 +123,7 @@ export function cleanupMobileTargets(
     `${iosAppBundleId}.wda`;
   const androidAppId =
     options.androidAppId ||
+    process.env.QA_ANDROID_APP_PACKAGE ||
     process.env.QA_ANDROID_APP_ID ||
     process.env.QA_ANDROID_PACKAGE ||
     'com.tempotune';

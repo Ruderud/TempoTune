@@ -309,7 +309,7 @@ export function useTuner() {
       unsubError();
       serviceRef.current?.dispose();
     };
-  }, [processDetectedNote]);
+  }, [detectionSettingsRef, processDetectedNote]);
 
   useEffect(() => {
     const pitchConfig = toPitchDetectionConfig(detectionSettings);

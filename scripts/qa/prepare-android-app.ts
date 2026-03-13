@@ -17,9 +17,7 @@ const ANDROID_DIR = resolve(MOBILE_DIR, 'android');
 loadQaEnv();
 
 const APP_PACKAGE =
-  process.env.QA_ANDROID_APP_PACKAGE ||
-  process.env.QA_ANDROID_APP_ID ||
-  'com.tempotune';
+  process.env.QA_ANDROID_APP_PACKAGE || 'com.tempotune';
 const APP_ACTIVITY =
   process.env.QA_ANDROID_APP_ACTIVITY || 'com.tempotune.MainActivity';
 const APK_PATH =
@@ -133,6 +131,9 @@ const buildEnv = {
   QA_USE_DEV_WEB_URL: '1',
   QA_ENABLE_WEBVIEW_DEBUGGING: '1',
   ANDROID_EMULATOR_HOST: 'localhost',
+  TEMPO_TUNE_ALLOW_DEBUG_RELEASE_SIGNING: '1',
+  TEMPO_TUNE_ENABLE_MINIFY_IN_RELEASE: '0',
+  TEMPO_TUNE_ENABLE_SHRINK_RESOURCES_IN_RELEASE: '0',
   ...(process.env.QA_WEB_URL ? { QA_WEB_URL: process.env.QA_WEB_URL } : {}),
 };
 
@@ -145,7 +146,7 @@ if (target.osVersion) {
 console.log(`Package: ${APP_PACKAGE}`);
 console.log(`Activity: ${APP_ACTIVITY}`);
 console.log(`APK: ${APK_PATH}`);
-console.log('Build: Release + embedded JS bundle');
+console.log('Build: Release + embedded JS bundle + QA debug signing override');
 console.log('WebView: QA debug enabled\n');
 
 run('bash scripts/generate-dev-config.sh', MOBILE_DIR, buildEnv);

@@ -1,9 +1,8 @@
 #!/usr/bin/env tsx
 import { spawnSync } from 'node:child_process';
-import { resolve, dirname } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadQaEnv } from './load-qa-env';
-import { resolveIosRealDeviceSigningContext } from './ios-real-device-signing';
 import { stopManagedWebDevServer } from './web-dev-server';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -30,20 +29,11 @@ function runStep(label: string, args: string[], env: Record<string, string>) {
   }
 }
 
-const signing = resolveIosRealDeviceSigningContext();
-
-for (const note of signing.notes) {
-  console.log(`○ ${note}`);
-}
-
 const env: Record<string, string> = {
   QA_PLATFORM: 'ios',
-  QA_DEVICE_MODE: 'connected',
+  QA_DEVICE_MODE: 'booted',
   QA_REQUIRED_APPIUM_DRIVERS: 'xcuitest',
-  QA_IOS_BUNDLE_ID: signing.appBundleId,
-  QA_IOS_UPDATED_WDA_BUNDLE_ID: signing.updatedWdaBundleId,
-  QA_IOS_XCODE_SIGNING_ID: signing.signingId,
-  QA_IOS_USE_NEW_WDA: process.env.QA_IOS_USE_NEW_WDA || '1',
+  QA_IOS_BUNDLE_ID: process.env.QA_IOS_BUNDLE_ID || 'com.rud.tempotune',
   QA_USE_DEV_WEB_URL: '1',
   QA_ENABLE_WEBVIEW_DEBUGGING: '1',
   QA_REQUIRE_WEB_SERVER: '1',
@@ -52,15 +42,16 @@ const env: Record<string, string> = {
     process.env.QA_IOS_SHUTDOWN_SIMULATOR_AFTER_RUN || '1',
 };
 
-if (signing.teamId) {
-  env.QA_IOS_XCODE_ORG_ID = signing.teamId;
+if (process.env.QA_IOS_SIMULATOR_UDID) {
+  env.QA_DEVICE_UDID = process.env.QA_IOS_SIMULATOR_UDID;
 }
 
-console.log('iOS Real Device QA Runner\n');
-console.log(`App bundle: ${signing.appBundleId}`);
-console.log(`WDA bundle: ${signing.updatedWdaBundleId}`);
-console.log(`Signing: ${signing.signingId}`);
-console.log(`Team: ${signing.teamId ?? 'unresolved'}\n`);
+console.log('iOS Simulator QA Runner\n');
+console.log(`App bundle: ${env.QA_IOS_BUNDLE_ID}`);
+if (env.QA_DEVICE_UDID) {
+  console.log(`Preferred simulator UDID: ${env.QA_DEVICE_UDID}`);
+}
+console.log('');
 
 let exitCode = 0;
 
@@ -76,17 +67,12 @@ try {
     env
   );
   runStep(
-    'Prepare iOS real-device QA app',
-    ['exec', 'tsx', 'scripts/qa/prepare-ios-real-device-app.ts'],
+    'Prepare iOS simulator QA app',
+    ['exec', 'tsx', 'scripts/qa/prepare-ios-simulator-app.ts'],
     env
   );
   runStep(
-    'WDA real-device signing probe',
-    ['exec', 'tsx', 'scripts/qa/check-ios-real-device-wda.ts'],
-    env
-  );
-  runStep(
-    'Appium real-device smoke',
+    'Appium simulator smoke',
     ['exec', 'tsx', 'scripts/qa/run-appium.ts', ...passthroughArgs],
     env
   );

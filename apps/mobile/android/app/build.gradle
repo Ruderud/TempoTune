@@ -51,10 +51,71 @@ react {
     autolinkLibrariesWithApp()
 }
 
-/**
- * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
- */
-def enableProguardInReleaseBuilds = false
+def readConfiguredValue = { List<String> propertyNames, List<String> envNames ->
+    for (String propertyName : propertyNames) {
+        def propertyValue = project.findProperty(propertyName)
+        if (propertyValue != null && propertyValue.toString().trim()) {
+            return propertyValue.toString().trim()
+        }
+    }
+
+    for (String envName : envNames) {
+        def envValue = System.getenv(envName)
+        if (envValue != null && envValue.toString().trim()) {
+            return envValue.toString().trim()
+        }
+    }
+
+    return null
+}
+
+def readConfiguredBoolean = { List<String> propertyNames, List<String> envNames, boolean defaultValue ->
+    def configuredValue = readConfiguredValue(propertyNames, envNames)
+    return configuredValue == null ? defaultValue : configuredValue.toBoolean()
+}
+
+def releaseStoreFilePath = readConfiguredValue(
+    ['tempotune.release.storeFile'],
+    ['TEMPO_TUNE_RELEASE_STORE_FILE']
+)
+def releaseStorePassword = readConfiguredValue(
+    ['tempotune.release.storePassword'],
+    ['TEMPO_TUNE_RELEASE_STORE_PASSWORD']
+)
+def releaseKeyAlias = readConfiguredValue(
+    ['tempotune.release.keyAlias'],
+    ['TEMPO_TUNE_RELEASE_KEY_ALIAS']
+)
+def releaseKeyPassword = readConfiguredValue(
+    ['tempotune.release.keyPassword'],
+    ['TEMPO_TUNE_RELEASE_KEY_PASSWORD']
+)
+
+def hasReleaseSigning = [
+    releaseStoreFilePath,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword,
+].every { value -> value != null && value.length() > 0 }
+
+def allowDebugReleaseSigning = readConfiguredBoolean(
+    ['tempotune.allowDebugReleaseSigning'],
+    ['TEMPO_TUNE_ALLOW_DEBUG_RELEASE_SIGNING'],
+    false
+)
+def enableProguardInReleaseBuilds = readConfiguredBoolean(
+    ['tempotune.enableMinifyInRelease'],
+    ['TEMPO_TUNE_ENABLE_MINIFY_IN_RELEASE'],
+    true
+)
+def enableShrinkResourcesInReleaseBuilds = readConfiguredBoolean(
+    ['tempotune.enableShrinkResourcesInRelease'],
+    ['TEMPO_TUNE_ENABLE_SHRINK_RESOURCES_IN_RELEASE'],
+    enableProguardInReleaseBuilds
+)
+def releaseTasksRequested = gradle.startParameter.taskNames.any { taskName ->
+    taskName.toLowerCase().contains('release')
+}
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -89,16 +150,34 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        if (hasReleaseSigning) {
+            release {
+                storeFile file(releaseStoreFilePath)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            if (hasReleaseSigning) {
+                signingConfig signingConfigs.release
+            } else if (allowDebugReleaseSigning) {
+                // QA automation may opt into a debug-signed release APK explicitly.
+                signingConfig signingConfigs.debug
+            } else if (releaseTasksRequested) {
+                throw new GradleException(
+                    'Release signing is not configured. Set TEMPO_TUNE_RELEASE_STORE_FILE, ' +
+                    'TEMPO_TUNE_RELEASE_STORE_PASSWORD, TEMPO_TUNE_RELEASE_KEY_ALIAS, and ' +
+                    'TEMPO_TUNE_RELEASE_KEY_PASSWORD before building a production release.'
+                )
+            }
             minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources enableShrinkResourcesInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
     }

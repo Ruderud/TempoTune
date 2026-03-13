@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import WebView from 'react-native-webview';
 import type { WebViewMessageEvent } from 'react-native-webview';
@@ -23,6 +23,7 @@ import {
 const DEBUG_TUNER_LATENCY = __DEV__;
 const WEBVIEW_DEBUGGING_ENABLED = __DEV__ || QA_ENABLE_WEBVIEW_DEBUGGING;
 const SHOW_QA_DEBUG_BANNER = WEBVIEW_DEBUGGING_ENABLED || Boolean(QA_WEB_URL);
+const SHOULD_LOG_WEBVIEW_EVENTS = WEBVIEW_DEBUGGING_ENABLED;
 
 const getDevWebUrl = (): string => {
   if (Platform.OS === 'ios') {
@@ -49,6 +50,8 @@ const WEB_URL = getWebUrl();
 function App(): React.JSX.Element {
   const webViewRef = useRef<WebView | null>(null);
   const bridgeRef = useRef<BridgeHandler | null>(null);
+  const [webViewStatus, setWebViewStatus] = useState('idle');
+  const [webViewEventUrl, setWebViewEventUrl] = useState(WEB_URL);
 
   useEffect(() => {
     const bridge = new BridgeHandler(webViewRef);
@@ -172,17 +175,29 @@ function App(): React.JSX.Element {
         mediaCapturePermissionGrantType="grantIfSameHostElsePrompt"
         javaScriptEnabled
         onLoadStart={(event) => {
-          console.info(`[webview] load-start ${event.nativeEvent.url}`);
+          setWebViewStatus('load-start');
+          setWebViewEventUrl(event.nativeEvent.url);
+          if (SHOULD_LOG_WEBVIEW_EVENTS) {
+            console.info(`[webview] load-start ${event.nativeEvent.url}`);
+          }
         }}
         onLoadEnd={(event) => {
-          console.info(`[webview] load-end ${event.nativeEvent.url}`);
+          setWebViewStatus('load-end');
+          setWebViewEventUrl(event.nativeEvent.url);
+          if (SHOULD_LOG_WEBVIEW_EVENTS) {
+            console.info(`[webview] load-end ${event.nativeEvent.url}`);
+          }
         }}
         onHttpError={(event) => {
+          setWebViewStatus(`http-error:${event.nativeEvent.statusCode}`);
+          setWebViewEventUrl(event.nativeEvent.url);
           console.error(
             `[webview] http-error ${event.nativeEvent.statusCode} ${event.nativeEvent.description}`
           );
         }}
         onError={(event) => {
+          setWebViewStatus(`load-error:${event.nativeEvent.code}`);
+          setWebViewEventUrl(event.nativeEvent.url);
           console.error(
             `[webview] load-error ${event.nativeEvent.code} ${event.nativeEvent.description}`
           );
@@ -197,6 +212,14 @@ function App(): React.JSX.Element {
             testID="qa-web-url-banner"
           >
             {WEB_URL}
+          </Text>
+          <Text
+            accessibilityLabel={`QA WebView Status ${webViewStatus} ${webViewEventUrl}`}
+            selectable
+            style={styles.qaBannerMetaText}
+            testID="qa-webview-status"
+          >
+            {webViewStatus} {webViewEventUrl}
           </Text>
         </View>
       ) : null}
@@ -225,6 +248,15 @@ const styles = StyleSheet.create({
   qaBannerText: {
     color: '#fff',
     fontSize: 11,
+    fontFamily: Platform.select({
+      ios: 'Menlo',
+      default: 'monospace',
+    }),
+  },
+  qaBannerMetaText: {
+    color: 'rgba(255, 255, 255, 0.82)',
+    fontSize: 10,
+    marginTop: 4,
     fontFamily: Platform.select({
       ios: 'Menlo',
       default: 'monospace',

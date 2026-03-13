@@ -231,12 +231,15 @@ pnpm qa:setup:device:android-emu  # Install Android emulator Appium driver set
 pnpm qa:setup:device:android-real # Install Android real-device Appium driver set
 pnpm qa:setup:device:ios-sim  # Install iOS simulator-only Appium driver
 pnpm qa:setup:device:ios-real # Install iOS real-device Appium driver set
+pnpm qa:ondevice:list         # List available on-device lanes
+pnpm qa:ondevice              # Auto-pick or prompt for connected device / simulator lane
+pnpm qa:ondevice -- --target ios-real   # Run a specific on-device lane
 pnpm qa:device                # Preflight + bootstrap + Appium smoke tests
 pnpm qa:device:android-emu    # Android emulator only, boot emulator if needed, build/install app, run Appium smoke, then shut emulator down
 pnpm qa:device:android-real   # Connected Android device only, build/install QA app, run Appium smoke, then close the app
 pnpm qa:device:ios-sim        # Booted iOS simulator only, build/install app, run Appium smoke, then shut simulator down
 pnpm qa:device:ios-real       # Connected iPhone only, build/install QA app, verify WDA signing, run Appium smoke, then close the app
-pnpm qa:full                  # Layer 2 + Layer 3
+pnpm qa:full                  # lint + type-check + unit + web E2E + selected on-device QA
 ```
 
 For Android local QA, the Android path now uses a Release APK with embedded JS so Metro is not required.
@@ -245,6 +248,7 @@ If you use a local web server instead of `QA_WEB_URL`, the runner will still set
 For the current local setup, `pnpm qa:device:ios-sim` is the fastest path when an iOS simulator is already booted.
 If you already have a connected iPhone, `pnpm qa:device:ios-real` will now build/install the QA app, run the Appium smoke suite, and then terminate the app so a stale WebView error screen is not left open.
 If you already have a connected Android phone, `pnpm qa:device:android-real` will build/install the QA app, run the Appium smoke suite, and then force-stop the app.
+If both a connected device and simulator/emulator are available, `pnpm qa:ondevice` and `pnpm qa:full` will prompt you to choose a lane unless you pass `--target`.
 
 **Appium tests** (`apps/mobile/appium/specs/`):
 
@@ -312,7 +316,7 @@ QA_WEB_URL=https://your-reachable-tempotune-url.example
 
 - Android Studio + SDK + platform-tools
 - `adb` in PATH, device/emulator visible (`adb devices`)
-- Debug APK built and installed
+- QA runner가 release APK를 빌드/설치하므로 수동 디버그 APK 준비는 필수가 아님
 - For WebView debugging: `WebView.setWebContentsDebuggingEnabled(true)` in app
 
 ### Environment Variables (Device E2E)
@@ -337,4 +341,4 @@ QA_WEB_URL=https://your-reachable-tempotune-url.example
 - **Touch target verification** can use browser accessibility overlays (Chrome DevTools → More tools → Rendering → Show hit-test borders)
 - **Contrast ratio** can be checked with browser DevTools color picker or https://webaim.org/resources/contrastchecker/
 - **Playwright reports** are uploaded as CI artifacts (14-day retention)
-- **Appium device tests** are local/self-hosted only — not included in CI
+- **Full Appium device tests** are local/self-hosted; CI runs Android QA preflight only

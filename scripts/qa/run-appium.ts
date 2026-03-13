@@ -546,9 +546,7 @@ const androidApk =
   process.env.QA_ANDROID_APK ||
   resolve(MOBILE_DIR, 'android/app/build/outputs/apk/debug/app-debug.apk');
 const androidAppPackage =
-  process.env.QA_ANDROID_APP_PACKAGE ||
-  process.env.QA_ANDROID_APP_ID ||
-  '';
+  process.env.QA_ANDROID_APP_PACKAGE || '';
 const useInstalledAndroidApp =
   process.env.QA_ANDROID_USE_INSTALLED_APP === '1' ||
   process.env.QA_ANDROID_USE_INSTALLED_APP === 'true' ||

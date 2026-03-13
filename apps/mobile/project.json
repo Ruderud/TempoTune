@@ -71,7 +71,7 @@
     "e2e-device-ios-sim": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "QA_PLATFORM=ios QA_DEVICE_MODE=booted QA_IOS_BUNDLE_ID=com.rud.tempotune QA_IOS_SHUTDOWN_SIMULATOR_AFTER_RUN=1 tsx ../../scripts/qa/run-appium.ts",
+        "command": "tsx ../../scripts/qa/run-ios-simulator.ts",
         "cwd": "apps/mobile"
       }
     },
@@ -86,6 +86,13 @@
       "executor": "nx:run-commands",
       "options": {
         "command": "tsx ../../scripts/qa/discover-mobile-targets.ts",
+        "cwd": "apps/mobile"
+      }
+    },
+    "e2e-device-select": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "tsx ../../scripts/qa/run-ondevice-check.ts",
         "cwd": "apps/mobile"
       }
     },

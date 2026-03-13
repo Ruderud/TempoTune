@@ -90,6 +90,8 @@ pnpm build            # 모든 프로젝트 빌드
 pnpm test             # 모든 프로젝트 테스트 (bridge 회귀 테스트 포함)
 pnpm lint             # 모든 프로젝트 린트
 pnpm type-check       # TypeScript 타입 체크
+pnpm qa:ondevice      # 연결된 실기기/시뮬레이터를 선택해서 on-device QA 실행
+pnpm qa:full          # lint + type-check + unit + web E2E + selected on-device QA
 pnpm format           # 코드 포맷팅 (Prettier)
 ```
 
@@ -190,6 +192,8 @@ tuner.onPitch((result) => {
 ```
 main push → Type Check → Lint → Test → Version Inject → Build & Deploy
 ```
+
+모바일 릴리스/서명 절차는 [docs/mobile-release.md](docs/mobile-release.md)에 정리되어 있습니다.
 
 ## License
 

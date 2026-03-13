@@ -11,6 +11,7 @@ import { execSync, spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ensureManagedWebDevServer } from './web-dev-server';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '../..');
@@ -148,12 +149,24 @@ async function main() {
     console.log('   ✓ Next.js dev server running on :3000');
   } else if (usingExternalQaWebUrl) {
     console.log(`   ○ Skipping local web-server check (QA_WEB_URL=${explicitQaWebUrl})`);
-  } else {
-    console.log('   ○ Not running. Start it with: pnpm --filter @tempo-tune/web dev');
-    if (requireWebServer) {
-      console.log('   ✗ This QA path requires the web server to be running');
+  } else if (requireWebServer) {
+    console.log('   ○ Not running. Starting managed Next.js dev server...');
+    try {
+      const managedServer = await ensureManagedWebDevServer({ port: 3000 });
+      const statusLabel =
+        managedServer.status === 'started' ? 'started by QA' : 'reused existing server';
+      const logSuffix = managedServer.logPath
+        ? ` (log: ${managedServer.logPath})`
+        : '';
+      console.log(`   ✓ Next.js dev server ready on :3000 (${statusLabel})${logSuffix}`);
+    } catch (error) {
+      console.log(
+        `   ✗ ${error instanceof Error ? error.message : String(error)}`
+      );
       process.exit(1);
     }
+  } else {
+    console.log('   ○ Not running. Start it with: pnpm --filter @tempo-tune/web dev');
     console.log('   ⚠ Device tests may fail without the web server');
   }
 

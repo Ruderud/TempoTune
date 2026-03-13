@@ -3,6 +3,7 @@ import type WebView from 'react-native-webview';
 import type {RefObject} from 'react';
 
 type MessageHandler = (data: unknown) => Promise<BridgeResponse>;
+const IS_DEV = typeof __DEV__ !== 'undefined' && __DEV__;
 
 /** Maps a request type to its corresponding response type. */
 const RESPONSE_TYPE: Partial<Record<BridgeMessageType, BridgeMessageType>> = {
@@ -24,14 +25,9 @@ export class BridgeHandler {
   async handleMessage(rawData: string): Promise<void> {
     try {
       const message: BridgeMessage = JSON.parse(rawData);
-      console.log('!!DEBUG [BridgeHandler.handleMessage] type:', message.type);
 
       const handler = this.handlers.get(message.type);
       if (!handler) {
-        console.log(
-          '!!DEBUG [BridgeHandler.handleMessage] unhandled type:',
-          message.type,
-        );
         return;
       }
 
@@ -43,7 +39,9 @@ export class BridgeHandler {
         requestId: message.requestId,
       });
     } catch (error) {
-      console.log('!!DEBUG [BridgeHandler.handleMessage] error:', error);
+      if (IS_DEV) {
+        console.warn('[BridgeHandler.handleMessage] failed to process message', error);
+      }
     }
   }
 
