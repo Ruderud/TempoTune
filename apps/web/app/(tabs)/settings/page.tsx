@@ -82,8 +82,8 @@ export default function SettingsPage() {
         <div className="px-5 lg:px-10 pt-4 lg:pt-8 space-y-4 lg:space-y-6 lg:max-w-4xl">
           {/* Mobile header */}
           <div className="flex items-center justify-between lg:hidden px-1 py-5">
-            <button type="button" onClick={() => window.history.back()} className="p-2 rounded-lg bg-card-soft flex items-center justify-center text-primary/70 border border-border-subtle">
-              <Icon src="/assets/icons/back.svg" size={18} label="뒤로" />
+            <button type="button" aria-label="뒤로" onClick={() => window.history.back()} className="p-2 rounded-lg bg-card-soft flex items-center justify-center text-primary/70 border border-border-subtle">
+              <Icon name="back" size={18} label="뒤로" />
             </button>
             <span className="text-lg font-bold tracking-[0.1em] text-primary">
               설정

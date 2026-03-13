@@ -29,14 +29,14 @@ export function TunerControl({
     <div className="px-4 py-2 space-y-2">
       {/* Mobile: Top bar */}
       <div className="flex items-center justify-between lg:hidden px-2 py-5">
-        <button type="button" className="p-2 rounded-lg bg-white/5 flex items-center justify-center text-primary/60">
-          <Icon src="/assets/icons/menu.svg" size={18} label="메뉴" />
+        <button type="button" aria-label="메뉴" className="p-2 rounded-lg bg-card-soft border border-border-subtle flex items-center justify-center text-primary/70">
+          <Icon name="menu" size={18} label="메뉴" />
         </button>
         <span className="text-lg font-bold tracking-[0.1em] text-primary">
           TEMPOTUNE
         </span>
-        <button type="button" className="p-2 rounded-lg bg-white/5 flex items-center justify-center text-primary/60">
-          <Icon src="/assets/icons/settings.svg" size={20} label="설정" />
+        <button type="button" aria-label="설정" className="p-2 rounded-lg bg-card-soft border border-border-subtle flex items-center justify-center text-primary/70">
+          <Icon name="settings" size={20} label="설정" />
         </button>
       </div>
 
@@ -47,7 +47,7 @@ export function TunerControl({
           className="flex-1 flex items-center justify-center gap-2 bg-surface border border-primary/20 min-h-[44px] py-2.5 rounded-lg text-sm font-medium hover:bg-primary/10 transition-colors"
           disabled={isListening}
         >
-          <span className="text-xs text-primary">⚙</span>
+          <Icon name="controls" size={16} className="text-primary" label="프리셋 옵션" />
           <select
             data-testid="tuner-preset-select"
             value={`${currentPreset.instrument}-${currentPreset.name}`}
@@ -58,13 +58,13 @@ export function TunerControl({
               if (preset) onPresetChange(preset);
             }}
             disabled={isListening}
-            className="bg-transparent text-white text-sm font-medium border-none outline-none cursor-pointer"
+            className="bg-transparent text-text-primary text-sm font-medium border-none outline-none cursor-pointer"
           >
             {ALL_TUNING_PRESETS.map((preset) => (
               <option
                 key={`${preset.instrument}-${preset.name}`}
                 value={`${preset.instrument}-${preset.name}`}
-                className="bg-surface text-white"
+                className="bg-surface text-text-primary"
               >
                 {preset.instrument === 'guitar' ? '기타' : '베이스'} {preset.name}
               </option>
@@ -106,7 +106,12 @@ export function TunerControl({
           onClick={isListening ? onStop : onStart}
           className="px-5 min-h-[44px] rounded-lg font-bold text-sm shadow-lg flex items-center gap-2 transition-all bg-primary text-background-dark shadow-primary/20"
         >
-          <span className="text-sm">{isListening ? '⏸' : '▶'}</span>
+          <Icon
+            name={isListening ? 'pause' : 'play'}
+            size={16}
+            className="text-background-dark"
+            label={isListening ? '중지' : '시작'}
+          />
           <span>{isListening ? '중지' : '시작'}</span>
         </button>
       </div>

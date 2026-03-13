@@ -57,9 +57,10 @@ export function TapTempo({ onBpmDetected }: TapTempoProps) {
         data-testid="tap-tempo-button"
         type="button"
         onClick={handleTap}
+        aria-label="탭 템포"
         className="w-24 h-24 rounded-full bg-surface border-2 border-primary/30 flex items-center justify-center transition-all hover:border-primary/60 active:scale-95 active:bg-primary/20"
       >
-        <Icon src="/assets/icons/clock.svg" size={32} className="text-primary" label="탭 템포" />
+        <Icon name="clock" size={32} className="text-primary" label="탭 템포" />
       </button>
 
       <div className="text-center">
