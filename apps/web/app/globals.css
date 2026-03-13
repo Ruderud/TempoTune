@@ -1,23 +1,46 @@
 @import "tailwindcss";
 
 @theme {
-  /* Primary accent — Stitch SSOT cyan */
-  --color-primary: #0df2f2;
+  /* Restrained studio palette:
+     teal for primary interaction, warm ivory contrast, coral for alerts */
+  --color-primary: #1d7874;
+  --color-background-dark: #f4f1de;
+  --color-background: #fcfaf3;
+  --color-surface: #ffffff;
+  --color-surface-darker: #e8f0ed;
+  --color-neutral-dark: #d7e5df;
+  --color-card-soft: #f8fbfa;
+  --color-card-strong: #e6eeeb;
+  --color-border-subtle: #cad7d3;
+  --color-overlay: #eef4f1;
+  --color-overlay-strong: #dde7e3;
+  --color-text-strong: #071e22;
+  --color-text-primary: #16323f;
+  --color-text-secondary: #355763;
+  --color-text-muted: #61767e;
+  --color-danger: #bb3e54;
+  --color-danger-soft: #f6dde2;
+  --color-accent-muted: color-mix(in srgb, var(--color-primary) 16%, transparent);
+}
 
-  /* Background hierarchy (dark → light) */
-  --color-background-dark: #0a1112;
-  --color-background: #102222;
-  --color-surface: #1a2e2e;
-  --color-surface-darker: #0a1717;
-  --color-neutral-dark: #162e2e;
-
-  /* Text hierarchy */
-  --color-text-primary: #e2e8f0;
-  --color-text-secondary: #cbd5e1;
-  --color-text-muted: #94a3b8;
-
-  /* Accent variants */
-  --color-accent-muted: rgba(13, 242, 242, 0.2);
+:root[data-theme='dark'] {
+  --color-primary: #58b09c;
+  --color-background-dark: #071e22;
+  --color-background: #0c252b;
+  --color-surface: #16323f;
+  --color-surface-darker: #102a35;
+  --color-neutral-dark: #1d4350;
+  --color-card-soft: #112a35;
+  --color-card-strong: #183744;
+  --color-border-subtle: #274857;
+  --color-overlay: #0c2026;
+  --color-overlay-strong: #07161b;
+  --color-text-strong: #f4f1de;
+  --color-text-primary: #e6f0ee;
+  --color-text-secondary: #cfe8e6;
+  --color-text-muted: #90aba8;
+  --color-danger: #ff7d87;
+  --color-danger-soft: #4b1f28;
 }
 
 /* ── Base: resets & element defaults ── */
@@ -38,10 +61,32 @@
     font-family: var(--font-space-grotesk), var(--font-noto-sans-kr), ui-sans-serif, system-ui, sans-serif;
   }
 
+  html {
+    background: var(--color-background-dark);
+    color: var(--color-text-primary);
+    color-scheme: light;
+  }
+
+  html[data-theme='dark'] {
+    color-scheme: dark;
+  }
+
   body {
     padding-top: env(safe-area-inset-top);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    background:
+      radial-gradient(
+        circle at top,
+        color-mix(in srgb, var(--color-primary) 14%, transparent),
+        transparent 48%
+      ),
+      var(--color-background-dark);
+    color: var(--color-text-primary);
+    transition:
+      background-color 0.25s ease,
+      color 0.25s ease,
+      border-color 0.25s ease;
   }
 }
 
@@ -58,60 +103,73 @@
 
   /* Glow effects */
   .glow-primary {
-    box-shadow: 0 0 15px rgba(13, 242, 242, 0.4);
+    box-shadow: 0 0 18px color-mix(in srgb, var(--color-primary) 36%, transparent);
   }
 
   .glow-primary-strong {
-    box-shadow: 0 0 25px rgba(13, 242, 242, 0.6);
+    box-shadow: 0 0 30px color-mix(in srgb, var(--color-primary) 54%, transparent);
   }
 
   .glow-beat {
-    box-shadow: 0 0 30px rgba(6, 249, 249, 0.6);
+    box-shadow: 0 0 30px color-mix(in srgb, var(--color-primary) 52%, transparent);
   }
 
   .glow-text {
-    text-shadow: 0 0 20px rgba(15, 212, 230, 0.4);
+    text-shadow: 0 0 20px color-mix(in srgb, var(--color-primary) 40%, transparent);
   }
 
   /* Glass morphism */
   .glass-nav {
-    background: rgba(10, 17, 18, 0.85);
+    background: color-mix(in srgb, var(--color-overlay) 84%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid rgba(13, 242, 242, 0.1);
+    border-top: 1px solid color-mix(in srgb, var(--color-primary) 14%, transparent);
   }
 
   .glass-card {
-    background: rgba(26, 46, 46, 0.7);
+    background: color-mix(in srgb, var(--color-surface) 76%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(13, 242, 242, 0.1);
+    border: 1px solid color-mix(in srgb, var(--color-border-subtle) 70%, transparent);
   }
 
   .glass-panel {
-    background: rgba(15, 35, 35, 0.7);
+    background: color-mix(in srgb, var(--color-overlay-strong) 82%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(6, 249, 249, 0.1);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 16%, transparent);
   }
 
   /* Domain-specific */
   .graph-gradient {
-    background: linear-gradient(180deg, rgba(13, 242, 242, 0.15) 0%, rgba(13, 242, 242, 0) 100%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-primary) 18%, transparent) 0%,
+      transparent 100%
+    );
   }
 
   .headstock-bg {
-    background: linear-gradient(180deg, rgba(26, 46, 46, 0.8) 0%, rgba(16, 34, 34, 1) 100%);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-surface) 84%, transparent) 0%,
+      var(--color-background) 100%
+    );
   }
 
   .active-string-glow {
-    box-shadow: 0 0 20px rgba(13, 242, 242, 0.3);
-    border-color: rgba(13, 242, 242, 0.6);
+    box-shadow: 0 0 20px color-mix(in srgb, var(--color-primary) 32%, transparent);
+    border-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
   }
 
   /* Skeleton loading */
   .skeleton-pulse {
-    background: linear-gradient(90deg, #1a2e2e 25%, #2a4242 50%, #1a2e2e 75%);
+    background: linear-gradient(
+      90deg,
+      var(--color-card-soft) 25%,
+      var(--color-card-strong) 50%,
+      var(--color-card-soft) 75%
+    );
     background-size: 200% 100%;
     animation: skeleton-shimmer 1.5s ease-in-out infinite;
   }
@@ -121,9 +179,16 @@
     animation: breathe 3s ease-in-out infinite;
   }
 
-  /* Slider (cyan primary) */
+  /* Slider */
   input[type='range'].slider {
     position: relative;
+    background: linear-gradient(
+      to right,
+      var(--color-primary) 0%,
+      var(--color-primary) var(--slider-progress, 0%),
+      var(--color-card-strong) var(--slider-progress, 0%),
+      var(--color-card-strong) 100%
+    );
   }
 
   input[type='range'].slider::-webkit-slider-thumb {
@@ -131,38 +196,64 @@
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #0df2f2 0%, #0bb8b8 100%);
+    background: linear-gradient(
+      135deg,
+      var(--color-primary) 0%,
+      color-mix(in srgb, var(--color-primary) 70%, var(--color-background-dark)) 100%
+    );
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(13, 242, 242, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 2px 8px color-mix(in srgb, var(--color-primary) 38%, transparent),
+      0 0 0 2px color-mix(in srgb, var(--color-surface) 70%, transparent);
     transition: all 0.2s ease;
   }
 
   input[type='range'].slider::-webkit-slider-thumb:hover {
-    background: linear-gradient(135deg, #3ff5f5 0%, #0df2f2 100%);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-primary) 75%, white) 0%,
+      var(--color-primary) 100%
+    );
     transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(13, 242, 242, 0.6), 0 0 0 3px rgba(255, 255, 255, 0.15);
+    box-shadow:
+      0 4px 12px color-mix(in srgb, var(--color-primary) 48%, transparent),
+      0 0 0 3px color-mix(in srgb, var(--color-surface) 78%, transparent);
   }
 
   input[type='range'].slider::-webkit-slider-thumb:active {
     transform: scale(1.05);
-    box-shadow: 0 2px 8px rgba(13, 242, 242, 0.5), 0 0 0 2px rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 2px 8px color-mix(in srgb, var(--color-primary) 44%, transparent),
+      0 0 0 2px color-mix(in srgb, var(--color-surface) 70%, transparent);
   }
 
   input[type='range'].slider::-moz-range-thumb {
     width: 24px;
     height: 24px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #0df2f2 0%, #0bb8b8 100%);
+    background: linear-gradient(
+      135deg,
+      var(--color-primary) 0%,
+      color-mix(in srgb, var(--color-primary) 70%, var(--color-background-dark)) 100%
+    );
     cursor: pointer;
     border: none;
-    box-shadow: 0 2px 8px rgba(13, 242, 242, 0.4), 0 0 0 2px rgba(255, 255, 255, 0.1);
+    box-shadow:
+      0 2px 8px color-mix(in srgb, var(--color-primary) 38%, transparent),
+      0 0 0 2px color-mix(in srgb, var(--color-surface) 70%, transparent);
     transition: all 0.2s ease;
   }
 
   input[type='range'].slider::-moz-range-thumb:hover {
-    background: linear-gradient(135deg, #3ff5f5 0%, #0df2f2 100%);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-primary) 75%, white) 0%,
+      var(--color-primary) 100%
+    );
     transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(13, 242, 242, 0.6), 0 0 0 3px rgba(255, 255, 255, 0.15);
+    box-shadow:
+      0 4px 12px color-mix(in srgb, var(--color-primary) 48%, transparent),
+      0 0 0 3px color-mix(in srgb, var(--color-surface) 78%, transparent);
   }
 
   input[type='range'].slider::-moz-range-thumb:active {
@@ -182,16 +273,20 @@
 
   /* Grid background (desktop) */
   .grid-bg {
-    background-image: radial-gradient(circle at 2px 2px, rgba(13, 242, 242, 0.05) 1px, transparent 0);
+    background-image: radial-gradient(
+      circle at 2px 2px,
+      color-mix(in srgb, var(--color-primary) 8%, transparent) 1px,
+      transparent 0
+    );
     background-size: 40px 40px;
   }
 
   /* Glass footer (desktop status bar) */
   .glass-footer {
-    background: rgba(10, 17, 18, 0.9);
+    background: color-mix(in srgb, var(--color-overlay) 88%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-top: 1px solid rgba(13, 242, 242, 0.08);
+    border-top: 1px solid color-mix(in srgb, var(--color-primary) 10%, transparent);
   }
 }
 
@@ -202,8 +297,8 @@
 }
 
 @keyframes breathe {
-  0%, 100% { box-shadow: 0 0 15px rgba(13, 242, 242, 0.2); }
-  50% { box-shadow: 0 0 25px rgba(13, 242, 242, 0.5); }
+  0%, 100% { box-shadow: 0 0 15px color-mix(in srgb, var(--color-primary) 22%, transparent); }
+  50% { box-shadow: 0 0 25px color-mix(in srgb, var(--color-primary) 48%, transparent); }
 }
 
 @keyframes fadeIn {

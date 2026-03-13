@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from 'next';
 import { Space_Grotesk, Noto_Sans_KR } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
+import { getThemeBootstrapScript } from '../lib/theme';
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ['latin'],
@@ -43,8 +45,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko">
-      <body className={`${spaceGrotesk.variable} ${notoSansKr.variable} bg-background-dark text-white min-h-screen`}>
+    <html lang="ko" suppressHydrationWarning>
+      <body className={`${spaceGrotesk.variable} ${notoSansKr.variable} bg-background-dark text-text-primary min-h-screen`}>
+        <Script id="theme-bootstrap" strategy="beforeInteractive">
+          {getThemeBootstrapScript()}
+        </Script>
         {children}
       </body>
     </html>

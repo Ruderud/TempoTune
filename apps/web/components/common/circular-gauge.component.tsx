@@ -18,9 +18,9 @@ export function CircularGauge({ value, maxValue = 50, size = 200 }: CircularGaug
   // Color based on accuracy
   const getColor = () => {
     const absValue = Math.abs(value);
-    if (absValue <= 5) return '#10b981'; // green - accurate
-    if (absValue <= 15) return '#eab308'; // yellow - close
-    return '#ef4444'; // red - off
+    if (absValue <= 5) return 'var(--color-primary)';
+    if (absValue <= 15) return 'var(--color-text-secondary)';
+    return 'var(--color-danger)';
   };
 
   const color = getColor();
@@ -45,7 +45,7 @@ export function CircularGauge({ value, maxValue = 50, size = 200 }: CircularGaug
         <path
           d={`M ${center - radius} ${center} A ${radius} ${radius} 0 0 1 ${center + radius} ${center}`}
           fill="none"
-          stroke="#374151"
+          stroke="var(--color-border-subtle)"
           strokeWidth="8"
           strokeLinecap="round"
         />
@@ -65,7 +65,7 @@ export function CircularGauge({ value, maxValue = 50, size = 200 }: CircularGaug
           y1={center - radius - 10}
           x2={center}
           y2={center - radius + 5}
-          stroke="#ffffff"
+          stroke="var(--color-text-strong)"
           strokeWidth="3"
           strokeLinecap="round"
         />
@@ -75,7 +75,7 @@ export function CircularGauge({ value, maxValue = 50, size = 200 }: CircularGaug
           x={center}
           y={center - 10}
           textAnchor="middle"
-          className="text-4xl font-bold fill-white"
+          className="text-4xl font-bold fill-[var(--color-text-strong)]"
         >
           {value > 0 ? '+' : ''}{value.toFixed(0)}
         </text>
@@ -83,14 +83,14 @@ export function CircularGauge({ value, maxValue = 50, size = 200 }: CircularGaug
           x={center}
           y={center + 15}
           textAnchor="middle"
-          className="text-sm fill-gray-400"
+          className="text-sm fill-[var(--color-text-muted)]"
         >
           cents
         </text>
       </svg>
 
       {/* Labels */}
-      <div className="flex justify-between w-full max-w-[180px] mt-2 text-xs text-gray-500">
+      <div className="flex justify-between w-full max-w-[180px] mt-2 text-xs text-text-muted">
         <span>-{maxValue}</span>
         <span>0</span>
         <span>+{maxValue}</span>

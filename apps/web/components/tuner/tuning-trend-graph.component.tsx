@@ -23,9 +23,9 @@ const GRAPH_BOTTOM = 86;
 
 function getTrendColor(cents: number): string {
   const abs = Math.abs(cents);
-  if (abs < 5) return '#0df2f2';
-  if (abs < 15) return '#0df2f2';
-  return '#0df2f2';
+  if (abs < 5) return 'var(--color-primary)';
+  if (abs < 15) return 'var(--color-primary)';
+  return 'var(--color-primary)';
 }
 
 function centsToY(cents: number): number {
@@ -77,7 +77,7 @@ export function TuningTrendGraph({
   const confidenceColor =
     confidence >= confidenceGate ? 'text-primary border-primary/30 bg-primary/10'
       : confidence > 0.12 ? 'text-primary/60 border-primary/20 bg-primary/5'
-      : 'text-gray-400 border-gray-700 bg-gray-900/70';
+      : 'text-text-muted border-border-subtle bg-card-soft';
 
   const lastIndex = history.length - 1;
   const lastX = lastIndex <= 0 ? 0 : (lastIndex / (MAX_POINTS - 1)) * 100;
@@ -99,14 +99,14 @@ export function TuningTrendGraph({
               {confidenceLabel}
             </span>
           </div>
-          <span className="text-xs font-semibold tabular-nums shrink-0" style={{ color: hasSignal ? trendColor : '#6b7280' }}>
+          <span className="text-xs font-semibold tabular-nums shrink-0" style={{ color: hasSignal ? trendColor : 'var(--color-text-muted)' }}>
             {isLowConfidence && isListening ? '신뢰도 낮음' : label}
           </span>
         </div>
       ) : (
         <div className="flex items-center justify-between gap-2">
           <span className="text-xs font-semibold text-primary/80">음정 편차</span>
-          <span className="text-xs font-semibold tabular-nums shrink-0" style={{ color: hasSignal ? trendColor : '#6b7280' }}>
+          <span className="text-xs font-semibold tabular-nums shrink-0" style={{ color: hasSignal ? trendColor : 'var(--color-text-muted)' }}>
             {isLowConfidence && isListening ? '신뢰도 낮음' : label}
           </span>
         </div>
@@ -118,11 +118,11 @@ export function TuningTrendGraph({
         role="img"
         aria-label="목표 음정 대비 실시간 편차 그래프"
       >
-        <line x1="0" y1={centsToY(15)} x2="100" y2={centsToY(15)} stroke="rgba(13, 242, 242, 0.15)" strokeWidth="0.8" />
-        <line x1="0" y1={centsToY(5)} x2="100" y2={centsToY(5)} stroke="rgba(13, 242, 242, 0.25)" strokeWidth="0.8" />
-        <line x1="0" y1={centsToY(0)} x2="100" y2={centsToY(0)} stroke="rgba(13, 242, 242, 0.5)" strokeWidth="1" />
-        <line x1="0" y1={centsToY(-5)} x2="100" y2={centsToY(-5)} stroke="rgba(13, 242, 242, 0.25)" strokeWidth="0.8" />
-        <line x1="0" y1={centsToY(-15)} x2="100" y2={centsToY(-15)} stroke="rgba(13, 242, 242, 0.15)" strokeWidth="0.8" />
+        <line x1="0" y1={centsToY(15)} x2="100" y2={centsToY(15)} style={{ stroke: 'color-mix(in srgb, var(--color-primary) 16%, transparent)' }} strokeWidth="0.8" />
+        <line x1="0" y1={centsToY(5)} x2="100" y2={centsToY(5)} style={{ stroke: 'color-mix(in srgb, var(--color-primary) 26%, transparent)' }} strokeWidth="0.8" />
+        <line x1="0" y1={centsToY(0)} x2="100" y2={centsToY(0)} style={{ stroke: 'color-mix(in srgb, var(--color-primary) 52%, transparent)' }} strokeWidth="1" />
+        <line x1="0" y1={centsToY(-5)} x2="100" y2={centsToY(-5)} style={{ stroke: 'color-mix(in srgb, var(--color-primary) 26%, transparent)' }} strokeWidth="0.8" />
+        <line x1="0" y1={centsToY(-15)} x2="100" y2={centsToY(-15)} style={{ stroke: 'color-mix(in srgb, var(--color-primary) 16%, transparent)' }} strokeWidth="0.8" />
 
         {history.length > 1 && (
           <polyline

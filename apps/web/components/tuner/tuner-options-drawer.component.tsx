@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import type { HeadstockLayout } from './guitar-headstock.component';
 
 type TunerDetectionSettings = {
@@ -46,19 +46,27 @@ export function TunerOptionsDrawer({
     const clamped = Math.max(MIN_REFERENCE_FREQ, Math.min(MAX_REFERENCE_FREQ, value));
     onReferenceFrequencyChange(clamped);
   };
+  const getSliderStyle = (
+    value: number,
+    min: number,
+    max: number,
+  ): CSSProperties =>
+    ({
+      ['--slider-progress' as string]: `${((value - min) / (max - min)) * 100}%`,
+    }) as CSSProperties;
 
   const presetButtonClass = (preset: Exclude<SensitivityPreset, 'custom'>) =>
     `px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${
       sensitivityPreset === preset
         ? 'bg-primary/20 text-primary border-primary/50'
-        : 'bg-surface text-gray-300 border-primary/20 hover:bg-surface/70'
+        : 'bg-surface text-text-primary border-primary/20 hover:bg-surface/70'
     }`;
 
   const headstockButtonClass = (layout: HeadstockLayout) =>
     `p-2 rounded-lg border transition-colors text-left ${
       headstockLayout === layout
         ? 'bg-primary/20 text-primary border-primary/50'
-        : 'bg-surface text-gray-300 border-primary/20 hover:bg-surface/70'
+        : 'bg-surface text-text-primary border-primary/20 hover:bg-surface/70'
     }`;
 
   const optionsContent = (
@@ -85,7 +93,8 @@ export function TunerOptionsDrawer({
             step={1}
             value={referenceFrequency}
             onChange={(e) => updateReferenceFrequency(Number(e.target.value))}
-            className="flex-1 h-2 bg-surface rounded-full appearance-none cursor-pointer slider"
+            className="flex-1 h-2 rounded-full appearance-none cursor-pointer slider"
+            style={getSliderStyle(referenceFrequency, MIN_REFERENCE_FREQ, MAX_REFERENCE_FREQ)}
             aria-label="A4 기준 주파수"
           />
           <button
@@ -128,7 +137,8 @@ export function TunerOptionsDrawer({
             step={0.01}
             value={detectionSettings.confidenceGate}
             onChange={(e) => onDetectionSettingsChange({ confidenceGate: Number(e.target.value) })}
-            className="flex-1 h-2 bg-surface rounded-full appearance-none cursor-pointer slider"
+            className="flex-1 h-2 rounded-full appearance-none cursor-pointer slider"
+            style={getSliderStyle(detectionSettings.confidenceGate, 0.1, 0.75)}
           />
           <span className="text-xs text-primary tabular-nums w-10 text-right">{detectionSettings.confidenceGate.toFixed(2)}</span>
         </div>
@@ -141,7 +151,8 @@ export function TunerOptionsDrawer({
             step={0.001}
             value={detectionSettings.rmsThreshold}
             onChange={(e) => onDetectionSettingsChange({ rmsThreshold: Number(e.target.value) })}
-            className="flex-1 h-2 bg-surface rounded-full appearance-none cursor-pointer slider"
+            className="flex-1 h-2 rounded-full appearance-none cursor-pointer slider"
+            style={getSliderStyle(detectionSettings.rmsThreshold, 0.001, 0.05)}
           />
           <span className="text-xs text-primary tabular-nums w-10 text-right">{detectionSettings.rmsThreshold.toFixed(3)}</span>
         </div>
@@ -167,7 +178,7 @@ export function TunerOptionsDrawer({
         <div className="flex items-center justify-between text-xs text-primary/60">
           <span>라우드니스 보정</span>
           <div className="w-10 h-5 rounded-full bg-surface border border-primary/20 relative">
-            <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-text-muted" />
+            <div className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-card-strong border border-border-subtle" />
           </div>
         </div>
       </div>
@@ -197,7 +208,7 @@ export function TunerOptionsDrawer({
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-50 bg-black/50"
+            className="fixed inset-0 z-50 bg-overlay-strong/70"
             onClick={() => setIsOpen(false)}
             aria-hidden="true"
           />

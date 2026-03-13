@@ -26,8 +26,8 @@ export function StringIndicator({ strings, activeString }: StringIndicatorProps)
               w-12 h-12 rounded-full flex items-center justify-center
               font-bold text-lg transition-all duration-200
               ${isActive
-                ? 'bg-gray-800 text-green-400 ring-2 ring-green-400 shadow-lg shadow-green-500/30 scale-110'
-                : 'bg-gray-800/60 text-gray-400 hover:bg-gray-800'
+                ? 'bg-primary/15 text-primary ring-2 ring-primary shadow-lg shadow-primary/20 scale-110'
+                : 'bg-card-soft text-text-muted border border-border-subtle hover:bg-card-strong'
               }
             `}
           >

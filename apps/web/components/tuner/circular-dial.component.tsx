@@ -15,8 +15,9 @@ function getStatusLabel(cents: number, hasSignal: boolean, isListening: boolean)
   if (!hasSignal) return { text: '수음 대기 중', color: 'text-text-muted' };
   const abs = Math.abs(cents);
   if (abs < 5) return { text: '정확함', color: 'text-primary' };
-  if (cents > 0) return { text: '약간 높음', color: 'text-amber-400' };
-  return { text: '약간 낮음', color: 'text-amber-400' };
+  if (abs < 15) return { text: cents > 0 ? '약간 높음' : '약간 낮음', color: 'text-text-secondary' };
+  if (cents > 0) return { text: '높음', color: 'text-danger' };
+  return { text: '낮음', color: 'text-danger' };
 }
 
 export function CircularDial({
@@ -36,6 +37,7 @@ export function CircularDial({
   const normalizedCents = hasSignal ? Math.max(-50, Math.min(50, centsFromTarget)) : 0;
   const progress = (normalizedCents + 50) / 100; // 0 = -50c, 0.5 = 0c, 1 = +50c
   const isInTune = hasSignal && Math.abs(centsFromTarget) < 5;
+  const isNearTune = hasSignal && Math.abs(centsFromTarget) < 15;
 
   // SVG arc parameters
   const cx = 144;
@@ -70,7 +72,7 @@ export function CircularDial({
           <path
             d={arcPath(startAngle, endAngle)}
             fill="none"
-            stroke="rgba(13, 242, 242, 0.1)"
+            style={{ stroke: 'color-mix(in srgb, var(--color-primary) 12%, transparent)' }}
             strokeWidth="6"
             strokeLinecap="round"
           />
@@ -80,7 +82,13 @@ export function CircularDial({
             <path
               d={arcPath(startAngle, needleAngle)}
               fill="none"
-              stroke={isInTune ? '#0df2f2' : 'rgba(13, 242, 242, 0.5)'}
+              style={{
+                stroke: isInTune
+                  ? 'var(--color-primary)'
+                  : isNearTune
+                    ? 'var(--color-text-secondary)'
+                    : 'var(--color-danger)',
+              }}
               strokeWidth="6"
               strokeLinecap="round"
             />
@@ -96,7 +104,7 @@ export function CircularDial({
             return (
               <line
                 x1={outerX} y1={outerY} x2={innerX} y2={innerY}
-                stroke="#0df2f2" strokeWidth="2" strokeLinecap="round"
+                style={{ stroke: 'var(--color-primary)' }} strokeWidth="2" strokeLinecap="round"
               />
             );
           })()}
@@ -112,7 +120,7 @@ export function CircularDial({
               <line
                 key={p}
                 x1={outerX} y1={outerY} x2={innerX} y2={innerY}
-                stroke="rgba(13, 242, 242, 0.3)" strokeWidth="1.5" strokeLinecap="round"
+                style={{ stroke: 'color-mix(in srgb, var(--color-primary) 34%, transparent)' }} strokeWidth="1.5" strokeLinecap="round"
               />
             );
           })}
@@ -123,8 +131,13 @@ export function CircularDial({
               cx={needleTipX}
               cy={needleTipY}
               r="5"
-              fill={isInTune ? '#0df2f2' : 'rgba(13, 242, 242, 0.7)'}
-              className={isInTune ? 'drop-shadow-[0_0_6px_rgba(13,242,242,0.8)]' : ''}
+              style={{
+                fill: isInTune
+                  ? 'var(--color-primary)'
+                  : isNearTune
+                    ? 'var(--color-text-secondary)'
+                    : 'var(--color-danger)',
+              }}
             />
           )}
         </svg>
@@ -133,7 +146,7 @@ export function CircularDial({
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <span className="text-xs text-text-muted mb-1">현재 음악대</span>
           <div className="flex items-baseline">
-            <span className={`text-7xl font-black tracking-tight leading-none ${isInTune ? 'text-primary glow-text' : 'text-white'}`}>
+            <span className={`text-7xl font-black tracking-tight leading-none ${isInTune ? 'text-primary glow-text' : 'text-text-strong'}`}>
               {noteName}
             </span>
             {octave !== '' && (

@@ -43,7 +43,7 @@ export function MetronomeDisplay({
                   w-4 h-4 lg:w-6 lg:h-6 rounded-full transition-all duration-100
                   ${isCurrentBeat
                     ? 'bg-primary ring-4 ring-primary/20'
-                    : 'bg-zinc-800'
+                    : 'bg-card-strong'
                   }
                 `}
               />
@@ -54,11 +54,11 @@ export function MetronomeDisplay({
 
       {/* BPM Display */}
       <div className="flex flex-col items-center">
-        <span className="text-8xl lg:text-[160px] font-bold tracking-tighter tabular-nums leading-none text-[#f1f5f9]">
+        <span className="text-8xl lg:text-[160px] font-bold tracking-tighter tabular-nums leading-none text-text-strong">
           {bpm}
         </span>
         <span className="text-primary tracking-[0.4em] font-medium text-sm lg:text-xl mt-2">BPM</span>
-        <span className="text-xs lg:text-sm text-white/40 mt-1 uppercase">{tempoMarking}</span>
+        <span className="text-xs lg:text-sm text-text-muted mt-1 uppercase">{tempoMarking}</span>
       </div>
     </div>
   );

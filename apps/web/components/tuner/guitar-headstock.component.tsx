@@ -44,7 +44,7 @@ function GuitarHeadstockInner({
     if (isDetected) {
       return 'bg-primary/10 text-primary/80 ring-2 ring-primary/40 shadow-lg shadow-primary/20';
     }
-    return 'bg-surface text-gray-300 border border-primary/20 hover:bg-surface/80 hover:text-white';
+    return 'bg-surface text-text-primary border border-primary/20 hover:bg-surface/80 hover:text-text-strong';
   };
 
   // Fallback to simple button list if string count doesn't match anchor config
@@ -53,8 +53,8 @@ function GuitarHeadstockInner({
   if (!useOverlayMode) {
     return (
       <div className="relative w-full max-w-[280px] mx-auto select-none">
-        <div className="flex flex-col gap-2 p-4 bg-gray-900/50 rounded-lg">
-          <p className="text-xs text-gray-400 text-center mb-2">현재 프리셋은 기본 버튼 UI를 사용합니다</p>
+        <div className="flex flex-col gap-2 p-4 bg-card-soft rounded-lg border border-border-subtle">
+          <p className="text-xs text-text-muted text-center mb-2">현재 프리셋은 기본 버튼 UI를 사용합니다</p>
           <div className="flex flex-wrap gap-2 justify-center">
             {strings.map((string, index) => (
               <button
@@ -71,10 +71,10 @@ function GuitarHeadstockInner({
           </div>
         </div>
 
-        <div className="mt-2 flex items-center justify-center gap-3 text-xs text-gray-400">
-          <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-400" />목표</span>
-          <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" />감지</span>
-          <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400" />일치</span>
+        <div className="mt-2 flex items-center justify-center gap-3 text-xs text-primary/60">
+          <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary" />목표</span>
+          <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/60" />감지</span>
+          <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary glow-primary" />일치</span>
         </div>
       </div>
     );
@@ -102,8 +102,8 @@ function GuitarHeadstockInner({
               transform: 'translate(-50%, -50%)',
             }}
           >
-            <div className="w-3 h-3 bg-red-500 rounded-full border border-white shadow-lg" />
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-1 rounded whitespace-nowrap">
+            <div className="w-3 h-3 bg-danger rounded-full border border-surface shadow-lg" />
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-overlay-strong text-text-strong text-xs px-1 rounded whitespace-nowrap border border-border-subtle">
               {index}
             </div>
           </div>
@@ -177,7 +177,7 @@ function GuitarHeadstockFallback({
     if (isDetected) {
       return 'bg-primary/10 text-primary/80 ring-2 ring-primary/40 shadow-lg shadow-primary/20';
     }
-    return 'bg-surface text-gray-300 border border-primary/20 hover:bg-surface/80 hover:text-white';
+    return 'bg-surface text-text-primary border border-primary/20 hover:bg-surface/80 hover:text-text-strong';
   };
 
   const useOverlayMode = strings.length === spec.anchors.length && strings.length === spec.stringToAnchorMap.length;
@@ -185,8 +185,8 @@ function GuitarHeadstockFallback({
   if (!useOverlayMode) {
     return (
       <div className="relative w-full max-w-[280px] mx-auto select-none">
-        <div className="flex flex-col gap-2 p-4 bg-gray-900/50 rounded-lg">
-          <p className="text-xs text-gray-400 text-center mb-2">현재 프리셋은 기본 버튼 UI를 사용합니다</p>
+        <div className="flex flex-col gap-2 p-4 bg-card-soft rounded-lg border border-border-subtle">
+          <p className="text-xs text-text-muted text-center mb-2">현재 프리셋은 기본 버튼 UI를 사용합니다</p>
           <div className="flex flex-wrap gap-2 justify-center">
             {strings.map((string, index) => (
               <button
@@ -203,10 +203,10 @@ function GuitarHeadstockFallback({
           </div>
         </div>
 
-        <div className="mt-2 flex items-center justify-center gap-3 text-xs text-gray-400">
-          <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-sky-400" />목표</span>
-          <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400" />감지</span>
-          <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-400" />일치</span>
+        <div className="mt-2 flex items-center justify-center gap-3 text-xs text-primary/60">
+          <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary" />목표</span>
+          <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary/60" />감지</span>
+          <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary glow-primary" />일치</span>
         </div>
       </div>
     );

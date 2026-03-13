@@ -18,6 +18,7 @@ export default function TunerPage() {
   const { headstockLayout, setHeadstockLayout } = useTunerLayout();
 
   const isAutoMode = tuner.tuningMode === 'auto';
+  const centsDelta = Math.abs(tuner.centsFromTarget);
 
   return (
     <div className="h-full overflow-hidden animate-[fadeIn_0.3s_ease-out] bg-background-dark relative">
@@ -101,7 +102,7 @@ export default function TunerPage() {
             {/* Row 2: Note + cents display */}
             <div className="flex items-center justify-center gap-4 px-4 py-2">
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-white">
+                <span className="text-4xl font-black text-text-strong">
                   {tuner.detectedNote ? tuner.detectedNote.name : '--'}
                 </span>
                 <span className="text-xl font-bold text-text-secondary">
@@ -211,11 +212,13 @@ export default function TunerPage() {
               <div className="flex justify-center py-2">
                 {tuner.hasSignal ? (
                   <span className={`text-xs font-semibold px-3 py-1 rounded-full border ${
-                    Math.abs(tuner.centsFromTarget) < 5
+                    centsDelta < 5
                       ? 'text-primary border-primary/30 bg-primary/10'
-                      : 'text-amber-400 border-amber-400/30 bg-amber-400/10'
+                      : centsDelta < 15
+                        ? 'text-text-secondary border-border-subtle bg-card-soft'
+                        : 'text-danger border-danger/30 bg-danger/10'
                   }`}>
-                    ● {Math.abs(tuner.centsFromTarget) < 5 ? '정상 상태: 인 튠' : '편차 감지됨'}
+                    ● {centsDelta < 5 ? '정상 상태: 인 튠' : centsDelta < 15 ? '미세 조정 필요' : '편차 감지됨'}
                   </span>
                 ) : (
                   <span className="text-xs font-semibold px-3 py-1 rounded-full border text-text-muted border-primary/10">
@@ -228,7 +231,7 @@ export default function TunerPage() {
               <div className="flex-1 flex flex-col items-center justify-center min-h-0">
                 <div className="flex items-baseline">
                   <span className={`text-[140px] font-black leading-none tracking-tight ${
-                    tuner.hasSignal && Math.abs(tuner.centsFromTarget) < 5 ? 'text-primary glow-text' : 'text-white'
+                    tuner.hasSignal && Math.abs(tuner.centsFromTarget) < 5 ? 'text-primary glow-text' : 'text-text-strong'
                   }`}>
                     {tuner.detectedNote ? tuner.detectedNote.name : '--'}
                   </span>
@@ -291,7 +294,7 @@ export default function TunerPage() {
               <div>
                 <span className="text-xs text-text-muted">현재 음정</span>
                 <div className="mt-2 glass-card rounded-xl p-4 text-center">
-                  <span className="text-5xl font-black text-white">
+                  <span className="text-5xl font-black text-text-strong">
                     {tuner.detectedNote ? `${tuner.detectedNote.name}${tuner.detectedNote.octave}` : '--'}
                   </span>
                   <div className="text-xs text-text-muted mt-2 tabular-nums">
@@ -382,7 +385,7 @@ export default function TunerPage() {
 
       {/* Error overlay */}
       {tuner.error && (
-        <div className="absolute inset-x-4 top-20 lg:inset-x-auto lg:left-1/2 lg:-translate-x-1/2 lg:w-[480px] p-3 bg-red-900/50 border border-red-700 rounded-xl text-red-300 text-xs break-all z-50">
+        <div className="absolute inset-x-4 top-20 lg:inset-x-auto lg:left-1/2 lg:-translate-x-1/2 lg:w-[480px] p-3 bg-danger-soft border border-danger/40 rounded-xl text-danger text-xs break-all z-50">
           {tuner.error}
         </div>
       )}

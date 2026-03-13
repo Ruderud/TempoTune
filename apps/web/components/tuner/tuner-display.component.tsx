@@ -21,14 +21,43 @@ export function TunerDisplay({
   const isInTune = detectedNote !== null && Math.abs(centsFromTarget) < 5;
   const isClose = detectedNote !== null && Math.abs(centsFromTarget) < 15;
 
-  const getColor = () => {
-    if (!detectedNote) return '#6b7280';
-    if (isInTune) return '#22c55e';
-    if (isClose) return '#eab308';
-    return '#ef4444';
+  const getTone = () => {
+    if (!detectedNote) {
+      return {
+        color: 'var(--color-text-muted)',
+        background: 'color-mix(in srgb, var(--color-text-muted) 10%, transparent)',
+        shadow: 'none',
+        noteColor: 'var(--color-text-strong)',
+      };
+    }
+
+    if (isInTune) {
+      return {
+        color: 'var(--color-primary)',
+        background: 'color-mix(in srgb, var(--color-primary) 16%, transparent)',
+        shadow: '0 0 16px color-mix(in srgb, var(--color-primary) 34%, transparent)',
+        noteColor: 'var(--color-primary)',
+      };
+    }
+
+    if (isClose) {
+      return {
+        color: 'var(--color-text-secondary)',
+        background: 'color-mix(in srgb, var(--color-text-secondary) 16%, transparent)',
+        shadow: '0 0 14px color-mix(in srgb, var(--color-text-secondary) 24%, transparent)',
+        noteColor: 'var(--color-text-strong)',
+      };
+    }
+
+    return {
+      color: 'var(--color-danger)',
+      background: 'color-mix(in srgb, var(--color-danger) 16%, transparent)',
+      shadow: '0 0 16px color-mix(in srgb, var(--color-danger) 34%, transparent)',
+      noteColor: 'var(--color-danger)',
+    };
   };
 
-  const color = getColor();
+  const tone = getTone();
 
   const directionHint = !detectedNote
     ? isListening ? '소리를 감지하는 중...' : ''
@@ -50,8 +79,8 @@ export function TunerDisplay({
       <div className="w-full max-w-sm relative">
         <div className="relative h-20 flex items-center">
           {/* Flat / Sharp labels */}
-          <span className="absolute left-0 top-2 text-2xl text-gray-500 select-none">&#9837;</span>
-          <span className="absolute right-0 top-2 text-2xl text-gray-500 select-none">&#9839;</span>
+          <span className="absolute left-0 top-2 text-2xl text-text-muted select-none">&#9837;</span>
+          <span className="absolute right-0 top-2 text-2xl text-text-muted select-none">&#9839;</span>
 
           {/* Bar area */}
           <div className="w-full mx-10 relative h-full flex items-center">
@@ -62,17 +91,17 @@ export function TunerDisplay({
                   key={i}
                   className={`w-px ${
                     i === 10
-                      ? 'h-8 bg-white/50'
+                      ? 'h-8 bg-text-secondary/45'
                       : i % 5 === 0
-                        ? 'h-5 bg-gray-600'
-                        : 'h-3 bg-gray-700/60'
+                        ? 'h-5 bg-border-subtle'
+                        : 'h-3 bg-border-subtle/60'
                   }`}
                 />
               ))}
             </div>
 
             {/* Center target line */}
-            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-10 bg-white/30 rounded-full" />
+            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-0.5 h-10 rounded-full bg-text-secondary/30" />
 
             {/* Needle bubble */}
             {detectedNote && (
@@ -83,10 +112,10 @@ export function TunerDisplay({
                 <div
                   className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold border-2 backdrop-blur-sm transition-colors duration-150"
                   style={{
-                    borderColor: color,
-                    backgroundColor: `${color}25`,
-                    color: color,
-                    boxShadow: `0 0 16px ${color}50`,
+                    borderColor: tone.color,
+                    backgroundColor: tone.background,
+                    color: tone.color,
+                    boxShadow: tone.shadow,
                   }}
                 >
                   {centsFromTarget > 0 ? '+' : ''}
@@ -95,7 +124,7 @@ export function TunerDisplay({
                 {/* Trail line from bubble down */}
                 <div
                   className="absolute left-1/2 -translate-x-1/2 top-full w-0.5 h-3 rounded-full transition-colors duration-150"
-                  style={{ backgroundColor: color }}
+                  style={{ backgroundColor: tone.color }}
                 />
               </div>
             )}
@@ -106,7 +135,7 @@ export function TunerDisplay({
         <div className="text-center h-5">
           <span
             className="text-sm font-medium transition-colors duration-200"
-            style={{ color: detectedNote ? color : '#6b7280' }}
+            style={{ color: tone.color }}
           >
             {directionHint}
           </span>
@@ -117,20 +146,19 @@ export function TunerDisplay({
       <div className="mt-6 text-center">
         <div className="flex items-start justify-center">
           <span
-            className={`text-7xl font-bold tracking-tight transition-colors duration-300 ${
-              isInTune ? 'text-green-400' : 'text-white'
-            }`}
+            className="text-7xl font-bold tracking-tight transition-colors duration-300"
+            style={{ color: tone.noteColor }}
           >
             {displayNote}
           </span>
           {displayOctave !== null && (
-            <span className="text-2xl font-bold text-gray-400 mt-2 ml-0.5">
+            <span className="mt-2 ml-0.5 text-2xl font-bold text-text-muted">
               {displayOctave}
             </span>
           )}
         </div>
         {displayFrequency && (
-          <div className="text-sm text-gray-500 mt-1 tabular-nums">
+          <div className="mt-1 text-sm tabular-nums text-text-muted">
             {displayFrequency}
           </div>
         )}
@@ -138,8 +166,8 @@ export function TunerDisplay({
 
       {/* Target string info */}
       {closestString && detectedNote && (
-        <div className="mt-2 px-3 py-1 rounded-full bg-gray-800/50 border border-gray-700/50">
-          <span className="text-xs text-gray-400 tabular-nums">
+        <div className="mt-2 rounded-full border border-border-subtle bg-card-soft px-3 py-1">
+          <span className="text-xs tabular-nums text-text-muted">
             목표: {closestString.name}
             {closestString.octave} ({closestString.frequency.toFixed(1)} Hz)
           </span>

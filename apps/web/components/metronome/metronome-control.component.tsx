@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import {
   COMMON_TIME_SIGNATURES,
   MAX_BPM,
@@ -31,6 +32,7 @@ export function MetronomeControl({
     const clampedBpm = clamp(newBpm, MIN_BPM, MAX_BPM);
     onBpmChange(clampedBpm);
   };
+  const sliderProgress = `${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%`;
 
   return (
     <div className="w-full space-y-4">
@@ -39,7 +41,7 @@ export function MetronomeControl({
         <button
           data-testid="bpm-decrement"
           onClick={() => handleBpmChange(bpm - 1)}
-          className="w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0 bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95"
+          className="w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0 bg-card-soft border border-border-subtle text-primary hover:border-primary/30 active:scale-95"
         >
           <span className="text-xl font-light">&minus;</span>
         </button>
@@ -52,10 +54,8 @@ export function MetronomeControl({
             max={MAX_BPM}
             value={bpm}
             onChange={(e) => handleBpmChange(Number(e.target.value))}
-            className="w-full h-1.5 bg-white/10 rounded-full appearance-none cursor-pointer slider"
-            style={{
-              background: `linear-gradient(to right, rgb(13, 242, 242) 0%, rgb(13, 242, 242) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgba(255, 255, 255, 0.1) ${((bpm - MIN_BPM) / (MAX_BPM - MIN_BPM)) * 100}%, rgba(255, 255, 255, 0.1) 100%)`,
-            }}
+            className="w-full h-1.5 rounded-full appearance-none cursor-pointer slider"
+            style={{ '--slider-progress': sliderProgress } as CSSProperties}
           />
           {/* Desktop: Tempo scale labels */}
           <div className="hidden lg:flex justify-between mt-1 text-xs text-text-muted px-1">
@@ -70,7 +70,7 @@ export function MetronomeControl({
         <button
           data-testid="bpm-increment"
           onClick={() => handleBpmChange(bpm + 1)}
-          className="w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0 bg-white/5 border border-white/10 text-primary hover:border-white/20 active:scale-95"
+          className="w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0 bg-card-soft border border-border-subtle text-primary hover:border-primary/30 active:scale-95"
         >
           <span className="text-xl font-light">+</span>
         </button>
@@ -97,7 +97,7 @@ export function MetronomeControl({
                   ${
                     isActive
                       ? 'bg-primary text-background-dark font-bold shadow-lg shadow-primary/20'
-                      : 'bg-surface border border-primary/20 text-white/80 hover:border-primary/50'
+                      : 'bg-surface border border-primary/20 text-text-primary hover:border-primary/50'
                   }
                 `}
               >
@@ -110,13 +110,13 @@ export function MetronomeControl({
 
       {/* Sound Presets */}
       <div className="space-y-1.5">
-        <div className="text-xs text-white/40 font-medium ml-1 mb-3">
+        <div className="text-xs text-text-muted font-medium ml-1 mb-3">
           사운드 설정
         </div>
         <div className="flex gap-2 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             disabled
-            className="shrink-0 px-6 py-2.5 rounded-full bg-white/10 border border-white/10 text-xs text-slate-100 cursor-not-allowed"
+            className="shrink-0 px-6 py-2.5 rounded-full bg-card-strong border border-border-subtle text-xs text-text-primary cursor-not-allowed"
           >
             나무 (Wood)
           </button>
@@ -128,13 +128,13 @@ export function MetronomeControl({
           </button>
           <button
             disabled
-            className="shrink-0 px-6 py-2.5 rounded-full bg-white/10 border border-white/10 text-xs text-slate-100 cursor-not-allowed"
+            className="shrink-0 px-6 py-2.5 rounded-full bg-card-strong border border-border-subtle text-xs text-text-primary cursor-not-allowed"
           >
             박수 (Clap)
           </button>
           <button
             disabled
-            className="shrink-0 px-6 py-2.5 rounded-full bg-white/10 border border-white/10 text-xs text-slate-100 cursor-not-allowed"
+            className="shrink-0 px-6 py-2.5 rounded-full bg-card-strong border border-border-subtle text-xs text-text-primary cursor-not-allowed"
           >
             틱 (Tick)
           </button>
@@ -150,7 +150,7 @@ export function MetronomeControl({
           ${
             isPlaying
               ? 'bg-background-dark border-2 border-primary text-primary breathing-glow active:scale-[0.98]'
-              : 'bg-primary border-2 border-transparent text-background-dark shadow-[0px_25px_50px_-12px_rgba(13,242,242,0.1)] active:scale-[0.98]'
+              : 'bg-primary border-2 border-transparent text-background-dark shadow-lg shadow-primary/20 active:scale-[0.98]'
           }
         `}
       >

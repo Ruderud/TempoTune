@@ -11,21 +11,76 @@ type NeedleGaugeProps = {
   isListening: boolean;
 };
 
-const COLOR_GREEN = '#0df2f2';
-const COLOR_YELLOW = '#0df2f2';
-const COLOR_RED = '#0df2f2';
-const COLOR_GRAY = '#6b7280';
+type ThemeGaugePalette = {
+  primary: string;
+  textStrong: string;
+  textSecondary: string;
+  textMuted: string;
+  cardSoft: string;
+  border: string;
+};
 
 const LERP_FACTOR = 0.12;
 const TICK_COUNT = 21;
 const CENTER_INDEX = 10;
 
-function getColor(detectedNote: TunerNote | null, cents: number): string {
-  if (!detectedNote) return COLOR_GRAY;
+function withAlpha(color: string, alpha: number): string {
+  const normalized = color.trim();
+  const safeAlpha = Math.max(0, Math.min(1, alpha));
+
+  if (normalized.startsWith('#')) {
+    const hex = normalized.slice(1);
+    const fullHex = hex.length === 3
+      ? hex.split('').map((part) => part + part).join('')
+      : hex;
+
+    if (fullHex.length !== 6) {
+      return normalized;
+    }
+
+    const r = Number.parseInt(fullHex.slice(0, 2), 16);
+    const g = Number.parseInt(fullHex.slice(2, 4), 16);
+    const b = Number.parseInt(fullHex.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${safeAlpha})`;
+  }
+
+  if (normalized.startsWith('rgb(')) {
+    return normalized.replace(/^rgb\((.+)\)$/, `rgba($1, ${safeAlpha})`);
+  }
+
+  if (normalized.startsWith('rgba(')) {
+    return normalized.replace(
+      /^rgba\((.+),\s*[\d.]+\)$/,
+      `rgba($1, ${safeAlpha})`,
+    );
+  }
+
+  return normalized;
+}
+
+function getThemeGaugePalette(): ThemeGaugePalette {
+  const styles = window.getComputedStyle(document.documentElement);
+
+  return {
+    primary: styles.getPropertyValue('--color-primary').trim() || '#1d7874',
+    textStrong: styles.getPropertyValue('--color-text-strong').trim() || '#071e22',
+    textSecondary: styles.getPropertyValue('--color-text-secondary').trim() || '#355763',
+    textMuted: styles.getPropertyValue('--color-text-muted').trim() || '#61767e',
+    cardSoft: styles.getPropertyValue('--color-card-soft').trim() || '#f8fbfa',
+    border: styles.getPropertyValue('--color-border-subtle').trim() || '#cad7d3',
+  };
+}
+
+function getColor(
+  detectedNote: TunerNote | null,
+  cents: number,
+  palette: ThemeGaugePalette,
+): string {
+  if (!detectedNote) return palette.textMuted;
   const absCents = Math.abs(cents);
-  if (absCents < 5) return COLOR_GREEN;
-  if (absCents < 15) return COLOR_YELLOW;
-  return COLOR_RED;
+  if (absCents < 5) return palette.primary;
+  if (absCents < 15) return palette.primary;
+  return palette.primary;
 }
 
 function getDirectionHint(
@@ -69,6 +124,14 @@ export function NeedleGauge({
   const containerRef = useRef<HTMLDivElement>(null);
   const animatedCentsRef = useRef(0);
   const rafIdRef = useRef(0);
+  const paletteRef = useRef<ThemeGaugePalette>({
+    primary: '#1d7874',
+    textStrong: '#071e22',
+    textSecondary: '#355763',
+    textMuted: '#61767e',
+    cardSoft: '#f8fbfa',
+    border: '#cad7d3',
+  });
 
   // --- Sync props into refs so the rAF loop never restarts ---
   const detectedNoteRef = useRef(detectedNote);
@@ -82,6 +145,24 @@ export function NeedleGauge({
     centsFromTargetRef.current = centsFromTarget;
     isListeningRef.current = isListening;
   });
+
+  useEffect(() => {
+    const syncPalette = () => {
+      paletteRef.current = getThemeGaugePalette();
+    };
+
+    syncPalette();
+
+    const observer = new MutationObserver(syncPalette);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['data-theme'],
+    });
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
 
   // --- Single mount rAF loop ---
   useEffect(() => {
@@ -119,6 +200,7 @@ export function NeedleGauge({
       const target = targetStringRef.current;
       const cents = centsFromTargetRef.current;
       const listening = isListeningRef.current;
+      const palette = paletteRef.current;
 
       ctx.save();
       ctx.clearRect(0, 0, width, height);
@@ -144,7 +226,7 @@ export function NeedleGauge({
       );
       const needleRatio = (animatedCentsRef.current + 50) / 100;
       const needleX = barLeft + needleRatio * barWidth;
-      const color = getColor(note, animatedCentsRef.current);
+      const color = getColor(note, animatedCentsRef.current, palette);
 
       if (note) {
         const bubbleR = clamp(h * 0.04, 16, 30);
@@ -152,7 +234,7 @@ export function NeedleGauge({
 
         ctx.beginPath();
         ctx.arc(needleX, bubbleY, bubbleR, 0, Math.PI * 2);
-        ctx.fillStyle = color + '25';
+        ctx.fillStyle = withAlpha(color, 0.15);
         ctx.fill();
         ctx.strokeStyle = color;
         ctx.lineWidth = 2.5;
@@ -175,7 +257,7 @@ export function NeedleGauge({
       ctx.font = `bold ${fontSize(0.04, 16, 26)}px serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = '#6b7280';
+      ctx.fillStyle = palette.textMuted;
       ctx.fillText('\u266D', barLeft - marginX / 2, tickY);
       ctx.fillText('\u266F', barRight + marginX / 2, tickY);
 
@@ -191,15 +273,15 @@ export function NeedleGauge({
         if (isCenter) {
           tickH = clamp(h * 0.06, 24, 44);
           tickW = 2.5;
-          tickColor = '#0df2f2';
+          tickColor = palette.primary;
         } else if (isMajor) {
           tickH = clamp(h * 0.045, 18, 32);
           tickW = 2;
-          tickColor = '#6b7280';
+          tickColor = palette.textMuted;
         } else {
           tickH = clamp(h * 0.025, 10, 20);
           tickW = 1.5;
-          tickColor = 'rgba(107, 114, 128, 0.5)';
+          tickColor = withAlpha(palette.textMuted, 0.5);
         }
 
         ctx.fillStyle = tickColor;
@@ -228,8 +310,8 @@ export function NeedleGauge({
           needleX, needleTop,
           needleX, needleBottom,
         );
-        glowGradient.addColorStop(0, color + '60');
-        glowGradient.addColorStop(0.5, color + '20');
+        glowGradient.addColorStop(0, withAlpha(color, 0.6));
+        glowGradient.addColorStop(0.5, withAlpha(color, 0.2));
         glowGradient.addColorStop(1, 'transparent');
         ctx.strokeStyle = glowGradient;
         ctx.lineWidth = 8;
@@ -257,7 +339,7 @@ export function NeedleGauge({
         ctx.font = `600 ${fontSize(0.035, 13, 22)}px system-ui, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = note ? color : COLOR_GRAY;
+        ctx.fillStyle = note ? color : palette.textMuted;
         ctx.fillText(hint, w / 2, hintY);
       }
 
@@ -272,7 +354,7 @@ export function NeedleGauge({
       ctx.font = `900 ${noteFontSize}px system-ui, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = isInTune ? '#0df2f2' : '#ffffff';
+      ctx.fillStyle = isInTune ? palette.primary : palette.textStrong;
       ctx.fillText(displayNote, w / 2, noteY);
 
       if (note) {
@@ -285,7 +367,7 @@ export function NeedleGauge({
         ctx.font = `700 ${octaveFontSize}px system-ui, sans-serif`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#9ca3af';
+        ctx.fillStyle = palette.textSecondary;
         ctx.fillText(`${note.octave}`, octaveX, octaveY);
       }
 
@@ -298,7 +380,7 @@ export function NeedleGauge({
         ctx.font = `${fontSize(0.032, 12, 22)}px system-ui, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = '#6b7280';
+        ctx.fillStyle = palette.textMuted;
         ctx.fillText(freqText, w / 2, freqY);
       }
 
@@ -320,14 +402,14 @@ export function NeedleGauge({
 
         // Pill background
         drawRoundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2);
-        ctx.fillStyle = 'rgba(31, 41, 55, 0.5)';
+        ctx.fillStyle = withAlpha(palette.cardSoft, 0.82);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(55, 65, 81, 0.5)';
+        ctx.strokeStyle = withAlpha(palette.border, 0.75);
         ctx.lineWidth = 1;
         ctx.stroke();
 
         // Pill text
-        ctx.fillStyle = '#9ca3af';
+        ctx.fillStyle = palette.textSecondary;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(badgeText, w / 2, badgeY);

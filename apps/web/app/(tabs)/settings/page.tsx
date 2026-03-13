@@ -2,8 +2,39 @@
 
 import { Icon } from '../../../components/common/icon.component';
 import { APP_NAME, APP_VERSION, COPYRIGHT_YEAR, LEGAL_ENTITY } from '../../../constants/app';
+import { useThemePreference } from '../../../hooks/use-theme-preference';
+import type { ThemePreference } from '../../../lib/theme';
+
+const themeOptions: Array<{
+  value: ThemePreference;
+  label: string;
+  description: string;
+}> = [
+  { value: 'system', label: '시스템', description: 'OS 설정을 따릅니다.' },
+  { value: 'light', label: '라이트', description: '밝은 작업 환경에 맞춥니다.' },
+  { value: 'dark', label: '다크', description: '저조도 환경에 맞춥니다.' },
+];
 
 export default function SettingsPage() {
+  const { preference, resolvedTheme, setPreference } = useThemePreference();
+  const studioPalette = [
+    {
+      label: '틸 포커스',
+      description: '주요 버튼, 활성 탭, 실시간 데이터 강조',
+      swatchClass: 'bg-primary',
+    },
+    {
+      label: '아이보리 대비',
+      description: '헤드라인과 중요한 표면 대비에만 사용',
+      swatchClass: resolvedTheme === 'dark' ? 'bg-text-strong' : 'bg-background-dark',
+    },
+    {
+      label: '코랄 알림',
+      description: '오류, 삭제, 경고 상태에만 제한적으로 사용',
+      swatchClass: 'bg-danger',
+    },
+  ];
+
   return (
     <div className="h-full overflow-y-auto pb-4 lg:flex lg:overflow-hidden">
       {/* Desktop Sidebar */}
@@ -20,7 +51,7 @@ export default function SettingsPage() {
             </svg>
             <span className="font-medium text-sm">일반</span>
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-primary/60 hover:text-primary hover:bg-white/5 transition-all">
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-primary/60 hover:text-primary hover:bg-card-soft transition-all">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <rect x="3" y="9" width="3" height="6" rx="1" />
               <rect x="8" y="5" width="3" height="14" rx="1" />
@@ -29,14 +60,14 @@ export default function SettingsPage() {
             </svg>
             <span className="font-medium text-sm">튜너</span>
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-primary/60 hover:text-primary hover:bg-white/5 transition-all">
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-primary/60 hover:text-primary hover:bg-card-soft transition-all">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M6 22h12L14 4h-4L6 22z" />
               <path d="M12 14l4-6" />
             </svg>
             <span className="font-medium text-sm">메트로놈</span>
           </button>
-          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-primary/60 hover:text-primary hover:bg-white/5 transition-all">
+          <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-primary/60 hover:text-primary hover:bg-card-soft transition-all">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="4" y="4" width="16" height="16" rx="2" />
               <path d="M9 9h6M9 15h6" />
@@ -51,7 +82,7 @@ export default function SettingsPage() {
         <div className="px-5 lg:px-10 pt-4 lg:pt-8 space-y-4 lg:space-y-6 lg:max-w-4xl">
           {/* Mobile header */}
           <div className="flex items-center justify-between lg:hidden px-1 py-5">
-            <button type="button" onClick={() => window.history.back()} className="p-2 rounded-lg bg-white/5 flex items-center justify-center text-primary/60">
+            <button type="button" onClick={() => window.history.back()} className="p-2 rounded-lg bg-card-soft flex items-center justify-center text-primary/70 border border-border-subtle">
               <Icon src="/assets/icons/back.svg" size={18} label="뒤로" />
             </button>
             <span className="text-lg font-bold tracking-[0.1em] text-primary">
@@ -101,7 +132,7 @@ export default function SettingsPage() {
             <h2 className="px-1 mb-1.5 text-xs font-semibold uppercase tracking-widest text-primary/60">
               키보드 단축키
             </h2>
-            <div className="glass-card rounded-xl divide-y divide-white/5">
+            <div className="glass-card rounded-xl divide-y divide-border-subtle">
               {[
                 { action: '재생 / 일시정지', key: 'Space' },
                 { action: '템포 직접 입력 (Tap)', key: 'T' },
@@ -120,33 +151,89 @@ export default function SettingsPage() {
             <h2 className="px-1 mb-1.5 text-xs font-semibold uppercase tracking-widest text-primary/60">
               가독성 및 테마
             </h2>
-            <div className="glass-card rounded-xl divide-y divide-white/5">
-              <div className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-3">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400">
-                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                  </svg>
-                  <span className="text-sm font-medium">다크 모드</span>
+            <div className="glass-card rounded-xl divide-y divide-border-subtle">
+              <div className="p-4 space-y-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted">
+                      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                    </svg>
+                    <div>
+                      <span className="text-sm font-medium text-text-strong">앱 테마</span>
+                      <p className="mt-1 text-xs text-text-muted">
+                        현재 {resolvedTheme === 'dark' ? '다크' : '라이트'} 테마가 적용 중입니다.
+                      </p>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-primary">
+                    Studio Palette
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">항상 켬</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-600">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
+
+                <div className="grid grid-cols-3 gap-2">
+                  {themeOptions.map((option) => {
+                    const active = preference === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => setPreference(option.value)}
+                        className={`rounded-xl border px-3 py-3 text-left transition-all ${
+                          active
+                            ? 'border-primary/60 bg-primary text-background-dark shadow-lg shadow-primary/20'
+                            : 'border-border-subtle bg-card-soft text-text-primary hover:border-primary/30 hover:bg-card-strong'
+                        }`}
+                      >
+                        <span className="block text-sm font-semibold">{option.label}</span>
+                        <span className={`mt-1 block text-[11px] leading-relaxed ${
+                          active ? 'text-background-dark/80' : 'text-text-muted'
+                        }`}>
+                          {option.description}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="rounded-xl border border-border-subtle bg-card-soft p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-semibold text-text-primary">
+                        포인트 컬러는 세 가지 역할로만 씁니다.
+                      </p>
+                      <p className="mt-1 text-xs leading-relaxed text-text-muted">
+                        기본 상태는 중성 톤으로 두고, 틸은 상호작용, 아이보리는 대비, 코랄은 경고에만 사용합니다.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                    {studioPalette.map((tone) => (
+                      <div key={tone.label} className="rounded-lg border border-border-subtle bg-surface/70 p-2.5">
+                        <div className="flex items-center gap-2">
+                          <span className={`h-3 w-3 rounded-full border border-background/40 ${tone.swatchClass}`} />
+                          <span className="text-xs font-semibold text-text-primary">{tone.label}</span>
+                        </div>
+                        <p className="mt-2 text-[11px] leading-relaxed text-text-muted">
+                          {tone.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
+
               <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-400">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted">
                     <polyline points="4 7 4 4 20 4 20 7" />
                     <line x1="9" y1="20" x2="15" y2="20" />
                     <line x1="12" y1="4" x2="12" y2="20" />
                   </svg>
-                  <span className="text-sm font-medium">텍스트 크기</span>
+                  <span className="text-sm font-medium text-text-strong">텍스트 크기</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">표준</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-600">
+                  <span className="text-xs text-text-muted">표준</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted">
                     <polyline points="9 18 15 12 9 6" />
                   </svg>
                 </div>
@@ -166,16 +253,16 @@ export default function SettingsPage() {
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-base">{APP_NAME}</h3>
-                <p className="text-xs text-slate-500 mt-0.5">버전 v{APP_VERSION}</p>
+                <p className="text-xs text-text-muted mt-0.5">버전 v{APP_VERSION}</p>
               </div>
             </div>
             <div className="mt-4 text-center space-y-1">
-              <p className="text-xs text-slate-600 font-medium">Developed by {LEGAL_ENTITY}</p>
+              <p className="text-xs text-text-muted font-medium">Developed by {LEGAL_ENTITY}</p>
               <div className="flex justify-center gap-4 text-xs text-primary/60 uppercase tracking-tighter">
                 <button type="button" className="hover:text-primary transition-colors">이용약관</button>
-                <span className="w-1 h-1 bg-slate-700 rounded-full my-auto" />
+                <span className="w-1 h-1 bg-border-subtle rounded-full my-auto" />
                 <button type="button" className="hover:text-primary transition-colors">개인정보처리방침</button>
-                <span className="w-1 h-1 bg-slate-700 rounded-full my-auto" />
+                <span className="w-1 h-1 bg-border-subtle rounded-full my-auto" />
                 <button type="button" className="hover:text-primary transition-colors">라이선스</button>
               </div>
             </div>
@@ -203,7 +290,7 @@ export default function SettingsPage() {
           <button type="button" disabled className="w-full min-h-[44px] rounded-lg bg-surface border border-primary/10 text-sm text-text-muted opacity-40 cursor-not-allowed">
             데이터 내보내기
           </button>
-          <button type="button" disabled className="w-full min-h-[44px] rounded-lg bg-red-900/20 border border-red-700/20 text-sm text-red-400 opacity-40 cursor-not-allowed">
+          <button type="button" disabled className="w-full min-h-[44px] rounded-lg bg-danger-soft border border-danger/30 text-sm text-danger opacity-40 cursor-not-allowed">
             설정 초기화
           </button>
         </div>
