@@ -27,14 +27,40 @@ export function getThemeBootstrapScript(): string {
       const root = document.documentElement;
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-      const stored = localStorage.getItem(storageKey);
-      const preference = stored === 'light' || stored === 'dark' ? stored : 'system';
-      const resolved = preference === 'system'
-        ? (mediaQuery.matches ? 'dark' : 'light')
-        : preference;
+      const readPreference = () => {
+        const stored = localStorage.getItem(storageKey);
+        return stored === 'light' || stored === 'dark' ? stored : 'system';
+      };
 
-      root.dataset.themePreference = preference;
-      root.dataset.theme = resolved;
+      const applyTheme = () => {
+        const preference = readPreference();
+        const resolved = preference === 'system'
+          ? (mediaQuery.matches ? 'dark' : 'light')
+          : preference;
+
+        root.dataset.themePreference = preference;
+        root.dataset.theme = resolved;
+      };
+
+      const syncSystemTheme = () => {
+        if (readPreference() === 'system') {
+          applyTheme();
+        }
+      };
+
+      applyTheme();
+
+      if (typeof mediaQuery.addEventListener === 'function') {
+        mediaQuery.addEventListener('change', syncSystemTheme);
+      } else if (typeof mediaQuery.addListener === 'function') {
+        mediaQuery.addListener(syncSystemTheme);
+      }
+
+      window.addEventListener('storage', (event) => {
+        if (event.key === storageKey) {
+          applyTheme();
+        }
+      });
     })();
   `;
 }

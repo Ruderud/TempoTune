@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, type CSSProperties } from 'react';
+import { ChevronUp, Minus, Plus, X } from 'lucide-react';
+import { Icon } from '../common/icon.component';
 import type { HeadstockLayout } from './guitar-headstock.component';
 
 type TunerDetectionSettings = {
@@ -84,7 +86,7 @@ export function TunerOptionsDrawer({
             className="w-11 h-11 rounded-lg bg-surface text-primary border border-primary/20 hover:bg-primary/10 active:scale-95 shrink-0"
             aria-label="A4 기준 주파수 감소"
           >
-            -
+            <Icon icon={Minus} size={16} className="mx-auto text-primary" />
           </button>
           <input
             type="range"
@@ -103,7 +105,7 @@ export function TunerOptionsDrawer({
             className="w-11 h-11 rounded-lg bg-surface text-primary border border-primary/20 hover:bg-primary/10 active:scale-95 shrink-0"
             aria-label="A4 기준 주파수 증가"
           >
-            +
+            <Icon icon={Plus} size={16} className="mx-auto text-primary" />
           </button>
         </div>
       </div>
@@ -200,9 +202,7 @@ export function TunerOptionsDrawer({
         aria-label="튜너 옵션 열기"
       >
         설정
-        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-          <path d="M18 15l-6-6-6 6" />
-        </svg>
+        <Icon icon={ChevronUp} size={16} className="text-primary/80" />
       </button>
 
       {isOpen && (
@@ -223,7 +223,7 @@ export function TunerOptionsDrawer({
                   className="w-11 h-11 rounded-lg bg-surface text-primary hover:bg-primary/10 flex items-center justify-center border border-primary/20"
                   aria-label="닫기"
                 >
-                  ✕
+                  <Icon icon={X} size={18} className="text-primary" />
                 </button>
               </div>
               {optionsContent}

@@ -9,21 +9,33 @@ test.describe('Tab Navigation', () => {
 
   test('navigate to tuner tab', async ({ page }) => {
     await page.goto('/metronome');
-    await page.getByTestId('tab-tuner').click();
-    await expect(page).toHaveURL(/\/tuner/);
+    const tunerTab = page.locator('[data-testid="tab-tuner"]:visible');
+    await expect(tunerTab).toBeVisible();
+    await Promise.all([
+      page.waitForURL(/\/tuner/),
+      tunerTab.click(),
+    ]);
     await expect(page.getByTestId('tuner-play-stop').first()).toBeVisible();
   });
 
   test('navigate to settings tab', async ({ page }) => {
     await page.goto('/metronome');
-    await page.getByTestId('tab-settings').click();
-    await expect(page).toHaveURL(/\/settings/);
+    const settingsTab = page.locator('[data-testid="tab-settings"]:visible');
+    await expect(settingsTab).toBeVisible();
+    await Promise.all([
+      page.waitForURL(/\/settings/),
+      settingsTab.click(),
+    ]);
   });
 
   test('navigate back to metronome tab', async ({ page }) => {
     await page.goto('/tuner');
-    await page.getByTestId('tab-metronome').click();
-    await expect(page).toHaveURL(/\/metronome/);
+    const metronomeTab = page.locator('[data-testid="tab-metronome"]:visible');
+    await expect(metronomeTab).toBeVisible();
+    await Promise.all([
+      page.waitForURL(/\/metronome/),
+      metronomeTab.click(),
+    ]);
     await expect(page.getByTestId('metronome-play-stop').first()).toBeVisible();
   });
 

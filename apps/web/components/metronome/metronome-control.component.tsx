@@ -1,12 +1,14 @@
 'use client';
 
 import type { CSSProperties } from 'react';
+import { Minus, Play, Plus, Square } from 'lucide-react';
 import {
   COMMON_TIME_SIGNATURES,
   MAX_BPM,
   MIN_BPM,
 } from '@tempo-tune/shared/constants';
 import { clamp } from '@tempo-tune/shared/utils';
+import { Icon } from '../common/icon.component';
 
 type MetronomeControlProps = {
   bpm: number;
@@ -43,7 +45,7 @@ export function MetronomeControl({
           onClick={() => handleBpmChange(bpm - 1)}
           className="w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0 bg-card-soft border border-border-subtle text-primary hover:border-primary/30 active:scale-95"
         >
-          <span className="text-xl font-light">&minus;</span>
+          <Icon icon={Minus} size={20} className="text-primary" />
         </button>
 
         <div className="flex-1">
@@ -72,7 +74,7 @@ export function MetronomeControl({
           onClick={() => handleBpmChange(bpm + 1)}
           className="w-14 h-14 rounded-xl flex items-center justify-center transition-all shrink-0 bg-card-soft border border-border-subtle text-primary hover:border-primary/30 active:scale-95"
         >
-          <span className="text-xl font-light">+</span>
+          <Icon icon={Plus} size={20} className="text-primary" />
         </button>
       </div>
 
@@ -154,7 +156,11 @@ export function MetronomeControl({
           }
         `}
       >
-        <span className="text-2xl">{isPlaying ? '■' : '▶'}</span>
+        <Icon
+          icon={isPlaying ? Square : Play}
+          size={20}
+          className={isPlaying ? 'text-primary' : 'text-background-dark'}
+        />
         <span>{isPlaying ? '정지' : '시작'}</span>
       </button>
     </div>

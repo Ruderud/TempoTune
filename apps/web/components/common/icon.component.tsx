@@ -34,22 +34,36 @@ const ICONS: Record<IconName, LucideIcon> = {
   tuner: Waves,
 };
 
-type IconProps = {
-  name: IconName;
+type SharedIconProps = {
   size?: number;
   className?: string;
   label?: string;
   strokeWidth?: number;
 };
 
+type IconProps =
+  | (SharedIconProps & {
+      name: IconName;
+      icon?: never;
+    })
+  | (SharedIconProps & {
+      icon: LucideIcon;
+      name?: never;
+    });
+
 export function Icon({
   name,
+  icon,
   size = 20,
   className,
   label,
   strokeWidth = 2,
 }: IconProps) {
-  const LucideIcon = ICONS[name];
+  const LucideIcon = icon ?? (name ? ICONS[name] : null);
+
+  if (!LucideIcon) {
+    return null;
+  }
 
   return (
     <LucideIcon

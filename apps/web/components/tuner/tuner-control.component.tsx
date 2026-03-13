@@ -3,6 +3,7 @@
 import type { TuningPreset } from '@tempo-tune/shared/types';
 import { ALL_TUNING_PRESETS } from '@tempo-tune/shared/constants';
 import { Icon } from '../common/icon.component';
+import { MobilePageHeader } from '../common/mobile-page-header.component';
 
 type TuningMode = 'auto' | 'manual';
 
@@ -28,16 +29,8 @@ export function TunerControl({
   return (
     <div className="px-4 py-2 space-y-2">
       {/* Mobile: Top bar */}
-      <div className="flex items-center justify-between lg:hidden px-2 py-5">
-        <button type="button" aria-label="메뉴" className="p-2 rounded-lg bg-card-soft border border-border-subtle flex items-center justify-center text-primary/70">
-          <Icon name="menu" size={18} label="메뉴" />
-        </button>
-        <span className="text-lg font-bold tracking-[0.1em] text-primary">
-          TEMPOTUNE
-        </span>
-        <button type="button" aria-label="설정" className="p-2 rounded-lg bg-card-soft border border-border-subtle flex items-center justify-center text-primary/70">
-          <Icon name="settings" size={20} label="설정" />
-        </button>
+      <div className="lg:hidden">
+        <MobilePageHeader title="TEMPOTUNE" />
       </div>
 
       {/* Controls row */}

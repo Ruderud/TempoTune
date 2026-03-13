@@ -21,7 +21,7 @@ test.describe('Metronome BPM Controls', () => {
       } as unknown as typeof AudioContext;
     });
     await page.goto('/metronome');
-    await page.waitForLoadState('networkidle');
+    await expect(page.getByTestId('bpm-slider').first()).toBeVisible();
   });
 
   test('BPM controls are visible', async ({ page }) => {

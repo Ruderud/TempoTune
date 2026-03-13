@@ -56,10 +56,26 @@ export function useThemePreference() {
       }
     };
 
-    mediaQuery.addEventListener('change', handleSystemThemeChange);
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === null || event.key === THEME_STORAGE_KEY) {
+        syncFromStorage();
+      }
+    };
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleSystemThemeChange);
+    } else if (typeof mediaQuery.addListener === 'function') {
+      mediaQuery.addListener(handleSystemThemeChange);
+    }
+    window.addEventListener('storage', handleStorageChange);
 
     return () => {
-      mediaQuery.removeEventListener('change', handleSystemThemeChange);
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', handleSystemThemeChange);
+      } else if (typeof mediaQuery.removeListener === 'function') {
+        mediaQuery.removeListener(handleSystemThemeChange);
+      }
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 

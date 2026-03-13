@@ -1,7 +1,9 @@
 'use client';
 
+import { Ellipsis, Guitar, Music2, Piano, type LucideIcon } from 'lucide-react';
 import type { TuningPreset } from '@tempo-tune/shared/types';
 import { ALL_TUNING_PRESETS } from '@tempo-tune/shared/constants';
+import { Icon } from '../common/icon.component';
 
 type InstrumentSelectorProps = {
   currentPreset: TuningPreset;
@@ -9,12 +11,12 @@ type InstrumentSelectorProps = {
   disabled?: boolean;
 };
 
-const instruments = [
-  { id: 'piano', label: '피아노', icon: '🎹', enabled: false },
-  { id: 'guitar', label: '기타', icon: '🎸', enabled: true },
-  { id: 'bass', label: '베이스', icon: '🎸', enabled: true },
-  { id: 'violin', label: '바이올린', icon: '🎻', enabled: false },
-  { id: 'more', label: '더보기', icon: '⋯', enabled: false },
+const instruments: Array<{ id: string; label: string; icon: LucideIcon; enabled: boolean }> = [
+  { id: 'piano', label: '피아노', icon: Piano, enabled: false },
+  { id: 'guitar', label: '기타', icon: Guitar, enabled: true },
+  { id: 'bass', label: '베이스', icon: Music2, enabled: true },
+  { id: 'violin', label: '바이올린', icon: Music2, enabled: false },
+  { id: 'more', label: '더보기', icon: Ellipsis, enabled: false },
 ] as const;
 
 export function InstrumentSelector({
@@ -46,7 +48,7 @@ export function InstrumentSelector({
                   : 'bg-surface/30 text-text-muted/50 border border-transparent cursor-not-allowed'
             }`}
           >
-            <span className="text-lg">{inst.icon}</span>
+            <Icon icon={inst.icon} size={18} className="text-current" />
             <span>{inst.label}</span>
           </button>
         );

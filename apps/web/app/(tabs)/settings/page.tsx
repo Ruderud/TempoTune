@@ -1,5 +1,16 @@
 'use client';
 
+import {
+  ChevronRight,
+  Clock3,
+  Info,
+  Keyboard,
+  MoonStar,
+  Music2,
+  SlidersHorizontal,
+  Type,
+  Waves,
+} from 'lucide-react';
 import { Icon } from '../../../components/common/icon.component';
 import { APP_NAME, APP_VERSION, COPYRIGHT_YEAR, LEGAL_ENTITY } from '../../../constants/app';
 import { useThemePreference } from '../../../hooks/use-theme-preference';
@@ -45,33 +56,19 @@ export default function SettingsPage() {
             <span className="text-xs text-primary/40 bg-primary/10 px-2 py-0.5 rounded-full">SYSTEM</span>
           </div>
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 text-primary border border-primary/20 transition-all">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
-            </svg>
+            <Icon icon={SlidersHorizontal} size={16} />
             <span className="font-medium text-sm">일반</span>
           </button>
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-primary/60 hover:text-primary hover:bg-card-soft transition-all">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <rect x="3" y="9" width="3" height="6" rx="1" />
-              <rect x="8" y="5" width="3" height="14" rx="1" />
-              <rect x="13" y="7" width="3" height="10" rx="1" />
-              <rect x="18" y="10" width="3" height="4" rx="1" />
-            </svg>
+            <Icon icon={Waves} size={16} />
             <span className="font-medium text-sm">튜너</span>
           </button>
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-primary/60 hover:text-primary hover:bg-card-soft transition-all">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 22h12L14 4h-4L6 22z" />
-              <path d="M12 14l4-6" />
-            </svg>
+            <Icon icon={Clock3} size={16} />
             <span className="font-medium text-sm">메트로놈</span>
           </button>
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-primary/60 hover:text-primary hover:bg-card-soft transition-all">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="4" y="4" width="16" height="16" rx="2" />
-              <path d="M9 9h6M9 15h6" />
-            </svg>
+            <Icon icon={Keyboard} size={16} />
             <span className="font-medium text-sm">단축키</span>
           </button>
         </div>
@@ -97,11 +94,7 @@ export default function SettingsPage() {
               튜너 설정
             </h2>
             <div className="glass-card rounded-xl p-4 flex items-center gap-3 text-text-muted">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-primary/40">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
+              <Icon icon={Info} size={16} className="shrink-0 text-primary/40" />
               <span className="text-xs">
                 {/* TODO: A4 기준 주파수·민감도·노이즈 게이트 설정은 튜너 엔진 연동 후 활성화됩니다. */}
                 튜너 설정은 준비 중입니다.
@@ -115,11 +108,7 @@ export default function SettingsPage() {
               메트로놈 옵션
             </h2>
             <div className="glass-card rounded-xl p-4 flex items-center gap-3 text-text-muted">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0 text-primary/40">
-                <circle cx="12" cy="12" r="10" />
-                <line x1="12" y1="8" x2="12" y2="12" />
-                <line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
+              <Icon icon={Info} size={16} className="shrink-0 text-primary/40" />
               <span className="text-xs">
                 {/* TODO: 시각적 플래시·백그라운드 재생 설정은 메트로놈 엔진 연동 후 활성화됩니다. */}
                 메트로놈 옵션은 준비 중입니다.
@@ -155,9 +144,7 @@ export default function SettingsPage() {
               <div className="p-4 space-y-4">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted">
-                      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-                    </svg>
+                    <Icon icon={MoonStar} size={20} className="text-text-muted" />
                     <div>
                       <span className="text-sm font-medium text-text-strong">앱 테마</span>
                       <p className="mt-1 text-xs text-text-muted">
@@ -224,18 +211,12 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between p-4">
                 <div className="flex items-center gap-3">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted">
-                    <polyline points="4 7 4 4 20 4 20 7" />
-                    <line x1="9" y1="20" x2="15" y2="20" />
-                    <line x1="12" y1="4" x2="12" y2="20" />
-                  </svg>
+                  <Icon icon={Type} size={20} className="text-text-muted" />
                   <span className="text-sm font-medium text-text-strong">텍스트 크기</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-text-muted">표준</span>
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-text-muted">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
+                  <Icon icon={ChevronRight} size={12} className="text-text-muted" />
                 </div>
               </div>
             </div>
@@ -245,11 +226,7 @@ export default function SettingsPage() {
           <section className="pt-2 pb-6">
             <div className="glass-card rounded-xl p-4 flex items-center gap-3">
               <div className="w-14 h-14 bg-gradient-to-br from-primary to-primary/40 rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-background-dark">
-                  <path d="M9 18V5l12-2v13" />
-                  <circle cx="6" cy="18" r="3" />
-                  <circle cx="18" cy="16" r="3" />
-                </svg>
+                <Icon icon={Music2} size={28} className="text-background-dark" />
               </div>
               <div className="flex-1">
                 <h3 className="font-bold text-base">{APP_NAME}</h3>

@@ -9,7 +9,11 @@ test.describe('Settings Page', () => {
 
   test('navigable from metronome', async ({ page }) => {
     await page.goto('/metronome');
-    await page.getByTestId('tab-settings').click();
-    await expect(page).toHaveURL(/\/settings/);
+    const settingsTab = page.locator('[data-testid="tab-settings"]:visible');
+    await expect(settingsTab).toBeVisible();
+    await Promise.all([
+      page.waitForURL(/\/settings/),
+      settingsTab.click(),
+    ]);
   });
 });
