@@ -1,5 +1,11 @@
 export type AppRuntimeChannel = 'development' | 'qa' | 'production';
 export type MobilePlatformOs = 'ios' | 'android';
+export type NativeDistributionChannel =
+  | 'development'
+  | 'simulator'
+  | 'testflight'
+  | 'appstore'
+  | 'unknown';
 
 export type MobileWebViewRuntimeOptions = {
   isDevMode: boolean;
@@ -13,6 +19,7 @@ export type MobileWebViewRuntimeOptions = {
   qaEnableWebviewDebugging: boolean;
   qaWebUrl: string;
   appEntryPath?: string;
+  nativeDistributionChannel?: NativeDistributionChannel;
 };
 
 export type MobileWebViewRuntime = {
@@ -88,12 +95,30 @@ function getDevWebUrl(
   return ensureAppEntryPath(`http://${androidEmulatorHost}:${devServerPort}`, appEntryPath);
 }
 
+export function shouldForceProductionRuntime(
+  options: Pick<
+    MobileWebViewRuntimeOptions,
+    'platformOs' | 'nativeDistributionChannel'
+  >,
+): boolean {
+  if (options.platformOs !== 'ios') {
+    return false;
+  }
+
+  return (
+    options.nativeDistributionChannel === 'testflight' ||
+    options.nativeDistributionChannel === 'appstore'
+  );
+}
+
 export function createMobileWebViewRuntime(
   options: MobileWebViewRuntimeOptions,
 ): MobileWebViewRuntime {
   const appEntryPath = options.appEntryPath ?? DEFAULT_APP_ENTRY_PATH;
-  const isQaRuntime = options.runtimeChannel === 'qa';
-  const isProductionRuntime = options.runtimeChannel === 'production';
+  const forceProductionRuntime = shouldForceProductionRuntime(options);
+  const isQaRuntime = !forceProductionRuntime && options.runtimeChannel === 'qa';
+  const isProductionRuntime =
+    forceProductionRuntime || options.runtimeChannel === 'production';
 
   let webUrl: string;
   if (isQaRuntime && options.qaWebUrl) {
@@ -117,11 +142,15 @@ export function createMobileWebViewRuntime(
     webUrl,
     webOrigin: getWebOrigin(webUrl),
     webviewDebuggingEnabled:
-      options.isDevMode || (isQaRuntime && options.qaEnableWebviewDebugging),
+      !forceProductionRuntime &&
+      (options.isDevMode || (isQaRuntime && options.qaEnableWebviewDebugging)),
     showQaDebugBanner:
-      options.isDevMode ||
-      (isQaRuntime && (options.qaEnableWebviewDebugging || Boolean(options.qaWebUrl))),
+      !forceProductionRuntime &&
+      (options.isDevMode ||
+        (isQaRuntime &&
+          (options.qaEnableWebviewDebugging || Boolean(options.qaWebUrl)))),
     shouldLogWebviewEvents:
-      options.isDevMode || (isQaRuntime && options.qaEnableWebviewDebugging),
+      !forceProductionRuntime &&
+      (options.isDevMode || (isQaRuntime && options.qaEnableWebviewDebugging)),
   };
 }

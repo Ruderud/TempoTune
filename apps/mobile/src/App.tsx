@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import { NativeModules, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import WebView from 'react-native-webview';
 import type {
   WebViewNavigation,
@@ -28,10 +28,14 @@ import {
   buildNativeAppBootstrapUrl,
   createMobileWebViewRuntime,
   type AppRuntimeChannel,
+  type NativeDistributionChannel,
 } from './runtime/webview-runtime';
 
 const DEBUG_TUNER_LATENCY = __DEV__;
 const RUNTIME_CHANNEL = APP_RUNTIME_CHANNEL as AppRuntimeChannel;
+const NATIVE_DISTRIBUTION_CHANNEL = (
+  NativeModules.AppRuntimeInfoModule?.distributionChannel ?? 'unknown'
+) as NativeDistributionChannel;
 const WEBVIEW_RUNTIME = createMobileWebViewRuntime({
   isDevMode: __DEV__,
   runtimeChannel: RUNTIME_CHANNEL,
@@ -43,6 +47,7 @@ const WEBVIEW_RUNTIME = createMobileWebViewRuntime({
   qaUseDevWebUrl: QA_USE_DEV_WEB_URL,
   qaEnableWebviewDebugging: QA_ENABLE_WEBVIEW_DEBUGGING,
   qaWebUrl: QA_WEB_URL,
+  nativeDistributionChannel: NATIVE_DISTRIBUTION_CHANNEL,
 });
 const APP_ENTRY_PATH = WEBVIEW_RUNTIME.appEntryPath;
 const WEB_URL = buildNativeAppBootstrapUrl(WEBVIEW_RUNTIME.webUrl, APP_ENTRY_PATH);

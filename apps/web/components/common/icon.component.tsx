@@ -1,4 +1,5 @@
 import {
+  AudioLines,
   ArrowLeft,
   Clock3,
   Menu,
@@ -19,6 +20,7 @@ export type IconName =
   | 'metronome'
   | 'pause'
   | 'play'
+  | 'rhythm'
   | 'settings'
   | 'tuner';
 
@@ -30,6 +32,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   metronome: Music2,
   pause: Pause,
   play: Play,
+  rhythm: AudioLines,
   settings: Settings2,
   tuner: Waves,
 };

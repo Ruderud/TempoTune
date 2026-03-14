@@ -5,6 +5,7 @@ import {
   DEFAULT_APP_ENTRY_PATH,
   ensureAppEntryPath,
   getWebOrigin,
+  shouldForceProductionRuntime,
 } from './webview-runtime';
 
 const baseOptions = {
@@ -102,5 +103,41 @@ describe('createMobileWebViewRuntime', () => {
     expect(runtime.webUrl).toBe('http://10.0.2.2:3000/metronome');
     expect(runtime.showQaDebugBanner).toBe(true);
     expect(runtime.webviewDebuggingEnabled).toBe(true);
+  });
+
+  it('forces production URL for iOS TestFlight distribution even with QA flags', () => {
+    const runtime = createMobileWebViewRuntime({
+      ...baseOptions,
+      runtimeChannel: 'qa',
+      qaUseDevWebUrl: true,
+      qaEnableWebviewDebugging: true,
+      qaWebUrl: 'https://qa.example.com',
+      nativeDistributionChannel: 'testflight',
+    });
+
+    expect(runtime.webUrl).toBe('https://tempotune.example.com/metronome');
+    expect(runtime.webviewDebuggingEnabled).toBe(false);
+    expect(runtime.showQaDebugBanner).toBe(false);
+    expect(runtime.shouldLogWebviewEvents).toBe(false);
+  });
+});
+
+describe('shouldForceProductionRuntime', () => {
+  it('forces production for iOS TestFlight builds', () => {
+    expect(
+      shouldForceProductionRuntime({
+        platformOs: 'ios',
+        nativeDistributionChannel: 'testflight',
+      }),
+    ).toBe(true);
+  });
+
+  it('does not force production for Android QA builds', () => {
+    expect(
+      shouldForceProductionRuntime({
+        platformOs: 'android',
+        nativeDistributionChannel: 'unknown',
+      }),
+    ).toBe(false);
   });
 });

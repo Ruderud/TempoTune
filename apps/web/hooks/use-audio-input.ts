@@ -28,6 +28,9 @@ export function useAudioInput() {
 
     // Initial device enumeration
     bridge.listInputDevices().then(setDevices).catch(() => {});
+    bridge.getSelectedInputDevice().then((device) => {
+      setSelectedDeviceId(device?.id ?? null);
+    }).catch(() => {});
 
     return () => {
       unsubState();
@@ -65,8 +68,8 @@ export function useAudioInput() {
     await bridge.startCapture(fullConfig);
   }, [selectedDeviceId]);
 
-  const stopCapture = useCallback(() => {
-    bridgeRef.current?.stopCapture();
+  const stopCapture = useCallback(async () => {
+    await bridgeRef.current?.stopCapture();
   }, []);
 
   const addConsumer = useCallback((consumer: AudioFrameConsumer): (() => void) => {

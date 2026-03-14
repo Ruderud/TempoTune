@@ -26,6 +26,8 @@
 		B1A2C3D400220062006654EE /* MetronomeSharedState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A2C3D400220060006654EE /* MetronomeSharedState.swift */; };
 		C1D2E3F400330011006654EE /* AudioInputModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F400330001006654EE /* AudioInputModule.swift */; };
 		C1D2E3F400330012006654EE /* AudioInputModule.m in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F400330002006654EE /* AudioInputModule.m */; };
+		D5A6B7C800550011006654EE /* AppRuntimeInfoModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5A6B7C800550001006654EE /* AppRuntimeInfoModule.swift */; };
+		D5A6B7C800550012006654EE /* AppRuntimeInfoModule.m in Sources */ = {isa = PBXBuildFile; fileRef = D5A6B7C800550002006654EE /* AppRuntimeInfoModule.m */; };
 		FCD3739C224C3CA60437FC42 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -78,6 +80,8 @@
 		B1A2C3D400220064006654EE /* MetronomeWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MetronomeWidgetExtension.entitlements; sourceTree = "<group>"; };
 		C1D2E3F400330001006654EE /* AudioInputModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AudioInputModule.swift; path = TempoTune/AudioInputModule.swift; sourceTree = "<group>"; };
 		C1D2E3F400330002006654EE /* AudioInputModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AudioInputModule.m; path = TempoTune/AudioInputModule.m; sourceTree = "<group>"; };
+		D5A6B7C800550001006654EE /* AppRuntimeInfoModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppRuntimeInfoModule.swift; path = TempoTune/AppRuntimeInfoModule.swift; sourceTree = "<group>"; };
+		D5A6B7C800550002006654EE /* AppRuntimeInfoModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AppRuntimeInfoModule.m; path = TempoTune/AppRuntimeInfoModule.m; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -105,6 +109,8 @@
 			children = (
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
+				D5A6B7C800550001006654EE /* AppRuntimeInfoModule.swift */,
+				D5A6B7C800550002006654EE /* AppRuntimeInfoModule.m */,
 				C1D2E3F400330001006654EE /* AudioInputModule.swift */,
 				C1D2E3F400330002006654EE /* AudioInputModule.m */,
 				A1B2C3D400112233006654EE /* PitchDetectorModule.swift */,
@@ -389,6 +395,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				D5A6B7C800550011006654EE /* AppRuntimeInfoModule.swift in Sources */,
+				D5A6B7C800550012006654EE /* AppRuntimeInfoModule.m in Sources */,
 				C1D2E3F400330011006654EE /* AudioInputModule.swift in Sources */,
 				C1D2E3F400330012006654EE /* AudioInputModule.m in Sources */,
 				A1B2C3D400112235006654EE /* PitchDetectorModule.swift in Sources */,

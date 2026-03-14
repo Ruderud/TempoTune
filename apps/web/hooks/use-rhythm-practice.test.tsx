@@ -43,6 +43,27 @@ describe('useRhythmPractice', () => {
       expect(result.current.latestHit?.status).toBe('late');
       expect(result.current.stats.totalHits).toBe(1);
       expect(result.current.stats.lateCount).toBe(1);
+      expect(result.current.recentHits).toHaveLength(1);
+      expect(result.current.currentStreak).toBe(0);
+    });
+
+    act(() => {
+      fakeBridge.emitRhythm({
+        detectedAtMonotonicMs: 1200,
+        nearestBeatAtMonotonicMs: 1200,
+        offsetMs: 0,
+        status: 'on-time',
+        confidence: 0.93,
+        source: 'pick-attack',
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.latestHit?.status).toBe('on-time');
+      expect(result.current.recentHits).toHaveLength(2);
+      expect(result.current.recentHits[0]?.status).toBe('on-time');
+      expect(result.current.currentStreak).toBe(1);
+      expect(result.current.stats.onTimeCount).toBe(1);
     });
 
     act(() => {
@@ -66,7 +87,7 @@ describe('useRhythmPractice', () => {
       });
     });
 
-    expect(result.current.stats.totalHits).toBe(1);
+    expect(result.current.stats.totalHits).toBe(2);
     unmount();
   });
 

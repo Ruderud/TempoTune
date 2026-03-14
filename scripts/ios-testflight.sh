@@ -21,6 +21,11 @@ QA_ENABLE_WEBVIEW_DEBUGGING=0 \
 QA_WEB_URL= \
   bash apps/mobile/scripts/generate-dev-config.sh
 
+if ! grep -q "export const APP_RUNTIME_CHANNEL = 'production';" apps/mobile/src/config.generated.ts; then
+  echo "[ios-testflight] Generated runtime config is not production-safe." >&2
+  exit 1
+fi
+
 # Read current version for logging
 PBXPROJ="apps/mobile/ios/TempoTune.xcodeproj/project.pbxproj"
 VERSION=$(grep -m1 'MARKETING_VERSION' "$PBXPROJ" | sed 's/.*= //;s/;//;s/ //g')

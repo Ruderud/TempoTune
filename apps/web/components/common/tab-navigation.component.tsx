@@ -18,6 +18,12 @@ const tabs = [
     match: (p: string) => p.startsWith('/tuner'),
   },
   {
+    href: '/rhythm',
+    label: '박자',
+    iconName: 'rhythm' as const,
+    match: (p: string) => p.startsWith('/rhythm'),
+  },
+  {
     href: '/settings',
     label: '설정',
     iconName: 'settings' as const,
@@ -27,8 +33,8 @@ const tabs = [
 
 export function TabNavigation() {
   const pathname = usePathname();
-  const settingsTab = tabs[2];
-  const navTabs = tabs.slice(0, 2);
+  const settingsTab = tabs[tabs.length - 1];
+  const navTabs = tabs.slice(0, tabs.length - 1);
 
   return (
     <>

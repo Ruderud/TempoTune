@@ -14,6 +14,7 @@ const EMPTY_STATS: RhythmSessionStats = {
   meanOffsetMs: 0,
   accuracy: 0,
 };
+const MAX_RECENT_HITS = 8;
 
 function accumulateStats(prev: RhythmSessionStats, hit: RhythmHitEvent): RhythmSessionStats {
   const totalHits = prev.totalHits + 1;
@@ -39,6 +40,8 @@ function accumulateStats(prev: RhythmSessionStats, hit: RhythmHitEvent): RhythmS
 export function useRhythmPractice() {
   const [isActive, setIsActive] = useState(false);
   const [latestHit, setLatestHit] = useState<RhythmHitEvent | null>(null);
+  const [recentHits, setRecentHits] = useState<RhythmHitEvent[]>([]);
+  const [currentStreak, setCurrentStreak] = useState(0);
   const [stats, setStats] = useState<RhythmSessionStats>(EMPTY_STATS);
 
   const engineRef = useRef<RhythmEngine | null>(null);
@@ -48,8 +51,23 @@ export function useRhythmPractice() {
   useEffect(() => {
     engineRef.current = new RhythmEngine();
     return () => {
+      removeConsumerRef.current?.();
+      removeNativeRhythmRef.current?.();
       engineRef.current?.reset();
     };
+  }, []);
+
+  const pushHit = useCallback((hit: RhythmHitEvent, nextStats?: RhythmSessionStats) => {
+    setLatestHit(hit);
+    setRecentHits((prev) => [hit, ...prev].slice(0, MAX_RECENT_HITS));
+    setCurrentStreak((prev) => (hit.status === 'on-time' ? prev + 1 : 0));
+
+    if (nextStats) {
+      setStats(nextStats);
+      return;
+    }
+
+    setStats((prev) => accumulateStats(prev, hit));
   }, []);
 
   const startPractice = useCallback(
@@ -63,20 +81,22 @@ export function useRhythmPractice() {
       removeNativeRhythmRef.current = null;
       engine.reset();
       setLatestHit(null);
+      setRecentHits([]);
+      setCurrentStreak(0);
       setStats(EMPTY_STATS);
       const startMs = performance.now();
       engine.generateTimeline(bpm, beatsPerMeasure, startMs, 300_000);
 
       engine.onRhythmJudgement((j: RhythmJudgement) => {
-        setLatestHit({
+        const hit: RhythmHitEvent = {
           detectedAtMonotonicMs: j.detectedAtMonotonicMs,
           nearestBeatAtMonotonicMs: j.nearestBeatAtMonotonicMs,
           offsetMs: j.offsetMs,
           status: j.status,
           confidence: j.confidence,
           source: j.source,
-        });
-        setStats(engine.getStats());
+        };
+        pushHit(hit, engine.getStats());
       });
 
       // Subscribe to audio frames via the shared facade
@@ -92,14 +112,13 @@ export function useRhythmPractice() {
           enableRhythm: true,
         });
         removeNativeRhythmRef.current = bridge.onRhythmHitDetected((event) => {
-          setLatestHit(event);
-          setStats((prev) => accumulateStats(prev, event));
+          pushHit(event);
         });
       }
 
       setIsActive(true);
     },
-    [],
+    [pushHit],
   );
 
   const stopPractice = useCallback(() => {
@@ -117,12 +136,16 @@ export function useRhythmPractice() {
   const resetStats = useCallback(() => {
     engineRef.current?.reset();
     setLatestHit(null);
+    setRecentHits([]);
+    setCurrentStreak(0);
     setStats(EMPTY_STATS);
   }, []);
 
   return {
     isActive,
     latestHit,
+    recentHits,
+    currentStreak,
     stats,
     startPractice,
     stopPractice,
