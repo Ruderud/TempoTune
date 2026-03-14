@@ -1,5 +1,16 @@
 export function isNativeEnvironment(): boolean {
-  return typeof window !== 'undefined' && 'ReactNativeWebView' in window;
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const nativeWindow = window as typeof window & {
+    __TEMPO_TUNE_NATIVE_WEBVIEW__?: boolean;
+  };
+
+  return (
+    'ReactNativeWebView' in window ||
+    nativeWindow.__TEMPO_TUNE_NATIVE_WEBVIEW__ === true
+  );
 }
 
 export function postMessageToNative<T>(message: T): void {

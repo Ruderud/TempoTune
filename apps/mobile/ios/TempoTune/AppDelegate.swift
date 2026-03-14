@@ -44,9 +44,47 @@ class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {
 
   override func bundleURL() -> URL? {
 #if DEBUG
-    RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index")
+    if let providerURL = RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: "index") {
+      return providerURL
+    }
+
+    return fallbackDebugBundleURL()
 #else
     Bundle.main.url(forResource: "main", withExtension: "jsbundle")
 #endif
   }
+
+#if DEBUG
+  private func fallbackDebugBundleURL() -> URL? {
+    let bundlePath = "index.bundle?platform=ios&dev=true&minify=false"
+    let port = ProcessInfo.processInfo.environment["RCT_METRO_PORT"] ?? "8081"
+    let hostCandidates: [String]
+
+#if targetEnvironment(simulator)
+    hostCandidates = ["localhost", "127.0.0.1"]
+#else
+    hostCandidates = [
+      ProcessInfo.processInfo.environment["RCT_METRO_HOST"],
+      ProcessInfo.processInfo.environment["DEV_MACHINE_IP"],
+    ]
+    .compactMap { value in
+      guard let trimmed = value?.trimmingCharacters(in: .whitespacesAndNewlines),
+            !trimmed.isEmpty else {
+        return nil
+      }
+      return trimmed
+    }
+#endif
+
+    for host in hostCandidates {
+      if let url = URL(string: "http://\(host):\(port)/\(bundlePath)") {
+        NSLog("[TempoTune] Falling back to Metro bundle URL: %@", url.absoluteString)
+        return url
+      }
+    }
+
+    NSLog("[TempoTune] Failed to resolve a debug JS bundle URL")
+    return nil
+  }
+#endif
 }

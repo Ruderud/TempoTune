@@ -116,6 +116,50 @@ def enableShrinkResourcesInReleaseBuilds = readConfiguredBoolean(
 def releaseTasksRequested = gradle.startParameter.taskNames.any { taskName ->
     taskName.toLowerCase().contains('release')
 }
+def qaUseDevWebUrl = readConfiguredBoolean(
+    ['tempotune.qa.useDevWebUrl'],
+    ['QA_USE_DEV_WEB_URL'],
+    false
+)
+def qaEnableWebviewDebugging = readConfiguredBoolean(
+    ['tempotune.qa.enableWebviewDebugging'],
+    ['QA_ENABLE_WEBVIEW_DEBUGGING'],
+    false
+)
+def qaWebUrl = readConfiguredValue(
+    ['tempotune.qa.webUrl'],
+    ['QA_WEB_URL']
+)
+def explicitRuntimeChannel = readConfiguredValue(
+    ['tempotune.runtimeChannel'],
+    ['APP_RUNTIME_CHANNEL']
+)
+def qaRuntimeRequested =
+    allowDebugReleaseSigning ||
+    qaUseDevWebUrl ||
+    qaEnableWebviewDebugging ||
+    (qaWebUrl != null && qaWebUrl.length() > 0)
+def runtimeChannel = explicitRuntimeChannel ?: (
+    releaseTasksRequested
+        ? (qaRuntimeRequested ? 'qa' : 'production')
+        : 'development'
+)
+
+def generateTempoTuneRuntimeConfig = tasks.register("generateTempoTuneRuntimeConfig", Exec) {
+    workingDir file("${rootDir}/..")
+    commandLine "bash", "scripts/generate-dev-config.sh"
+    environment "APP_RUNTIME_CHANNEL", runtimeChannel
+
+    if (runtimeChannel == 'production') {
+        environment "QA_USE_DEV_WEB_URL", "0"
+        environment "QA_ENABLE_WEBVIEW_DEBUGGING", "0"
+        environment "QA_WEB_URL", ""
+    }
+}
+
+tasks.named("preBuild").configure {
+    dependsOn(generateTempoTuneRuntimeConfig)
+}
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)

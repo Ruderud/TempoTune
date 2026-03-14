@@ -1,0 +1,144 @@
+{
+  "generatedAt": "2026-03-14T13:38:53.580Z",
+  "sampleRate": 44100,
+  "samples": [
+    {
+      "id": "reference_a4_note",
+      "category": "note",
+      "instrument": "reference",
+      "note": "A",
+      "octave": 4,
+      "frequency": 440,
+      "wavPath": "/qa-audio/reference_a4_note.wav",
+      "mp3Path": "/qa-audio/reference_a4_note.mp3"
+    },
+    {
+      "id": "reference_e2_note",
+      "category": "note",
+      "instrument": "reference",
+      "note": "E",
+      "octave": 2,
+      "frequency": 82.41,
+      "wavPath": "/qa-audio/reference_e2_note.wav",
+      "mp3Path": "/qa-audio/reference_e2_note.mp3"
+    },
+    {
+      "id": "guitar_open_e2_note",
+      "category": "note",
+      "instrument": "guitar",
+      "note": "E",
+      "octave": 2,
+      "frequency": 82.41,
+      "wavPath": "/qa-audio/guitar_open_e2_note.wav",
+      "mp3Path": "/qa-audio/guitar_open_e2_note.mp3"
+    },
+    {
+      "id": "guitar_open_a2_note",
+      "category": "note",
+      "instrument": "guitar",
+      "note": "A",
+      "octave": 2,
+      "frequency": 110,
+      "wavPath": "/qa-audio/guitar_open_a2_note.wav",
+      "mp3Path": "/qa-audio/guitar_open_a2_note.mp3"
+    },
+    {
+      "id": "guitar_open_d3_note",
+      "category": "note",
+      "instrument": "guitar",
+      "note": "D",
+      "octave": 3,
+      "frequency": 146.83,
+      "wavPath": "/qa-audio/guitar_open_d3_note.wav",
+      "mp3Path": "/qa-audio/guitar_open_d3_note.mp3"
+    },
+    {
+      "id": "guitar_open_g3_note",
+      "category": "note",
+      "instrument": "guitar",
+      "note": "G",
+      "octave": 3,
+      "frequency": 196,
+      "wavPath": "/qa-audio/guitar_open_g3_note.wav",
+      "mp3Path": "/qa-audio/guitar_open_g3_note.mp3"
+    },
+    {
+      "id": "guitar_open_b3_note",
+      "category": "note",
+      "instrument": "guitar",
+      "note": "B",
+      "octave": 3,
+      "frequency": 246.94,
+      "wavPath": "/qa-audio/guitar_open_b3_note.wav",
+      "mp3Path": "/qa-audio/guitar_open_b3_note.mp3"
+    },
+    {
+      "id": "guitar_open_e4_note",
+      "category": "note",
+      "instrument": "guitar",
+      "note": "E",
+      "octave": 4,
+      "frequency": 329.63,
+      "wavPath": "/qa-audio/guitar_open_e4_note.wav",
+      "mp3Path": "/qa-audio/guitar_open_e4_note.mp3"
+    },
+    {
+      "id": "bass_open_e1_note",
+      "category": "note",
+      "instrument": "bass",
+      "note": "E",
+      "octave": 1,
+      "frequency": 41.2,
+      "wavPath": "/qa-audio/bass_open_e1_note.wav",
+      "mp3Path": "/qa-audio/bass_open_e1_note.mp3"
+    },
+    {
+      "id": "bass_open_a1_note",
+      "category": "note",
+      "instrument": "bass",
+      "note": "A",
+      "octave": 1,
+      "frequency": 55,
+      "wavPath": "/qa-audio/bass_open_a1_note.wav",
+      "mp3Path": "/qa-audio/bass_open_a1_note.mp3"
+    },
+    {
+      "id": "bass_open_d2_note",
+      "category": "note",
+      "instrument": "bass",
+      "note": "D",
+      "octave": 2,
+      "frequency": 73.42,
+      "wavPath": "/qa-audio/bass_open_d2_note.wav",
+      "mp3Path": "/qa-audio/bass_open_d2_note.mp3"
+    },
+    {
+      "id": "bass_open_g2_note",
+      "category": "note",
+      "instrument": "bass",
+      "note": "G",
+      "octave": 2,
+      "frequency": 98,
+      "wavPath": "/qa-audio/bass_open_g2_note.wav",
+      "mp3Path": "/qa-audio/bass_open_g2_note.mp3"
+    },
+    {
+      "id": "rhythm_quarter_120bpm_on_time",
+      "category": "rhythm",
+      "bpm": 120,
+      "beatsPerBar": 4,
+      "bars": 4,
+      "wavPath": "/qa-audio/rhythm_quarter_120bpm_on_time.wav",
+      "mp3Path": "/qa-audio/rhythm_quarter_120bpm_on_time.mp3"
+    },
+    {
+      "id": "rhythm_quarter_120bpm_late_35ms",
+      "category": "rhythm",
+      "bpm": 120,
+      "beatsPerBar": 4,
+      "bars": 4,
+      "wavPath": "/qa-audio/rhythm_quarter_120bpm_late_35ms.wav",
+      "mp3Path": "/qa-audio/rhythm_quarter_120bpm_late_35ms.mp3"
+    }
+  ]
+}

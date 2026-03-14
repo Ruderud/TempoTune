@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPORT_DIR = resolve(__dirname, '../../../../reports/qa/device');
+const DEFAULT_APP_ENTRY_PATH = '/metronome';
 
 async function captureNativeDiagnostics(driver: WebdriverIO.Browser) {
   mkdirSync(REPORT_DIR, { recursive: true });
@@ -72,7 +73,8 @@ async function captureNativeDiagnostics(driver: WebdriverIO.Browser) {
 
 async function waitForNativeWebViewStatus(
   driver: WebdriverIO.Browser,
-  timeoutMs: number
+  timeoutMs: number,
+  appEntryPath = DEFAULT_APP_ENTRY_PATH,
 ) {
   const statusElement = await driver.$('~qa-webview-status');
 
@@ -87,11 +89,14 @@ async function waitForNativeWebViewStatus(
         throw new Error(`Native WebView reported a load failure: ${statusText}`);
       }
 
-      return statusText.includes('load-end');
+      return (
+        statusText.includes('load-end') &&
+        statusText.includes(appEntryPath)
+      );
     },
     {
       timeout: timeoutMs,
-      timeoutMsg: 'Native WebView did not report load-end in time',
+      timeoutMsg: `Native WebView did not report load-end for ${appEntryPath} in time`,
       interval: 1000,
     }
   );
@@ -105,13 +110,44 @@ export async function switchToWebView(
   driver: WebdriverIO.Browser,
   maxRetries = 5,
   delayMs = 2000,
+  appEntryPath = DEFAULT_APP_ENTRY_PATH,
 ): Promise<string> {
-  await waitForNativeWebViewStatus(
-    driver,
-    Math.max(delayMs * Math.max(maxRetries, 3), 15_000)
-  );
+  try {
+    await driver.switchContext('NATIVE_APP');
+  } catch {
+    // Ignore when the session has not entered a WebView yet.
+  }
 
   for (let i = 0; i < maxRetries; i++) {
+    let nativeWebViewReady = false;
+
+    try {
+      await waitForNativeWebViewStatus(
+        driver,
+        delayMs,
+        appEntryPath,
+      );
+      nativeWebViewReady = true;
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : String(error);
+      if (
+        message.includes('http-error') ||
+        message.includes('load-error')
+      ) {
+        throw error;
+      }
+
+      if (i < maxRetries - 1) {
+        await driver.pause(delayMs);
+        continue;
+      }
+    }
+
+    if (!nativeWebViewReady) {
+      break;
+    }
+
     const contexts = await driver.getContexts();
     const webview = contexts.find(
       (ctx) => typeof ctx === 'string' && ctx.startsWith('WEBVIEW'),

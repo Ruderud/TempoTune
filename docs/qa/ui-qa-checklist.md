@@ -108,8 +108,8 @@ This script enforces:
   - Back navigation works as expected
 
 - [ ] **Deep links tested**
-  - `/tuner`, `/metronome`, `/settings` direct access
-  - `/landing` direct access, `/`는 앱 라우트 정책대로 리디렉션 동작 확인
+  - 첫 방문 시 `/`는 랜딩, 사용 기록이 있으면 마지막 앱 화면으로 진입
+  - `/landing`, `/tuner`, `/metronome`, `/settings` direct access
 
 - [ ] **No `href="#"` remnants**
   - All links have proper `data-route` or `onClick`
@@ -173,7 +173,7 @@ Before merging any UI changes:
 5. [ ] Manually test touch targets
 6. [ ] Confirm navigation flow
 7. [ ] Run full QA: `pnpm exec nx affected -t type-check lint test`
-8. [ ] Take screenshot with `bash .claude/scripts/ui-screenshot.sh` (if applicable)
+8. [ ] Take screenshot with `bash scripts/qa/ui-screenshot.sh` (if applicable)
 
 ---
 
@@ -321,22 +321,22 @@ QA_WEB_URL=https://your-reachable-tempotune-url.example
 
 ### Environment Variables (Device E2E)
 
-| Variable              | Values                                    | Default | Description        |
-| --------------------- | ----------------------------------------- | ------- | ------------------ |
-| `QA_PLATFORM`         | `ios`, `android`, `all`                   | `all`   | Target platform    |
-| `QA_DEVICE_MODE`      | `booted`, `connected`, `all`, `allowlist` | `all`   | Device filter      |
-| `QA_DEVICE_ALLOWLIST` | comma-separated UDIDs                     | —       | For allowlist mode |
-| `QA_WEB_URL`          | full URL                                  | —       | Override WebView URL for real-device QA when local IP is unreachable |
-| `QA_ANDROID_APP_PACKAGE` | Android application id                 | `com.tempotune` | Installed-app launch target |
-| `QA_ANDROID_APP_ACTIVITY` | Android launch activity               | `com.tempotune.MainActivity` | Installed-app launch activity |
-| `QA_ANDROID_SHUTDOWN_EMULATOR_AFTER_RUN` | `0`, `1`           | `0`     | Shut Android emulators down after Appium finishes |
-| `QA_IOS_SHUTDOWN_SIMULATOR_AFTER_RUN` | `0`, `1`                    | `0`     | Shut booted simulators down after Appium finishes |
+| Variable                                 | Values                                    | Default                      | Description                                                          |
+| ---------------------------------------- | ----------------------------------------- | ---------------------------- | -------------------------------------------------------------------- |
+| `QA_PLATFORM`                            | `ios`, `android`, `all`                   | `all`                        | Target platform                                                      |
+| `QA_DEVICE_MODE`                         | `booted`, `connected`, `all`, `allowlist` | `all`                        | Device filter                                                        |
+| `QA_DEVICE_ALLOWLIST`                    | comma-separated UDIDs                     | —                            | For allowlist mode                                                   |
+| `QA_WEB_URL`                             | full URL                                  | —                            | Override WebView URL for real-device QA when local IP is unreachable |
+| `QA_ANDROID_APP_PACKAGE`                 | Android application id                    | `com.tempotune`              | Installed-app launch target                                          |
+| `QA_ANDROID_APP_ACTIVITY`                | Android launch activity                   | `com.tempotune.MainActivity` | Installed-app launch activity                                        |
+| `QA_ANDROID_SHUTDOWN_EMULATOR_AFTER_RUN` | `0`, `1`                                  | `0`                          | Shut Android emulators down after Appium finishes                    |
+| `QA_IOS_SHUTDOWN_SIMULATOR_AFTER_RUN`    | `0`, `1`                                  | `0`                          | Shut booted simulators down after Appium finishes                    |
 
 ---
 
 ## Notes
 
-- **UI screenshot tool** (`.claude/scripts/ui-screenshot.sh`) should be run after every `apps/web/` change
+- **UI screenshot tool** (`scripts/qa/ui-screenshot.sh`) should be run after every `apps/web/` change
 - **Manual viewport tests** can use browser DevTools responsive mode
 - **Touch target verification** can use browser accessibility overlays (Chrome DevTools → More tools → Rendering → Show hit-test borders)
 - **Contrast ratio** can be checked with browser DevTools color picker or https://webaim.org/resources/contrastchecker/

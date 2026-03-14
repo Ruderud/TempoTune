@@ -73,6 +73,7 @@ android/app/release
 ios/Pods
 ios/build
 apps/mobile/ios/build-qa/
+apps/mobile/ios/build-debug/
 apps/mobile/ios/ios/
 *.pbxuser
 !default.pbxuser

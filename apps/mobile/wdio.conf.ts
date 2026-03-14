@@ -131,6 +131,14 @@ function getCapabilities(): WebdriverIO.Capabilities[] {
   return caps;
 }
 
+function getAppIdentifier(): string {
+  if ((process.env.QA_PLATFORM || 'all') === 'android') {
+    return process.env.QA_ANDROID_APP_PACKAGE || DEFAULT_ANDROID_APP_PACKAGE;
+  }
+
+  return process.env.QA_IOS_BUNDLE_ID || DEFAULT_IOS_BUNDLE_ID;
+}
+
 export const config: Options.Testrunner = {
   runner: 'local',
   port: 4723,
@@ -171,5 +179,24 @@ export const config: Options.Testrunner = {
   // Set APPIUM_HOME for driver discovery
   beforeSession: () => {
     process.env.APPIUM_HOME = APPIUM_HOME;
+  },
+
+  before: async () => {
+    const appId = getAppIdentifier();
+
+    try {
+      await browser.terminateApp(appId);
+    } catch {
+      // Ignore when the app is not running yet.
+    }
+
+    await browser.pause(1000);
+
+    try {
+      await browser.activateApp(appId);
+      await browser.pause(2000);
+    } catch {
+      // Appium will still attempt to launch the AUT if activation is unsupported.
+    }
   },
 };

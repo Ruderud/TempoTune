@@ -24,6 +24,8 @@
 		B1A2C3D400220019006654EE /* MetronomeWidgetExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = B1A2C3D400220008006654EE /* MetronomeWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		B1A2C3D400220061006654EE /* MetronomeSharedState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A2C3D400220060006654EE /* MetronomeSharedState.swift */; };
 		B1A2C3D400220062006654EE /* MetronomeSharedState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1A2C3D400220060006654EE /* MetronomeSharedState.swift */; };
+		C1D2E3F400330011006654EE /* AudioInputModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F400330001006654EE /* AudioInputModule.swift */; };
+		C1D2E3F400330012006654EE /* AudioInputModule.m in Sources */ = {isa = PBXBuildFile; fileRef = C1D2E3F400330002006654EE /* AudioInputModule.m */; };
 		FCD3739C224C3CA60437FC42 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
@@ -74,6 +76,8 @@
 		B1A2C3D400220060006654EE /* MetronomeSharedState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetronomeSharedState.swift; sourceTree = "<group>"; };
 		B1A2C3D400220063006654EE /* TempoTune.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = TempoTune.entitlements; path = TempoTune/TempoTune.entitlements; sourceTree = "<group>"; };
 		B1A2C3D400220064006654EE /* MetronomeWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MetronomeWidgetExtension.entitlements; sourceTree = "<group>"; };
+		C1D2E3F400330001006654EE /* AudioInputModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AudioInputModule.swift; path = TempoTune/AudioInputModule.swift; sourceTree = "<group>"; };
+		C1D2E3F400330002006654EE /* AudioInputModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AudioInputModule.m; path = TempoTune/AudioInputModule.m; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -101,6 +105,8 @@
 			children = (
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
+				C1D2E3F400330001006654EE /* AudioInputModule.swift */,
+				C1D2E3F400330002006654EE /* AudioInputModule.m */,
 				A1B2C3D400112233006654EE /* PitchDetectorModule.swift */,
 				A1B2C3D400112234006654EE /* PitchDetectorModule.m */,
 				B1A2C3D400220001006654EE /* MetronomeModule.swift */,
@@ -192,6 +198,7 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "TempoTune" */;
 			buildPhases = (
 				C38B50BA6285516D6DCD4F65 /* [CP] Check Pods Manifest.lock */,
+				D4E5F6A700440011006654EE /* Generate Mobile Runtime Config */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
@@ -308,13 +315,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TempoTune/Pods-TempoTune-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TempoTune/Pods-TempoTune-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -343,6 +346,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		D4E5F6A700440011006654EE /* Generate Mobile Runtime Config */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../scripts/generate-dev-config.sh",
+				"$(SRCROOT)/../.env",
+			);
+			name = "Generate Mobile Runtime Config";
+			outputPaths = (
+				"$(SRCROOT)/../src/config.generated.ts",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -euo pipefail\n\nQA_USE_DEV_WEB_URL_VALUE=\"${QA_USE_DEV_WEB_URL:-0}\"\nQA_ENABLE_WEBVIEW_DEBUGGING_VALUE=\"${QA_ENABLE_WEBVIEW_DEBUGGING:-0}\"\nQA_WEB_URL_VALUE=\"${QA_WEB_URL:-}\"\nRUNTIME_CHANNEL=\"development\"\n\nif [ \"${CONFIGURATION}\" = \"Release\" ]; then\n  if [ \"$QA_USE_DEV_WEB_URL_VALUE\" = \"1\" ] || [ \"$QA_ENABLE_WEBVIEW_DEBUGGING_VALUE\" = \"1\" ] || [ -n \"$QA_WEB_URL_VALUE\" ]; then\n    RUNTIME_CHANNEL=\"qa\"\n  else\n    RUNTIME_CHANNEL=\"production\"\n    QA_USE_DEV_WEB_URL_VALUE=0\n    QA_ENABLE_WEBVIEW_DEBUGGING_VALUE=0\n    QA_WEB_URL_VALUE=\n  fi\nelif [ \"$QA_USE_DEV_WEB_URL_VALUE\" = \"1\" ] || [ \"$QA_ENABLE_WEBVIEW_DEBUGGING_VALUE\" = \"1\" ] || [ -n \"$QA_WEB_URL_VALUE\" ]; then\n  RUNTIME_CHANNEL=\"qa\"\nfi\n\ncd \"${SRCROOT}/..\"\nAPP_RUNTIME_CHANNEL=\"$RUNTIME_CHANNEL\" \\\nQA_USE_DEV_WEB_URL=\"$QA_USE_DEV_WEB_URL_VALUE\" \\\nQA_ENABLE_WEBVIEW_DEBUGGING=\"$QA_ENABLE_WEBVIEW_DEBUGGING_VALUE\" \\\nQA_WEB_URL=\"$QA_WEB_URL_VALUE\" \\\n  bash scripts/generate-dev-config.sh\n";
+			showEnvVarsInLog = 0;
+		};
 		E235C05ADACE081382539298 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -351,13 +372,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TempoTune/Pods-TempoTune-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TempoTune/Pods-TempoTune-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -372,6 +389,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				C1D2E3F400330011006654EE /* AudioInputModule.swift in Sources */,
+				C1D2E3F400330012006654EE /* AudioInputModule.m in Sources */,
 				A1B2C3D400112235006654EE /* PitchDetectorModule.swift in Sources */,
 				A1B2C3D400112236006654EE /* PitchDetectorModule.m in Sources */,
 				B1A2C3D400220011006654EE /* MetronomeModule.swift in Sources */,

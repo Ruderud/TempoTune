@@ -102,10 +102,10 @@ export default function TunerPage() {
             {/* Row 2: Note + cents display */}
             <div className="flex items-center justify-center gap-4 px-4 py-2">
               <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-black text-text-strong">
+                <span data-testid="tuner-detected-note" className="text-4xl font-black text-text-strong">
                   {tuner.detectedNote ? tuner.detectedNote.name : '--'}
                 </span>
-                <span className="text-xl font-bold text-text-secondary">
+                <span data-testid="tuner-detected-octave" className="text-xl font-bold text-text-secondary">
                   {tuner.detectedNote ? tuner.detectedNote.octave : ''}
                 </span>
               </div>
@@ -114,7 +114,7 @@ export default function TunerPage() {
                   {tuner.centsFromTarget > 0 ? '+' : ''}{Math.round(tuner.centsFromTarget)} cents
                 </span>
               )}
-              <span className="text-xs text-text-muted tabular-nums">
+              <span data-testid="tuner-detected-frequency" className="text-xs text-text-muted tabular-nums">
                 {tuner.detectedNote ? `${tuner.detectedNote.frequency.toFixed(1)} Hz` : ''}
               </span>
             </div>
@@ -230,18 +230,18 @@ export default function TunerPage() {
               {/* Big note display */}
               <div className="flex-1 flex flex-col items-center justify-center min-h-0">
                 <div className="flex items-baseline">
-                  <span className={`text-[140px] font-black leading-none tracking-tight ${
+                  <span data-testid="tuner-detected-note" className={`text-[140px] font-black leading-none tracking-tight ${
                     tuner.hasSignal && Math.abs(tuner.centsFromTarget) < 5 ? 'text-primary glow-text' : 'text-text-strong'
                   }`}>
                     {tuner.detectedNote ? tuner.detectedNote.name : '--'}
                   </span>
                   {tuner.detectedNote && (
-                    <span className="text-5xl font-bold text-text-secondary -translate-y-12 ml-1">
+                    <span data-testid="tuner-detected-octave" className="text-5xl font-bold text-text-secondary -translate-y-12 ml-1">
                       {tuner.detectedNote.octave}
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-4 mt-2 text-sm text-text-muted tabular-nums">
+                <div data-testid="tuner-detected-frequency" className="flex items-center gap-4 mt-2 text-sm text-text-muted tabular-nums">
                   {tuner.detectedNote && (
                     <>
                       <span>{tuner.detectedNote.frequency.toFixed(1)} Hz</span>

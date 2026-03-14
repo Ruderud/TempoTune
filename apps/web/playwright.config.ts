@@ -25,9 +25,9 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'pnpm dev',
+    command: 'sh -c "test -f .next/BUILD_ID || pnpm build; pnpm start"',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
-    timeout: 30_000,
+    timeout: 120_000,
   },
 });

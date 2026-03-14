@@ -433,8 +433,9 @@ function runWdio(target: MobileTarget, portOffset: number): TargetRunResult {
   const { passthroughWithoutSpec, specArgs } = splitSpecArgs(
     normalizedPassthroughArgs
   );
-  const shouldRunSequentialSpecs =
-    target.platform === 'ios' && target.type === 'device';
+  // A single device/simulator cannot safely run multiple UI specs in parallel
+  // because each session mutates the same app and WebView state.
+  const shouldRunSequentialSpecs = true;
 
   const executions = shouldRunSequentialSpecs
     ? (specArgs.length > 0 ? specArgs : getDefaultSpecFiles()).map((specPath) => ({

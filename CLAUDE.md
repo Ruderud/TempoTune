@@ -30,7 +30,7 @@ pnpm --filter @tempo-tune/web dev     # dev server
 
 ### UI 작업 후 자동 스크린샷
 
-- `apps/web/` 파일 수정 후 반드시 `bash .claude/scripts/ui-screenshot.sh` 실행
+- `apps/web/` 파일 수정 후 반드시 `bash scripts/qa/ui-screenshot.sh` 실행
 - `.screenshots/` 결과를 Read tool로 시각 확인
 
 ### Git Convention
