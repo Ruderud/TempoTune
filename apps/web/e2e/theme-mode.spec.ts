@@ -1,12 +1,16 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('Theme Mode', () => {
-  test('theme menu applies explicit light and dark themes', async ({ page }) => {
+  test('theme menu applies explicit light and dark themes', async ({
+    page,
+  }) => {
     await page.goto('/tuner');
     await expect(page.getByTestId('tuner-play-stop').first()).toBeVisible();
 
     const html = page.locator('html');
-    const themeTrigger = page.locator('[data-testid="theme-menu-trigger"]:visible');
+    const themeTrigger = page.locator(
+      '[data-testid="theme-menu-trigger"]:visible'
+    );
 
     await themeTrigger.click();
     await page.getByTestId('theme-option-light').click();

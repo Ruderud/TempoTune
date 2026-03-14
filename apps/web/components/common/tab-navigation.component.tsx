@@ -9,7 +9,7 @@ const tabs = [
     href: '/metronome',
     label: '메트로놈',
     iconName: 'metronome' as const,
-    match: (p: string) => p.startsWith('/metronome') || p === '/',
+    match: (p: string) => p.startsWith('/metronome'),
   },
   {
     href: '/tuner',
@@ -33,7 +33,10 @@ export function TabNavigation() {
   return (
     <>
       {/* Mobile: Bottom Tab Bar */}
-      <nav data-testid="tab-bar-mobile" className="order-last glass-nav tab-bar-safe-area lg:hidden">
+      <nav
+        data-testid="tab-bar-mobile"
+        className="order-last glass-nav tab-bar-safe-area lg:hidden"
+      >
         <div className="flex justify-around max-w-md mx-auto px-4 pt-2 pb-2">
           {tabs.map((tab) => {
             const active = tab.match(pathname);
@@ -48,7 +51,12 @@ export function TabNavigation() {
                     : 'text-primary/40 active:text-primary/60'
                 }`}
               >
-                <Icon name={tab.iconName} size={20} className={active ? 'glow-text' : ''} label={tab.label} />
+                <Icon
+                  name={tab.iconName}
+                  size={20}
+                  className={active ? 'glow-text' : ''}
+                  label={tab.label}
+                />
                 <span className="text-xs font-semibold">{tab.label}</span>
               </Link>
             );
@@ -62,9 +70,16 @@ export function TabNavigation() {
           <div className="flex items-center gap-8">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center glow-primary">
-                <Icon name="metronome" size={20} className="text-background-dark" label="TempoTune" />
+                <Icon
+                  name="metronome"
+                  size={20}
+                  className="text-background-dark"
+                  label="TempoTune"
+                />
               </div>
-              <h1 className="text-lg font-bold tracking-tight text-primary">TempoTune</h1>
+              <h1 className="text-lg font-bold tracking-tight text-primary">
+                TempoTune
+              </h1>
             </div>
             <div className="h-5 w-px bg-primary/20" />
             <nav className="flex items-center gap-1">
@@ -81,7 +96,12 @@ export function TabNavigation() {
                         : 'text-primary/60 hover:text-primary hover:bg-primary/5'
                     }`}
                   >
-                    <Icon name={tab.iconName} size={20} className={active ? 'glow-text' : ''} label={tab.label} />
+                    <Icon
+                      name={tab.iconName}
+                      size={20}
+                      className={active ? 'glow-text' : ''}
+                      label={tab.label}
+                    />
                     <span>{tab.label}</span>
                   </Link>
                 );

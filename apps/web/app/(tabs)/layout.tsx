@@ -1,19 +1,26 @@
 'use client';
 
+import { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { TabNavigation } from '../../components/common/tab-navigation.component';
 import { APP_VERSION, COPYRIGHT_YEAR, LEGAL_ENTITY } from '../../constants/app';
+import { persistLastAppRoute } from '../../lib/last-app-route';
 
 export default function TabsLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    persistLastAppRoute(pathname);
+  }, [pathname]);
+
   return (
     <main className="flex flex-col h-[100dvh] overflow-hidden bg-background-dark">
       <TabNavigation />
-      <div className="flex-1 min-h-0 lg:grid-bg">
-        {children}
-      </div>
+      <div className="flex-1 min-h-0 lg:grid-bg">{children}</div>
 
       {/* Desktop: Glass Footer Status Bar */}
       <footer className="hidden lg:flex glass-footer h-8 items-center justify-between px-6 text-xs text-text-muted tabular-nums shrink-0">
@@ -23,7 +30,9 @@ export default function TabsLayout({
         </div>
         <div className="flex items-center gap-4">
           <span>v{APP_VERSION}</span>
-          <span>&copy; {COPYRIGHT_YEAR} {LEGAL_ENTITY}</span>
+          <span>
+            &copy; {COPYRIGHT_YEAR} {LEGAL_ENTITY}
+          </span>
         </div>
       </footer>
     </main>
