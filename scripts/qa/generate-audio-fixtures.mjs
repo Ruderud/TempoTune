@@ -9,7 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const require = createRequire(import.meta.url);
 const {Mp3Encoder} = require('lamejsfix');
 const ROOT = resolve(__dirname, '../..');
-const OUTPUT_DIR = resolve(ROOT, 'apps/web/public/qa-audio');
+const OUTPUT_DIR = resolve(ROOT, 'qa/assets/audio');
 const SAMPLE_RATE = 44_100;
 const BIT_RATE_KBPS = 128;
 

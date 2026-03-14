@@ -1,5 +1,8 @@
 # QA Audio Fixtures
 
+These files are QA-only fixtures. They should not live under deployable web `public/` assets.
+The canonical location is `qa/assets/audio/`, and the app serves them only through the QA route `/qa-audio/*` during local dev/QA runs.
+
 Re-generate these files with:
 
 ```bash
