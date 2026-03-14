@@ -25,6 +25,12 @@ cd apps/mobile/android
 ./gradlew app:bundleRelease
 ```
 
+Expected artifact path:
+
+```text
+apps/mobile/android/app/build/outputs/bundle/release/
+```
+
 If the signing variables are missing, release builds fail fast by design.
 
 ### QA Android release build
@@ -49,12 +55,25 @@ TEMPO_TUNE_ENABLE_SHRINK_RESOURCES_IN_RELEASE=0 \
 ./gradlew app:assembleRelease
 ```
 
+Expected artifact path:
+
+```text
+apps/mobile/android/app/build/outputs/apk/release/
+```
+
 ## iOS
 
 Use the existing TestFlight flow:
 
 ```bash
 ./scripts/ios-testflight.sh
+```
+
+Expected archive/log paths:
+
+```text
+apps/mobile/ios/build/TempoTune.xcarchive
+apps/mobile/ios/build/testflight-upload.log
 ```
 
 For real-device QA signing, prefer `.env.qa.local` with:

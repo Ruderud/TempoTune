@@ -193,7 +193,7 @@ tuner.onPitch((result) => {
 main push → Type Check → Lint → Test → Version Inject → Build & Deploy
 ```
 
-모바일 릴리스/서명 절차는 [docs/mobile-release.md](docs/mobile-release.md)에 정리되어 있습니다.
+모바일 릴리스/서명 절차는 [docs/releases/mobile-release.md](docs/releases/mobile-release.md)에 정리되어 있습니다.
 
 ## License
 

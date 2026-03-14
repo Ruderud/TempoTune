@@ -32,7 +32,7 @@
 
 2. 코드 규칙
 - 작업 단위(WU)별 커밋 분리
-- `apps/web` 수정 후 `bash .claude/scripts/ui-screenshot.sh` 필수
+- `apps/web` 수정 후 `bash scripts/qa/ui-screenshot.sh` 필수
 - 기존 오디오/튜닝 로직 계약(`hooks/services`)은 우선 유지, UI 계층부터 교체
 
 3. 정적 텍스트 정책
@@ -254,7 +254,7 @@
 1) docs/mockups/stitch-tempotune-v1.0-2026-02-14 + docs/mockups/stitch-tempotune-branding-v1-2026-02-14를 SSOT로 사용
 2) 작업 단위를 WU-1~WU-8로 나누고 병렬 가능한 것은 병렬로 진행
 3) 텍스트 12px 미만 금지, 터치 타겟 44px 미만 금지
-4) apps/web 수정 후 bash .claude/scripts/ui-screenshot.sh 실행하고 결과 검토
+4) apps/web 수정 후 bash scripts/qa/ui-screenshot.sh 실행하고 결과 검토
 5) 기존 오디오 훅(useTuner/useMetronome) 계약은 깨지지 않게 UI 계층 위주로 교체
 6) 커밋은 WU 단위로 분리해서 남겨
 
@@ -263,4 +263,3 @@
 - 스크린샷 검증 결과
 - 남은 리스크와 후속 TODO
 ```
-
