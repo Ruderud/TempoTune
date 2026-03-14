@@ -4,8 +4,8 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import type { TunerNote, TuningPreset, TuningString } from '@tempo-tune/shared/types';
 import { A4_FREQUENCY, ALL_TUNING_PRESETS } from '@tempo-tune/shared/constants';
 import { TunerAudioService } from '../services/audio';
-import { AudioBridgeClient } from '../services/bridge/audio-bridge.client';
-import { isNativeEnvironment } from '../services/bridge/bridge-adapter';
+import type { AudioInputBridge } from '@tempo-tune/audio-input';
+import { getAudioInputBridge } from '../services/audio-input';
 import { TunerEngine } from '@tempo-tune/audio/tuner';
 import { clamp } from '@tempo-tune/shared/utils';
 import { useTunerDetectionSettings, toPitchDetectionConfig } from './use-tuner-detection-settings';
@@ -43,7 +43,7 @@ export function useTuner() {
   const [error, setError] = useState<string | null>(null);
 
   const serviceRef = useRef<TunerAudioService | null>(null);
-  const bridgeRef = useRef<AudioBridgeClient | null>(null);
+  const bridgeRef = useRef<AudioInputBridge | null>(null);
   const engineRef = useRef<TunerEngine | null>(null);
   const targetStringRef = useRef<TuningString | null>(null);
   const closestStringRef = useRef<TuningString | null>(null);
@@ -271,43 +271,58 @@ export function useTuner() {
   useEffect(() => {
     const pitchConfig = toPitchDetectionConfig(detectionSettingsRef.current);
 
-    if (isNativeEnvironment()) {
-      const bridge = new AudioBridgeClient();
-      const engine = new TunerEngine();
-      engine.setPreset(ALL_TUNING_PRESETS[0]);
-      engine.setReferenceFrequency(A4_FREQUENCY);
-      engine.setPitchDetectionConfig(pitchConfig);
-      bridgeRef.current = bridge;
-      engineRef.current = engine;
+    // Unified path: use AudioInputBridge facade (no platform branching).
+    const bridge = getAudioInputBridge();
+    const engine = new TunerEngine();
+    engine.setPreset(ALL_TUNING_PRESETS[0]);
+    engine.setReferenceFrequency(A4_FREQUENCY);
+    engine.setPitchDetectionConfig(pitchConfig);
+    bridgeRef.current = bridge;
+    engineRef.current = engine;
 
-      const unsubPitch = bridge.onPitchDetected((note) => processDetectedNote(note));
-      const unsubError = bridge.onError((err) => {
-        setError(err.message || 'An error occurred. Please try again.');
-        setIsListening(false);
-      });
+    const cleanups: (() => void)[] = [];
 
-      return () => {
-        unsubPitch();
-        unsubError();
-        bridge.dispose();
-        engine.dispose();
+    // Subscribe to pitch events from facade (native path emits these directly)
+    cleanups.push(bridge.onPitchDetected((event) => {
+      const note: TunerNote = {
+        frequency: event.frequency,
+        name: event.name as TunerNote['name'],
+        octave: event.octave,
+        cents: event.cents,
+        confidence: event.confidence,
+        detectedAtMs: event.detectedAtMonotonicMs,
+        debugSeq: event.debugSeq,
+        debugSource: event.debugSource,
       };
-    }
+      processDetectedNote(note);
+    }));
 
-    serviceRef.current = new TunerAudioService();
-    serviceRef.current.setPreset(ALL_TUNING_PRESETS[0]);
-    serviceRef.current.setReferenceFrequency(A4_FREQUENCY);
-    serviceRef.current.setPitchDetectionConfig(pitchConfig);
-    const unsubscribe = serviceRef.current.onNoteDetected(processDetectedNote);
-    const unsubError = serviceRef.current.onError((err) => {
+    cleanups.push(bridge.onError((err) => {
       setError(err.message || 'An error occurred. Please try again.');
       setIsListening(false);
-    });
+    }));
+
+    // If facade supports frame consumers (web path), register tuner as consumer
+    if (bridge.addFrameConsumer) {
+      const tunerService = new TunerAudioService();
+      tunerService.setPreset(ALL_TUNING_PRESETS[0]);
+      tunerService.setReferenceFrequency(A4_FREQUENCY);
+      tunerService.setPitchDetectionConfig(pitchConfig);
+      serviceRef.current = tunerService;
+
+      cleanups.push(tunerService.onNoteDetected(processDetectedNote));
+      cleanups.push(tunerService.onError((err) => {
+        setError(err.message || 'An error occurred. Please try again.');
+        setIsListening(false);
+      }));
+      cleanups.push(bridge.addFrameConsumer(tunerService.createFrameConsumer()));
+      cleanups.push(() => tunerService.dispose());
+    }
 
     return () => {
-      unsubscribe();
-      unsubError();
-      serviceRef.current?.dispose();
+      for (const cleanup of cleanups) cleanup();
+      engine.dispose();
+      // Don't dispose the singleton bridge — it's shared across hooks
     };
   }, [detectionSettingsRef, processDetectedNote]);
 
@@ -320,10 +335,15 @@ export function useTuner() {
   const start = useCallback(async () => {
     try {
       setError(null);
-      if (bridgeRef.current) {
-        await bridgeRef.current.startListening();
-      } else {
-        await serviceRef.current?.start();
+      const bridge = bridgeRef.current;
+      if (bridge) {
+        serviceRef.current?.startExternal();
+        await bridge.startCapture({
+          deviceId: 'default',
+          channelIndex: 0,
+          enablePitch: true,
+          enableRhythm: false,
+        });
       }
       setIsListening(true);
       clearSignalState();
@@ -341,11 +361,8 @@ export function useTuner() {
   }, [clearHistory, clearSignalState, setCentsFromTarget]);
 
   const stop = useCallback(() => {
-    if (bridgeRef.current) {
-      bridgeRef.current.stopListening();
-    } else {
-      serviceRef.current?.stop();
-    }
+    bridgeRef.current?.stopCapture();
+    serviceRef.current?.stop();
     setIsListening(false);
     clearSignalState();
     setDetectedNote(null);

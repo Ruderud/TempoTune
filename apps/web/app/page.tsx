@@ -13,11 +13,26 @@ export const metadata: Metadata = {
   description: '전문 연주자와 작곡가를 위한 고정밀 튜닝 엔진과 스마트 메트로놈',
 };
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const cookieStore = await cookies();
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const nativeAppRoute = sanitizeLastAppRoute(
+    typeof resolvedSearchParams?.appEntryPath === 'string'
+      ? resolvedSearchParams.appEntryPath
+      : null
+  );
+  const isNativeAppBootstrap = resolvedSearchParams?.nativeApp === '1';
   const lastRoute = sanitizeLastAppRoute(
     cookieStore.get(LAST_APP_ROUTE_COOKIE_KEY)?.value
   );
+
+  if (isNativeAppBootstrap) {
+    redirect(nativeAppRoute ?? '/metronome');
+  }
 
   if (lastRoute) {
     redirect(lastRoute);

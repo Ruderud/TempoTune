@@ -21,7 +21,9 @@
     "baseUrl": ".",
     "paths": {
       "@tempo-tune/shared/*": ["packages/shared/src/*"],
-      "@tempo-tune/audio/*": ["packages/audio/src/*"]
+      "@tempo-tune/audio/*": ["packages/audio/src/*"],
+      "@tempo-tune/audio-input": ["packages/audio-input/src"],
+      "@tempo-tune/audio-input/*": ["packages/audio-input/src/*"]
     }
   },
   "exclude": ["node_modules", "dist", "build", ".next", "out"]

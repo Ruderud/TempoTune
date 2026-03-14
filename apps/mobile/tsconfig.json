@@ -7,7 +7,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@tempo-tune/shared/*": ["../../packages/shared/src/*"],
-      "@tempo-tune/audio/*": ["../../packages/audio/src/*"]
+      "@tempo-tune/audio/*": ["../../packages/audio/src/*"],
+      "@tempo-tune/audio-input": ["../../packages/audio-input/src/index.ts"]
     }
   },
   "include": ["src/**/*", "*.ts", "*.tsx"],

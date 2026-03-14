@@ -1,9 +1,126 @@
+# CocoaPods 1.16.x can intermittently choke on pnpm/symlinked paths while generating
+# the Pods project for React Native monorepos. Keep iOS on the legacy architecture
+# for now and sanitize any accidental NUL-containing pathnames until upstream fixes land.
+ENV['RCT_NEW_ARCH_ENABLED'] = '0'
+
+if defined?(Pod::Project)
+  module TempoTuneCocoaPodsNullPathWorkaround
+    def group_for_path_in_group(absolute_pathname, group, reflect_file_system_structure, base_path = nil)
+      absolute_pathname = tempotune_sanitize_pathname(absolute_pathname)
+      base_path = tempotune_sanitize_pathname(base_path) if base_path
+
+      unless absolute_pathname.absolute?
+        raise ArgumentError, "Paths must be absolute #{absolute_pathname}"
+      end
+      unless base_path.nil? || base_path.absolute?
+        raise ArgumentError, "Paths must be absolute #{base_path}"
+      end
+
+      relative_base = base_path.nil? ? group.real_path : tempotune_safe_realdirpath(base_path)
+      relative_pathname = absolute_pathname.relative_path_from(relative_base)
+      relative_dir = relative_pathname.dirname
+
+      if reflect_file_system_structure
+        path = relative_base
+        relative_dir.each_filename do |name|
+          break if name.to_s.downcase.include? '.lproj'
+          next if name == '.'
+
+          path += name
+          group = group.children.find { |child| child.display_name == name } || group.new_group(name, path)
+        end
+      end
+
+      if relative_dir.basename.to_s.downcase.include? '.lproj'
+        group_name = variant_group_name(absolute_pathname)
+        lproj_parent_dir = absolute_pathname.dirname.dirname
+        group = @variant_groups_by_path_and_name[[lproj_parent_dir, group_name]] ||=
+                  group.new_variant_group(group_name, lproj_parent_dir)
+      end
+
+      group
+    end
+
+    private
+
+    def tempotune_sanitize_pathname(pathname)
+      return nil if pathname.nil?
+      Pathname.new(pathname.to_s.delete("\0"))
+    end
+
+    def tempotune_safe_realdirpath(pathname)
+      pathname.realdirpath
+    rescue ArgumentError => error
+      raise unless error.message.include?('null byte')
+
+      sanitized = tempotune_sanitize_pathname(pathname)
+      sanitized.realpath
+    rescue Errno::ENOENT
+      tempotune_sanitize_pathname(pathname).expand_path
+    end
+  end
+
+  Pod::Project.prepend(TempoTuneCocoaPodsNullPathWorkaround)
+end
+
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
     "react-native/scripts/react_native_pods.rb",
     {paths: [process.argv[1]]},
   )', __dir__]).strip
+
+if defined?(NewArchitectureHelper)
+  module TempoTuneInfoPlistScanWorkaround
+    def set_RCTNewArchEnabled_in_info_plist(installer, new_arch_enabled)
+      project_paths = installer.aggregate_targets
+        .map(&:user_project)
+        .uniq { |project| project.path }
+        .map(&:path)
+
+      project_paths.each do |project_path|
+        project_folder_path = File.dirname(project_path)
+        info_plist_files = Dir.glob(File.join(project_folder_path, '**', 'Info.plist'))
+
+        info_plist_files.each do |info_plist_file|
+          normalized = info_plist_file.tr('\\', '/')
+          next if tempotune_skip_info_plist?(normalized)
+
+          begin
+            info_plist = Xcodeproj::Plist.read_from_path(info_plist_file)
+          rescue ArgumentError => error
+            raise unless error.message.include?('invalid byte sequence in UTF-8')
+            next
+          end
+
+          next if info_plist['RCTNewArchEnabled'] == (new_arch_enabled ? true : false)
+
+          info_plist['RCTNewArchEnabled'] = new_arch_enabled ? true : false
+          Xcodeproj::Plist.write_to_path(info_plist, info_plist_file)
+        end
+      end
+    end
+
+    private
+
+    def tempotune_skip_info_plist?(normalized_path)
+      excluded_markers = [
+        '/Pods/',
+        '/Tests/',
+        '/metainternal/',
+        '.bundle/',
+        '/DerivedData/',
+        '/build/',
+        '/build-',
+        '/xcuserdata/',
+      ]
+
+      excluded_markers.any? { |marker| normalized_path.include?(marker) }
+    end
+  end
+
+  NewArchitectureHelper.singleton_class.prepend(TempoTuneInfoPlistScanWorkaround)
+end
 
 platform :ios, min_ios_version_supported
 prepare_react_native_project!
@@ -30,5 +147,11 @@ target 'TempoTune' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |build_configuration|
+        build_configuration.build_settings['RCT_METRO_PORT'] = '8081'
+      end
+    end
   end
 end

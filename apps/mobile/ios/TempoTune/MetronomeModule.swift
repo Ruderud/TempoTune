@@ -8,7 +8,7 @@ class MetronomeModule: RCTEventEmitter {
 
   // MARK: - Singleton (for App Intents access)
 
-  static let shared = MetronomeModule()
+  static var instance: MetronomeModule?
 
   // MARK: - State
 
@@ -20,6 +20,7 @@ class MetronomeModule: RCTEventEmitter {
   private var beatDenominator: Int = 4
   private var accentFirst: Bool = true
   private var currentBeat: Int = 0
+  private var lastBeatAtMonotonicMs: Double = 0
 
   // MARK: - Audio render state (accessed from audio thread)
 
@@ -46,6 +47,7 @@ class MetronomeModule: RCTEventEmitter {
 
   override init() {
     super.init()
+    Self.instance = self
     observeDarwinNotifications()
     observeAudioInterruptions()
     NotificationCenter.default.addObserver(
@@ -62,6 +64,11 @@ class MetronomeModule: RCTEventEmitter {
 
   override func startObserving() { hasListeners = true }
   override func stopObserving() { hasListeners = false }
+
+  var isCurrentlyPlayingForRhythm: Bool { isPlaying }
+  var currentBpmForRhythm: Double { bpm }
+  var currentBeatsPerMeasureForRhythm: Int { beatsPerMeasure }
+  var currentBeatAtMonotonicMsForRhythm: Double { lastBeatAtMonotonicMs }
 
   // MARK: - Exported Methods
 
@@ -248,12 +255,21 @@ class MetronomeModule: RCTEventEmitter {
 
   private func emitTick(beatIndex: Int, isAccent: Bool) {
     guard hasListeners else { return }
-    let timestamp = Date().timeIntervalSince1970 * 1000
+    let beatAtMonotonicMs = Self.monotonicNowMs()
+    lastBeatAtMonotonicMs = beatAtMonotonicMs
     sendEvent(withName: "onMetronomeTick", body: [
       "beatIndex": beatIndex,
       "isAccent": isAccent,
-      "timestamp": timestamp,
+      "timestamp": beatAtMonotonicMs,
+      "beatAtMonotonicMs": beatAtMonotonicMs,
     ])
+  }
+
+  private static func monotonicNowMs() -> Double {
+    var info = mach_timebase_info_data_t()
+    mach_timebase_info(&info)
+    let nanos = mach_absolute_time() * UInt64(info.numer) / UInt64(info.denom)
+    return Double(nanos) / 1_000_000.0
   }
 
   // MARK: - Live Activity (ActivityKit)

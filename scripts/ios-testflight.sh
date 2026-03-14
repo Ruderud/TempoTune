@@ -14,6 +14,13 @@ LOG_FILE="apps/mobile/ios/build/testflight-upload.log"
 
 mkdir -p "$(dirname "$ARCHIVE_PATH")" "$OUTPUT_DIR"
 
+echo "[ios-testflight] Regenerating mobile runtime config for production..."
+APP_RUNTIME_CHANNEL=production \
+QA_USE_DEV_WEB_URL=0 \
+QA_ENABLE_WEBVIEW_DEBUGGING=0 \
+QA_WEB_URL= \
+  bash apps/mobile/scripts/generate-dev-config.sh
+
 # Read current version for logging
 PBXPROJ="apps/mobile/ios/TempoTune.xcodeproj/project.pbxproj"
 VERSION=$(grep -m1 'MARKETING_VERSION' "$PBXPROJ" | sed 's/.*= //;s/;//;s/ //g')

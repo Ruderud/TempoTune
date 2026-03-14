@@ -131,6 +131,52 @@ export class TunerAudioService {
     return this.isListening;
   }
 
+  /**
+   * Create a frame consumer that feeds audio data into the tuner engine.
+   * Used to connect to LiveInputAudioService for shared capture sessions.
+   */
+  createFrameConsumer(): (timeDomainData: Float32Array<ArrayBuffer>, sampleRate: number) => void {
+    return (timeDomainData: Float32Array<ArrayBuffer>, sampleRate: number) => {
+      if (!this.isListening) return;
+
+      try {
+        this.engine.setAudioConfig({
+          sampleRate,
+          bufferSize: timeDomainData.length,
+        });
+
+        const pitch = this.engine.detectPitch(timeDomainData);
+        const noteWithDebug = pitch
+          ? {
+              ...frequencyToNote(pitch.frequency, this.engine.getReferenceFrequency()),
+              confidence: pitch.confidence,
+              rms: pitch.rms,
+              detectedAtMs: Date.now(),
+              debugSource: 'web' as const,
+            }
+          : null;
+
+        for (const callback of this.noteCallbacks) {
+          callback(noteWithDebug);
+        }
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        for (const cb of this.errorCallbacks) {
+          cb(error);
+        }
+      }
+    };
+  }
+
+  /**
+   * Start in "external" mode — marks as listening without opening getUserMedia.
+   * Audio frames are fed via createFrameConsumer().
+   */
+  startExternal(): void {
+    if (this.isListening) return;
+    this.isListening = true;
+  }
+
   dispose(): void {
     this.stop();
     this.noteCallbacks.clear();

@@ -5,10 +5,25 @@ export type AudioBridgeEventType =
   | 'pitchDetected'
   | 'listeningStarted'
   | 'listeningStopped'
-  | 'error';
+  | 'error'
+  // Audio input infrastructure events
+  | 'sessionStateChanged'
+  | 'rhythmHitDetected'
+  | 'routeChanged';
 
 export type AudioBridgeRequest = {
-  action: 'requestPermission' | 'startListening' | 'stopListening' | 'getPermissionStatus';
+  action:
+    | 'requestPermission'
+    | 'startListening'
+    | 'stopListening'
+    | 'getPermissionStatus'
+    // Audio input infrastructure actions
+    | 'listInputDevices'
+    | 'getSelectedInputDevice'
+    | 'selectInputDevice'
+    | 'startCapture'
+    | 'stopCapture'
+    | 'configureAnalyzers';
 };
 
 export type AudioBridgeResponse = {

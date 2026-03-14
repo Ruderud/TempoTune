@@ -1,0 +1,30 @@
+{
+  "name": "audio-input",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/audio-input/src",
+  "projectType": "library",
+  "tags": ["type:lib", "scope:audio-input"],
+  "targets": {
+    "type-check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter @tempo-tune/audio-input type-check",
+        "cwd": "packages/audio-input"
+      }
+    },
+    "lint": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter @tempo-tune/audio-input lint",
+        "cwd": "packages/audio-input"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "pnpm --filter @tempo-tune/audio-input test",
+        "cwd": "packages/audio-input"
+      }
+    }
+  }
+}

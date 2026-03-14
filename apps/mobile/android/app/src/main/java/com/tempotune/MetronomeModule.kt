@@ -16,6 +16,7 @@ import kotlin.math.PI
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sin
+import android.os.SystemClock
 
 class MetronomeModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
@@ -43,6 +44,7 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
     private var beatDenominator: Int = 4
     @Volatile private var accentFirst: Boolean = true
     private var currentBeat: Int = 0
+    @Volatile private var lastBeatAtMonotonicMs: Double = 0.0
 
     // Audio render state
     private val sampleRate = 44100
@@ -87,6 +89,9 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
 
     /** Expose playing state for external callers (MediaSession, etc.) */
     fun isCurrentlyPlaying(): Boolean = isPlaying
+    fun currentBpm(): Double = bpm
+    fun currentBeatsPerMeasure(): Int = beatsPerMeasure
+    fun currentBeatAtMonotonicMs(): Double = lastBeatAtMonotonicMs
 
     private fun sendEvent(eventName: String, params: com.facebook.react.bridge.WritableMap?) {
         if (!hasListeners) return
@@ -344,10 +349,13 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
 
     // Tick emission
     private fun emitTick(beatIndex: Int, isAccent: Boolean) {
+        val beatAtMonotonicMs = SystemClock.elapsedRealtime().toDouble()
+        lastBeatAtMonotonicMs = beatAtMonotonicMs
         val params = Arguments.createMap().apply {
             putInt("beatIndex", beatIndex)
             putBoolean("isAccent", isAccent)
-            putDouble("timestamp", System.currentTimeMillis().toDouble())
+            putDouble("timestamp", beatAtMonotonicMs)
+            putDouble("beatAtMonotonicMs", beatAtMonotonicMs)
         }
         sendEvent("onMetronomeTick", params)
     }

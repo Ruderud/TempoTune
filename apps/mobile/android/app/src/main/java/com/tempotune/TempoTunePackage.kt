@@ -10,6 +10,7 @@ class TempoTunePackage : ReactPackage {
         return listOf(
             MetronomeModule(reactContext),
             PitchDetectorModule(reactContext),
+            AudioInputModule(reactContext),
         )
     }
 
