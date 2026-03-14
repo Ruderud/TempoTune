@@ -16,15 +16,13 @@ mkdir -p "$(dirname "$ARCHIVE_PATH")" "$OUTPUT_DIR"
 
 echo "[ios-testflight] Regenerating mobile runtime config for production..."
 APP_RUNTIME_CHANNEL=production \
+TEMPO_TUNE_RELEASE_CHANNEL=production \
 QA_USE_DEV_WEB_URL=0 \
 QA_ENABLE_WEBVIEW_DEBUGGING=0 \
 QA_WEB_URL= \
   bash apps/mobile/scripts/generate-dev-config.sh
 
-if ! grep -q "export const APP_RUNTIME_CHANNEL = 'production';" apps/mobile/src/config.generated.ts; then
-  echo "[ios-testflight] Generated runtime config is not production-safe." >&2
-  exit 1
-fi
+bash apps/mobile/scripts/verify-production-runtime-config.sh
 
 # Read current version for logging
 PBXPROJ="apps/mobile/ios/TempoTune.xcodeproj/project.pbxproj"

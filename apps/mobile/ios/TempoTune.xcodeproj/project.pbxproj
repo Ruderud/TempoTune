@@ -359,6 +359,8 @@
 			);
 			inputPaths = (
 				"$(SRCROOT)/../scripts/generate-dev-config.sh",
+				"$(SRCROOT)/../scripts/generate-runtime-config-for-xcode.sh",
+				"$(SRCROOT)/../scripts/verify-production-runtime-config.sh",
 				"$(SRCROOT)/../.env",
 			);
 			name = "Generate Mobile Runtime Config";
@@ -367,7 +369,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "set -euo pipefail\n\nQA_USE_DEV_WEB_URL_VALUE=\"${QA_USE_DEV_WEB_URL:-0}\"\nQA_ENABLE_WEBVIEW_DEBUGGING_VALUE=\"${QA_ENABLE_WEBVIEW_DEBUGGING:-0}\"\nQA_WEB_URL_VALUE=\"${QA_WEB_URL:-}\"\nRUNTIME_CHANNEL=\"development\"\n\nif [ \"${CONFIGURATION}\" = \"Release\" ]; then\n  if [ \"$QA_USE_DEV_WEB_URL_VALUE\" = \"1\" ] || [ \"$QA_ENABLE_WEBVIEW_DEBUGGING_VALUE\" = \"1\" ] || [ -n \"$QA_WEB_URL_VALUE\" ]; then\n    RUNTIME_CHANNEL=\"qa\"\n  else\n    RUNTIME_CHANNEL=\"production\"\n    QA_USE_DEV_WEB_URL_VALUE=0\n    QA_ENABLE_WEBVIEW_DEBUGGING_VALUE=0\n    QA_WEB_URL_VALUE=\n  fi\nelif [ \"$QA_USE_DEV_WEB_URL_VALUE\" = \"1\" ] || [ \"$QA_ENABLE_WEBVIEW_DEBUGGING_VALUE\" = \"1\" ] || [ -n \"$QA_WEB_URL_VALUE\" ]; then\n  RUNTIME_CHANNEL=\"qa\"\nfi\n\ncd \"${SRCROOT}/..\"\nAPP_RUNTIME_CHANNEL=\"$RUNTIME_CHANNEL\" \\\nQA_USE_DEV_WEB_URL=\"$QA_USE_DEV_WEB_URL_VALUE\" \\\nQA_ENABLE_WEBVIEW_DEBUGGING=\"$QA_ENABLE_WEBVIEW_DEBUGGING_VALUE\" \\\nQA_WEB_URL=\"$QA_WEB_URL_VALUE\" \\\n  bash scripts/generate-dev-config.sh\n";
+			shellScript = "set -euo pipefail\n\ncd \"${SRCROOT}/..\"\nCONFIGURATION=\"${CONFIGURATION}\" \\\nAPP_RUNTIME_CHANNEL=\"${APP_RUNTIME_CHANNEL:-}\" \\\nQA_USE_DEV_WEB_URL=\"${QA_USE_DEV_WEB_URL:-0}\" \\\nQA_ENABLE_WEBVIEW_DEBUGGING=\"${QA_ENABLE_WEBVIEW_DEBUGGING:-0}\" \\\nQA_WEB_URL=\"${QA_WEB_URL:-}\" \\\nTEMPO_TUNE_RELEASE_CHANNEL=\"${TEMPO_TUNE_RELEASE_CHANNEL:-}\" \\\nTEMPO_TUNE_ALLOW_QA_RELEASE=\"${TEMPO_TUNE_ALLOW_QA_RELEASE:-0}\" \\\n  bash scripts/generate-runtime-config-for-xcode.sh\n";
 			showEnvVarsInLog = 0;
 		};
 		E235C05ADACE081382539298 /* [CP] Copy Pods Resources */ = {

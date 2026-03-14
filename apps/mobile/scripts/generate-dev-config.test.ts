@@ -39,9 +39,9 @@ describe('generate-dev-config.sh', () => {
       PROD_WEB_URL: 'https://prod.example.com',
       DEV_SERVER_PORT: '4010',
       ANDROID_EMULATOR_HOST: '127.0.0.1',
-      QA_USE_DEV_WEB_URL: '0',
-      QA_ENABLE_WEBVIEW_DEBUGGING: '0',
-      QA_WEB_URL: '',
+      QA_USE_DEV_WEB_URL: '1',
+      QA_ENABLE_WEBVIEW_DEBUGGING: '1',
+      QA_WEB_URL: 'https://qa.example.com',
     });
 
     expect(stdout).toContain('CHANNEL=production');

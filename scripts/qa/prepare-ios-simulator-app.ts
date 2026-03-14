@@ -120,6 +120,8 @@ if (!target) {
 const appInstalled = isInstalledOnSimulator(target.udid);
 const appBuilt = existsSync(APP_BUNDLE_PATH);
 const buildEnv = {
+  TEMPO_TUNE_RELEASE_CHANNEL: 'qa',
+  TEMPO_TUNE_ALLOW_QA_RELEASE: '1',
   QA_USE_DEV_WEB_URL: '1',
   QA_ENABLE_WEBVIEW_DEBUGGING: '1',
   ...(process.env.QA_WEB_URL ? { QA_WEB_URL: process.env.QA_WEB_URL } : {}),

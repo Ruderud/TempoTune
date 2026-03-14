@@ -134,16 +134,40 @@ def explicitRuntimeChannel = readConfiguredValue(
     ['tempotune.runtimeChannel'],
     ['APP_RUNTIME_CHANNEL']
 )
+def releaseChannel = (
+    readConfiguredValue(
+        ['tempotune.release.channel'],
+        ['TEMPO_TUNE_RELEASE_CHANNEL']
+    ) ?: 'production'
+).toLowerCase()
+def allowQaReleaseBuild = readConfiguredBoolean(
+    ['tempotune.allowQaRelease'],
+    ['TEMPO_TUNE_ALLOW_QA_RELEASE'],
+    false
+)
 def qaRuntimeRequested =
     allowDebugReleaseSigning ||
     qaUseDevWebUrl ||
     qaEnableWebviewDebugging ||
     (qaWebUrl != null && qaWebUrl.length() > 0)
-def runtimeChannel = explicitRuntimeChannel ?: (
-    releaseTasksRequested
-        ? (qaRuntimeRequested ? 'qa' : 'production')
-        : 'development'
-)
+
+if (releaseTasksRequested) {
+    if (!(releaseChannel in ['production', 'qa'])) {
+        throw new GradleException(
+            "TEMPO_TUNE_RELEASE_CHANNEL must be 'production' or 'qa' for release builds (got '${releaseChannel}')."
+        )
+    }
+
+    if (releaseChannel == 'qa' && !allowQaReleaseBuild) {
+        throw new GradleException(
+            "QA release build requested without TEMPO_TUNE_ALLOW_QA_RELEASE=1."
+        )
+    }
+}
+
+def runtimeChannel = releaseTasksRequested
+    ? releaseChannel
+    : (explicitRuntimeChannel ?: (qaRuntimeRequested ? 'qa' : 'development'))
 
 def generateTempoTuneRuntimeConfig = tasks.register("generateTempoTuneRuntimeConfig", Exec) {
     workingDir file("${rootDir}/..")
@@ -157,8 +181,15 @@ def generateTempoTuneRuntimeConfig = tasks.register("generateTempoTuneRuntimeCon
     }
 }
 
+def verifyTempoTuneProductionRuntime = tasks.register("verifyTempoTuneProductionRuntime", Exec) {
+    workingDir file("${rootDir}/..")
+    commandLine "bash", "scripts/verify-production-runtime-config.sh"
+    onlyIf { releaseTasksRequested && runtimeChannel == 'production' }
+}
+
 tasks.named("preBuild").configure {
     dependsOn(generateTempoTuneRuntimeConfig)
+    dependsOn(verifyTempoTuneProductionRuntime)
 }
 
 /**

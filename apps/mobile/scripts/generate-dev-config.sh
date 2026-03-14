@@ -95,6 +95,12 @@ case "$APP_RUNTIME_CHANNEL" in
     ;;
 esac
 
+if [ "$APP_RUNTIME_CHANNEL" = "production" ]; then
+  QA_USE_DEV_WEB_URL="0"
+  QA_ENABLE_WEBVIEW_DEBUGGING="0"
+  QA_WEB_URL=""
+fi
+
 # Auto-detect local IP
 DEV_MACHINE_IP=$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null)
 

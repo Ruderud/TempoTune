@@ -128,6 +128,8 @@ function installApk(serial: string) {
 
 const target = selectTarget();
 const buildEnv = {
+  TEMPO_TUNE_RELEASE_CHANNEL: 'qa',
+  TEMPO_TUNE_ALLOW_QA_RELEASE: '1',
   QA_USE_DEV_WEB_URL: '1',
   QA_ENABLE_WEBVIEW_DEBUGGING: '1',
   ANDROID_EMULATOR_HOST: 'localhost',
