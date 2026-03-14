@@ -14,4 +14,4 @@
 - Generated screenshots and QA output are not source documents. They live in ignored paths such as `.screenshots/`, `reports/qa/`, and `test-results/`.
 - Build artifacts also stay outside `docs/`. Common generated locations are `apps/web/.next/`, `apps/mobile/android/app/build/`, `apps/mobile/ios/build/`, and `output/`, and they are ignored by Git.
 - Assistant tool state under `.omc/` should not be used as the source of truth for project documentation.
-- QA sample audio fixtures for tuner/rhythm smoke tests live in `apps/web/public/qa-audio/` and can be regenerated with `pnpm run qa:audio-fixtures`.
+- QA sample audio fixtures for tuner/rhythm smoke tests live in `qa/assets/audio/`, are regenerated with `pnpm run qa:audio-fixtures`, and are served only through the QA route `/qa-audio/*` in local dev/QA runs.
