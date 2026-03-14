@@ -11,8 +11,18 @@ EXPORT_OPTIONS="apps/mobile/ios/ExportOptions.plist"
 ARCHIVE_PATH="apps/mobile/ios/build/TempoTune.xcarchive"
 OUTPUT_DIR="apps/mobile/ios/output"
 LOG_FILE="apps/mobile/ios/build/testflight-upload.log"
+UPDATE_VERSION_SCRIPT="apps/mobile/scripts/update-app-version.js"
+PBXPROJ="apps/mobile/ios/TempoTune.xcodeproj/project.pbxproj"
 
 mkdir -p "$(dirname "$ARCHIVE_PATH")" "$OUTPUT_DIR"
+
+CURRENT_VERSION=$(grep -m1 'MARKETING_VERSION' "$PBXPROJ" | sed 's/.*= //;s/;//;s/ //g')
+CURRENT_BUILD=$(grep -m1 'CURRENT_PROJECT_VERSION' "$PBXPROJ" | sed 's/.*= //;s/;//;s/ //g')
+TARGET_VERSION="${TEMPO_TUNE_MARKETING_VERSION:-$CURRENT_VERSION}"
+TARGET_BUILD="${TEMPO_TUNE_BUILD_NUMBER:-$((CURRENT_BUILD + 1))}"
+
+echo "[ios-testflight] Updating mobile version metadata..."
+node "$UPDATE_VERSION_SCRIPT" --version "$TARGET_VERSION" --build-number "$TARGET_BUILD" --yes
 
 echo "[ios-testflight] Regenerating mobile runtime config for production..."
 APP_RUNTIME_CHANNEL=production \
@@ -24,8 +34,6 @@ QA_WEB_URL= \
 
 bash apps/mobile/scripts/verify-production-runtime-config.sh
 
-# Read current version for logging
-PBXPROJ="apps/mobile/ios/TempoTune.xcodeproj/project.pbxproj"
 VERSION=$(grep -m1 'MARKETING_VERSION' "$PBXPROJ" | sed 's/.*= //;s/;//;s/ //g')
 BUILD=$(grep -m1 'CURRENT_PROJECT_VERSION' "$PBXPROJ" | sed 's/.*= //;s/;//;s/ //g')
 

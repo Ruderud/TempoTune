@@ -32,6 +32,35 @@ function ask(rl, question) {
   return new Promise((resolve) => rl.question(question, resolve));
 }
 
+function parseArgs(argv) {
+  const parsed = {
+    version: process.env.TEMPO_TUNE_MARKETING_VERSION || '',
+    buildNumber: process.env.TEMPO_TUNE_BUILD_NUMBER || '',
+    yes: false,
+  };
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === '--yes') {
+      parsed.yes = true;
+      continue;
+    }
+
+    if (arg === '--version') {
+      parsed.version = argv[index + 1] || '';
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--build-number') {
+      parsed.buildNumber = argv[index + 1] || '';
+      index += 1;
+    }
+  }
+
+  return parsed;
+}
+
 function updatePackageJson(version) {
   const pkg = JSON.parse(fs.readFileSync(PACKAGE_JSON, 'utf8'));
   pkg.version = version;
@@ -72,40 +101,49 @@ function updatePbxproj(versionName, buildNumber) {
 }
 
 async function main() {
+  const args = parseArgs(process.argv.slice(2));
   const currentVersion = readPackageVersion();
   const suggestedVersion = bumpPatch(currentVersion);
 
   console.log(`\nTempoTune Mobile — Version Update`);
   console.log(`Current version: ${currentVersion}\n`);
+  let nextVersion = args.version.trim();
+  let buildNumber = args.buildNumber.trim();
 
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
+  if (!args.yes || !nextVersion || !buildNumber) {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
 
-  const nextVersion = (await ask(rl, `Next version [${suggestedVersion}]: `)).trim() || suggestedVersion;
+    nextVersion =
+      nextVersion ||
+      (await ask(rl, `Next version [${suggestedVersion}]: `)).trim() ||
+        suggestedVersion;
+
+    const currentBuildGradle = fs.readFileSync(BUILD_GRADLE, 'utf8');
+    const currentVersionCode =
+      currentBuildGradle.match(/versionCode\s+(\d+)/)?.[1] || '1';
+    const suggestedBuildNumber = Number(currentVersionCode) + 1;
+
+    buildNumber =
+      buildNumber ||
+      (await ask(rl, `Build number [${suggestedBuildNumber}]: `)).trim() ||
+        String(suggestedBuildNumber);
+
+    rl.close();
+  }
 
   // Validate semver format
   if (!/^\d+\.\d+\.\d+$/.test(nextVersion)) {
     console.error('Error: Version must follow semver format (e.g. 1.2.3)');
-    rl.close();
     process.exit(1);
   }
-
-  const currentBuildGradle = fs.readFileSync(BUILD_GRADLE, 'utf8');
-  const currentVersionCode = currentBuildGradle.match(/versionCode\s+(\d+)/)?.[1] || '1';
-  const suggestedBuildNumber = Number(currentVersionCode) + 1;
-
-  const buildNumber =
-    (await ask(rl, `Build number [${suggestedBuildNumber}]: `)).trim() || String(suggestedBuildNumber);
 
   if (!/^\d+$/.test(buildNumber)) {
     console.error('Error: Build number must be a positive integer');
-    rl.close();
     process.exit(1);
   }
-
-  rl.close();
 
   console.log(`\nUpdating to v${nextVersion} (build ${buildNumber})...\n`);
 
