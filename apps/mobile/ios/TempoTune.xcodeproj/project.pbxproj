@@ -161,7 +161,6 @@
 				B1A2C3D400220004006654EE /* MetronomeAppIntents.swift */,
 				B1A2C3D400220060006654EE /* MetronomeSharedState.swift */,
 			);
-			name = Shared;
 			path = Shared;
 			sourceTree = "<group>";
 		};
@@ -309,9 +308,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TempoTune/Pods-TempoTune-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TempoTune/Pods-TempoTune-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -348,9 +351,13 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TempoTune/Pods-TempoTune-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
+			inputPaths = (
+			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-TempoTune/Pods-TempoTune-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -407,6 +414,7 @@
 				CODE_SIGN_ENTITLEMENTS = TempoTune/TempoTune.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = NG672883V3;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = TempoTune/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -437,6 +445,7 @@
 				CODE_SIGN_ENTITLEMENTS = TempoTune/TempoTune.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 8;
+				DEVELOPMENT_TEAM = NG672883V3;
 				INFOPLIST_FILE = TempoTune/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
