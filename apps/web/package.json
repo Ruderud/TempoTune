@@ -1,6 +1,6 @@
 {
   "name": "@tempo-tune/web",
-  "version": "0.1.61",
+  "version": "0.1.62",
   "private": true,
   "scripts": {
     "dev": "bash scripts/start-dev.sh",

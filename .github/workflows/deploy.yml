@@ -99,17 +99,15 @@ jobs:
 
       - name: Generate mobile dev config
         if: needs.affected.outputs.mobile == 'true'
-        run: |
-          cat > apps/mobile/src/config.generated.ts << 'GENEOF'
-          // Auto-generated for CI
-          export const DEV_MACHINE_IP = '127.0.0.1';
-          export const DEV_SERVER_PORT = 3000;
-          export const PROD_WEB_URL = 'https://tempotune.rudbeckiaz.com';
-          export const ANDROID_EMULATOR_HOST = '10.0.2.2';
-          export const QA_USE_DEV_WEB_URL = false;
-          export const QA_ENABLE_WEBVIEW_DEBUGGING = false;
-          export const QA_WEB_URL = '';
-          GENEOF
+        run: bash apps/mobile/scripts/generate-dev-config.sh
+        env:
+          APP_RUNTIME_CHANNEL: development
+          PROD_WEB_URL: https://tempotune.rudbeckiaz.com
+          DEV_SERVER_PORT: 3000
+          ANDROID_EMULATOR_HOST: 10.0.2.2
+          QA_USE_DEV_WEB_URL: '0'
+          QA_ENABLE_WEBVIEW_DEBUGGING: '0'
+          QA_WEB_URL: ''
 
       - name: Run type-check
         run: pnpm exec nx affected --target=type-check --base=${{ needs.affected.outputs.base-sha }} --head=HEAD

@@ -80,7 +80,7 @@ function ControlPanel({
     <div className="glass-card rounded-[28px] p-3.5 lg:p-5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="text-[11px] uppercase tracking-[0.24em] text-primary/80">Tempo Setup</div>
+          <div className="text-xs uppercase tracking-[0.24em] text-primary/80">Tempo Setup</div>
           <div className="mt-2 text-3xl font-bold tabular-nums text-text-strong">{bpm} BPM</div>
         </div>
         <div className="flex items-center gap-2">
@@ -159,8 +159,8 @@ function PracticeHero({
   return (
     <div className="glass-card flex h-full min-h-0 flex-col overflow-hidden rounded-[32px] p-4 lg:p-7">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-[11px] uppercase tracking-[0.28em] text-primary/80">Rhythm Practice</div>
-        <div className={`rounded-full border px-3 py-1 text-[11px] font-semibold ${hitTone.badge}`}>
+        <div className="text-xs uppercase tracking-[0.28em] text-primary/80">Rhythm Practice</div>
+        <div className={`rounded-full border px-3 py-1 text-xs font-semibold ${hitTone.badge}`}>
           {countdownValue ? '준비' : hitTone.label}
         </div>
       </div>
@@ -186,7 +186,7 @@ function PracticeHero({
             <div className={`${compact ? 'text-[38px]' : 'text-[76px] lg:text-[88px]'} font-bold leading-none tracking-tight text-text-strong`}>
               {countdownValue ?? (isPlaying ? currentBeat || 1 : bpm)}
             </div>
-            <div className="mt-2 text-[10px] uppercase tracking-[0.32em] text-text-muted lg:text-xs">
+            <div className="mt-2 text-xs uppercase tracking-[0.32em] text-text-muted">
               {countdownValue ? 'Get Ready' : isPlaying ? 'Current Beat' : 'BPM'}
             </div>
           </div>
@@ -198,13 +198,13 @@ function PracticeHero({
           <div className="col-span-3 rounded-[20px] border border-border-subtle bg-surface/80 px-3 py-2.5">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-[10px] uppercase tracking-[0.2em] text-text-muted">Latest Offset</div>
+                <div className="text-xs uppercase tracking-[0.2em] text-text-muted">Latest Offset</div>
                 <div className="mt-1 text-xl font-bold tabular-nums text-text-strong">
                   {countdownValue ? `${countdownValue}` : hitTone.offset}
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-[10px] uppercase tracking-[0.2em] text-text-muted">Session</div>
+                <div className="text-xs uppercase tracking-[0.2em] text-text-muted">Session</div>
                 <div className="mt-1 text-xs font-semibold text-text-primary">
                   {countdownValue ? '카운트다운 중' : isPlaying ? `${beatsPerMeasure}/4 진행 중` : '대기 중'}
                 </div>
@@ -212,19 +212,19 @@ function PracticeHero({
             </div>
           </div>
           <div className="rounded-[20px] border border-border-subtle bg-surface/70 p-2.5">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-text-muted">Accuracy</div>
+            <div className="text-xs uppercase tracking-[0.2em] text-text-muted">Accuracy</div>
             <div className="mt-1.5 text-lg font-bold tabular-nums text-text-strong">
               {totalHits ? `${Math.round((accuracy ?? 0) * 100)}%` : '--'}
             </div>
           </div>
           <div className="rounded-[20px] border border-border-subtle bg-surface/70 p-2.5">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-text-muted">Average</div>
+            <div className="text-xs uppercase tracking-[0.2em] text-text-muted">Average</div>
             <div className="mt-1.5 text-lg font-bold tabular-nums text-text-strong">
               {totalHits ? `${Math.round((meanOffsetMs ?? 0)) > 0 ? '+' : ''}${Math.round(meanOffsetMs ?? 0)}ms` : '--'}
             </div>
           </div>
           <div className="rounded-[20px] border border-border-subtle bg-surface/70 p-2.5">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-text-muted">Streak</div>
+            <div className="text-xs uppercase tracking-[0.2em] text-text-muted">Streak</div>
             <div className="mt-1.5 text-lg font-bold tabular-nums text-text-strong">{currentStreak ?? 0}</div>
           </div>
         </div>
@@ -287,12 +287,12 @@ function MetricStrip({
     <div className="grid grid-cols-3 gap-2.5">
       {items.map((item) => (
         <div key={item.label} className="rounded-[22px] border border-border-subtle bg-surface/80 p-2.5">
-          <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.2em] text-text-muted">
+          <div className="flex items-center gap-1.5 text-xs uppercase tracking-[0.2em] text-text-muted">
             <Icon icon={item.icon} size={13} className="text-primary/70" />
             <span>{item.label}</span>
           </div>
           <div className="mt-1.5 text-lg font-bold tabular-nums text-text-strong">{item.value}</div>
-          <div className="mt-1 text-[10px] text-text-muted">{item.hint}</div>
+          <div className="mt-1 text-xs text-text-muted">{item.hint}</div>
         </div>
       ))}
     </div>
@@ -306,7 +306,7 @@ function RecentHitsStrip({ hits }: { hits: RhythmHitEvent[] }) {
     <div className="glass-card rounded-[28px] p-3.5">
       <div className="flex items-center justify-between gap-3">
         <div>
-          <div className="text-[11px] uppercase tracking-[0.24em] text-primary/80">Recent Hits</div>
+          <div className="text-xs uppercase tracking-[0.24em] text-primary/80">Recent Hits</div>
           <div className="mt-1 text-sm font-semibold text-text-strong">최근 4번 판정</div>
         </div>
         <div className="text-xs text-text-muted">{displayHits.length}/4</div>
@@ -321,7 +321,7 @@ function RecentHitsStrip({ hits }: { hits: RhythmHitEvent[] }) {
               key={hit ? `${hit.detectedAtMonotonicMs}-${hit.offsetMs}` : `empty-${index}`}
               className="rounded-[20px] border border-border-subtle bg-card-soft p-2 text-center"
             >
-              <div className={`inline-flex rounded-full border px-2 py-0.5 text-[10px] font-semibold ${hit ? tone.badge : 'border-border-subtle bg-surface/70 text-text-muted'}`}>
+              <div className={`inline-flex rounded-full border px-2 py-0.5 text-xs font-semibold ${hit ? tone.badge : 'border-border-subtle bg-surface/70 text-text-muted'}`}>
                 {hit ? tone.label : '--'}
               </div>
               <div className="mt-1.5 text-sm font-bold tabular-nums text-text-strong">

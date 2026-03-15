@@ -142,7 +142,7 @@ export function SessionStats({
             현재 템포 {bpm} BPM, {beatsPerMeasure}/4 기준으로 판정합니다.
           </p>
         </div>
-        <div className="rounded-full border border-primary/20 bg-surface/80 px-3 py-1.5 text-[11px] font-medium text-text-secondary">
+        <div className="rounded-full border border-primary/20 bg-surface/80 px-3 py-1.5 text-xs font-medium text-text-secondary">
           {getSessionLabel(sessionState, practiceActive)}
         </div>
       </div>
@@ -291,7 +291,7 @@ export function SessionStats({
                   key={`${hit.detectedAtMonotonicMs}-${hit.offsetMs}`}
                   className="rounded-2xl border border-border-subtle bg-card-soft p-3"
                 >
-                  <div className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold ${tone.badge}`}>
+                  <div className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold ${tone.badge}`}>
                     {tone.label}
                   </div>
                   <div className="mt-3 text-lg font-bold tabular-nums text-text-strong">
