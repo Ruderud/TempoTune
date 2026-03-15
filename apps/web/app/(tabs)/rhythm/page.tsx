@@ -482,8 +482,14 @@ export default function RhythmPracticePage() {
       return;
     }
 
-    void stopPracticeSession();
-  }, [isActive, isPlaying, stopPracticeSession]);
+    const stopTimer = window.setTimeout(() => {
+      void stopPracticeSessionRef.current?.();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(stopTimer);
+    };
+  }, [isActive, isPlaying]);
 
   useEffect(() => {
     return () => {

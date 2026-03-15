@@ -8,7 +8,9 @@ const scriptsDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(scriptsDir, '../../..');
 const scriptPath = path.join(scriptsDir, 'generate-dev-config.sh');
 const configPath = path.resolve(scriptsDir, '../src/config.generated.ts');
-const originalConfig = fs.readFileSync(configPath, 'utf8');
+const originalConfig = fs.existsSync(configPath)
+  ? fs.readFileSync(configPath, 'utf8')
+  : null;
 
 function runGenerateConfig(env: Record<string, string | undefined>) {
   const result = spawnSync('bash', [scriptPath], {
@@ -29,6 +31,11 @@ function runGenerateConfig(env: Record<string, string | undefined>) {
 }
 
 afterEach(() => {
+  if (originalConfig === null) {
+    fs.rmSync(configPath, { force: true });
+    return;
+  }
+
   fs.writeFileSync(configPath, originalConfig);
 });
 

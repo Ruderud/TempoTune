@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { act } from 'react';
 
@@ -7,13 +7,18 @@ if (typeof globalThis !== 'undefined') {
 }
 
 export function renderTestHook<T>(useHook: () => T) {
-  let currentValue: T;
+  const currentValueRef: { current: T | undefined } = { current: undefined };
   const container = document.createElement('div');
   document.body.appendChild(container);
   const root: Root = createRoot(container);
 
   function TestHookHost() {
-    currentValue = useHook();
+    const value = useHook();
+
+    useLayoutEffect(() => {
+      currentValueRef.current = value;
+    }, [value]);
+
     return null;
   }
 
@@ -24,7 +29,7 @@ export function renderTestHook<T>(useHook: () => T) {
   return {
     result: {
       get current(): T {
-        return currentValue;
+        return currentValueRef.current as T;
       },
     },
     rerender() {

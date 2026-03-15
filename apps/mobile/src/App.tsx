@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useState } from 'react';
 import { NativeModules, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 import WebView from 'react-native-webview';
 import type {
-  WebViewNavigation,
   WebViewMessageEvent,
 } from 'react-native-webview';
 import {
@@ -256,7 +255,7 @@ function App(): React.JSX.Element {
     bridgeRef.current?.handleMessage(event.nativeEvent.data);
   };
 
-  const handleShouldStartLoadWithRequest = (_request: WebViewNavigation) => true;
+  const handleShouldStartLoadWithRequest = () => true;
 
   return (
     <SafeAreaView style={styles.container}>

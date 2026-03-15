@@ -50,6 +50,11 @@
   ],
   "author": "",
   "license": "MIT",
+  "pnpm": {
+    "overrides": {
+      "@types/react": "19.2.10"
+    }
+  },
   "engines": {
     "node": "^24.0.0",
     "pnpm": ">=10.0.0"
