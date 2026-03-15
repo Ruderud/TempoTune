@@ -81,13 +81,7 @@
     padding-top: env(safe-area-inset-top);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
-    background:
-      radial-gradient(
-        circle at top,
-        color-mix(in srgb, var(--color-primary) 14%, transparent),
-        transparent 48%
-      ),
-      var(--color-background-dark);
+    background: var(--color-background-dark);
     color: var(--color-text-primary);
     transition:
       background-color 0.25s ease,
@@ -100,7 +94,12 @@
 @layer components {
   /* Safe area */
   .tab-bar-safe-area {
-    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.4rem);
+  }
+
+  .tab-bar-content-safe-area {
+    padding-top: 0.5rem;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 0.9rem + 32px);
   }
 
   .bottom-sheet-safe-area {

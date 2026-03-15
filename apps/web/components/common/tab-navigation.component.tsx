@@ -41,9 +41,9 @@ export function TabNavigation() {
       {/* Mobile: Bottom Tab Bar */}
       <nav
         data-testid="tab-bar-mobile"
-        className="order-last glass-nav tab-bar-safe-area lg:hidden"
+        className="order-last glass-nav lg:hidden"
       >
-        <div className="flex justify-around max-w-md mx-auto px-4 pt-2 pb-2">
+        <div className="tab-bar-content-safe-area flex justify-around max-w-md mx-auto px-4">
           {tabs.map((tab) => {
             const active = tab.match(pathname);
             return (

@@ -1,5 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { NativeModules, Platform, SafeAreaView, StyleSheet, Text, View } from 'react-native';
+import {
+  NativeModules,
+  Platform,
+  StatusBar,
+  StyleSheet,
+  Text,
+  View,
+  useColorScheme,
+} from 'react-native';
 import WebView from 'react-native-webview';
 import type {
   WebViewMessageEvent,
@@ -53,18 +61,76 @@ const WEB_URL = buildNativeAppBootstrapUrl(WEBVIEW_RUNTIME.webUrl, APP_ENTRY_PAT
 const WEBVIEW_DEBUGGING_ENABLED = WEBVIEW_RUNTIME.webviewDebuggingEnabled;
 const SHOW_QA_DEBUG_BANNER = WEBVIEW_RUNTIME.showQaDebugBanner;
 const SHOULD_LOG_WEBVIEW_EVENTS = WEBVIEW_RUNTIME.shouldLogWebviewEvents;
+const SHOW_VISIBLE_QA_DEBUG_BANNER =
+  SHOW_QA_DEBUG_BANNER && QA_ENABLE_WEBVIEW_DEBUGGING;
+const WEB_THEME_SYNC_MESSAGE_TYPE = 'TEMPO_TUNE_THEME_CHANGED';
+const NATIVE_SHELL_BACKGROUND = {
+  light: '#f4f1de',
+  dark: '#071e22',
+} as const;
 const WEBVIEW_NATIVE_MARKER_SCRIPT = `
-  window.__TEMPO_TUNE_NATIVE_WEBVIEW__ = true;
-  window.__TEMPO_TUNE_APP_ENTRY_PATH__ = ${JSON.stringify(APP_ENTRY_PATH)};
-  true;
+  (() => {
+    const postTheme = () => {
+      try {
+        const theme = document.documentElement?.dataset?.theme;
+        if (theme === 'light' || theme === 'dark') {
+          window.ReactNativeWebView?.postMessage(
+            JSON.stringify({
+              type: '${WEB_THEME_SYNC_MESSAGE_TYPE}',
+              data: { theme },
+            })
+          );
+        }
+      } catch {
+        // Best effort only.
+      }
+    };
+
+    window.__TEMPO_TUNE_NATIVE_WEBVIEW__ = true;
+    window.__TEMPO_TUNE_APP_ENTRY_PATH__ = ${JSON.stringify(APP_ENTRY_PATH)};
+
+    if (document.documentElement) {
+      const observer = new MutationObserver(postTheme);
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      });
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', postTheme, { once: true });
+    }
+
+    postTheme();
+    true;
+  })();
 `;
 
+type NativeShellTheme = keyof typeof NATIVE_SHELL_BACKGROUND;
+
+function isNativeShellTheme(value: unknown): value is NativeShellTheme {
+  return value === 'light' || value === 'dark';
+}
+
 function App(): React.JSX.Element {
+  const systemColorScheme = useColorScheme();
+  const defaultNativeTheme: NativeShellTheme =
+    systemColorScheme === 'dark' ? 'dark' : 'light';
   const webViewRef = useRef<WebView | null>(null);
   const bridgeRef = useRef<BridgeHandler | null>(null);
   const currentWebUrl = WEB_URL;
   const [webViewStatus, setWebViewStatus] = useState('idle');
   const [webViewEventUrl, setWebViewEventUrl] = useState(WEB_URL);
+  const [nativeShellTheme, setNativeShellTheme] =
+    useState<NativeShellTheme>(defaultNativeTheme);
+  const [hasSyncedWebTheme, setHasSyncedWebTheme] = useState(false);
+  const shellBackgroundColor = NATIVE_SHELL_BACKGROUND[nativeShellTheme];
+
+  useEffect(() => {
+    if (!hasSyncedWebTheme) {
+      setNativeShellTheme(defaultNativeTheme);
+    }
+  }, [defaultNativeTheme, hasSyncedWebTheme]);
 
   useEffect(() => {
     const bridge = new BridgeHandler(webViewRef);
@@ -252,13 +318,42 @@ function App(): React.JSX.Element {
   }, []);
 
   const handleMessage = (event: WebViewMessageEvent) => {
-    bridgeRef.current?.handleMessage(event.nativeEvent.data);
+    const rawData = event.nativeEvent.data;
+
+    try {
+      const message = JSON.parse(rawData) as {
+        type?: string;
+        data?: { theme?: unknown };
+      };
+
+      if (
+        message.type === WEB_THEME_SYNC_MESSAGE_TYPE &&
+        isNativeShellTheme(message.data?.theme)
+      ) {
+        setNativeShellTheme(message.data.theme);
+        setHasSyncedWebTheme(true);
+        return;
+      }
+    } catch {
+      // Non-theme messages flow through the regular native bridge.
+    }
+
+    bridgeRef.current?.handleMessage(rawData);
   };
 
   const handleShouldStartLoadWithRequest = () => true;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        { backgroundColor: shellBackgroundColor },
+      ]}
+    >
+      <StatusBar
+        backgroundColor={shellBackgroundColor}
+        barStyle={nativeShellTheme === 'dark' ? 'light-content' : 'dark-content'}
+      />
       <WebView
         ref={webViewRef}
         source={{ uri: currentWebUrl }}
@@ -266,9 +361,14 @@ function App(): React.JSX.Element {
         onMessage={handleMessage}
         onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
         testID="app-webview"
-        style={styles.webview}
+        style={[
+          styles.webview,
+          { backgroundColor: shellBackgroundColor },
+        ]}
         webviewDebuggingEnabled={WEBVIEW_DEBUGGING_ENABLED}
         allowsInlineMediaPlayback
+        automaticallyAdjustContentInsets={false}
+        contentInsetAdjustmentBehavior="never"
         mediaPlaybackRequiresUserAction={false}
         mediaCapturePermissionGrantType="grantIfSameHostElsePrompt"
         javaScriptEnabled
@@ -301,7 +401,7 @@ function App(): React.JSX.Element {
           );
         }}
       />
-      {SHOW_QA_DEBUG_BANNER ? (
+      {SHOW_VISIBLE_QA_DEBUG_BANNER ? (
         <View style={styles.qaBanner}>
           <Text
             accessibilityLabel={`QA URL ${WEB_URL}`}
@@ -321,14 +421,25 @@ function App(): React.JSX.Element {
           </Text>
         </View>
       ) : null}
-    </SafeAreaView>
+      {SHOW_QA_DEBUG_BANNER && !SHOW_VISIBLE_QA_DEBUG_BANNER ? (
+        <View style={styles.qaDiagnosticsHidden}>
+          <Text
+            accessibilityLabel={`QA WebView Status ${webViewStatus} ${webViewEventUrl}`}
+            selectable
+            style={styles.qaBannerMetaText}
+            testID="qa-webview-status"
+          >
+            {webViewStatus} {webViewEventUrl}
+          </Text>
+        </View>
+      ) : null}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   webview: {
     flex: 1,
@@ -359,6 +470,13 @@ const styles = StyleSheet.create({
       ios: 'Menlo',
       default: 'monospace',
     }),
+  },
+  qaDiagnosticsHidden: {
+    position: 'absolute',
+    left: -10000,
+    width: 1,
+    height: 1,
+    opacity: 0,
   },
 });
 

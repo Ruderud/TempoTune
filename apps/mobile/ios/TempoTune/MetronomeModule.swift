@@ -1,6 +1,8 @@
 import Foundation
 import AVFoundation
 import ActivityKit
+import MediaPlayer
+import UIKit
 import React
 
 @objc(MetronomeModule)
@@ -56,6 +58,7 @@ class MetronomeModule: RCTEventEmitter {
       name: UIApplication.willEnterForegroundNotification,
       object: nil
     )
+    clearNowPlayingInfo()
   }
 
   override func supportedEvents() -> [String]! {
@@ -87,7 +90,8 @@ class MetronomeModule: RCTEventEmitter {
     setupAudioEngine()
 
     isPlaying = true
-    startLiveActivity()
+    startOrUpdateLiveActivity()
+    clearNowPlayingInfo()
     emitStateChanged()
   }
 
@@ -97,25 +101,23 @@ class MetronomeModule: RCTEventEmitter {
     isPlaying = false
     currentBeat = 0
 
-    endLiveActivity()
+    updateLiveActivity()
+    clearNowPlayingInfo()
     emitStateChanged()
   }
 
   @objc func setBpm(_ bpm: Double) {
     self.bpm = bpm
     self.samplesPerBeat = Int64(sampleRate * 60.0 / bpm)
-    if isPlaying {
-      updateLiveActivity()
-    }
+    updateLiveActivity()
     emitStateChanged()
   }
 
   @objc func setTimeSignature(_ beatsPerMeasure: Int) {
     self.beatsPerMeasure = beatsPerMeasure
     self.currentBeat = 0
-    if isPlaying {
-      updateLiveActivity()
-    }
+    updateLiveActivity()
+    emitStateChanged()
   }
 
   // MARK: - Pre-render tone buffers
@@ -272,17 +274,28 @@ class MetronomeModule: RCTEventEmitter {
     return Double(nanos) / 1_000_000.0
   }
 
+  // MARK: - System Media Controls Cleanup
+
+  private func clearNowPlayingInfo() {
+    let nowPlayingCenter = MPNowPlayingInfoCenter.default()
+    nowPlayingCenter.nowPlayingInfo = nil
+
+    if #available(iOS 13.0, *) {
+      nowPlayingCenter.playbackState = .stopped
+    }
+  }
+
   // MARK: - Live Activity (ActivityKit)
 
-  private func startLiveActivity() {
+  private func startOrUpdateLiveActivity() {
     guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
+    if resolveCurrentActivityIfNeeded() != nil {
+      updateLiveActivity()
+      return
+    }
 
     let attributes = MetronomeAttributes()
-    let state = MetronomeAttributes.ContentState(
-      bpm: Int(bpm),
-      isPlaying: true,
-      timeSignature: "\(beatsPerMeasure)/\(beatDenominator)"
-    )
+    let state = liveActivityState()
 
     do {
       let content = ActivityContent(state: state, staleDate: nil)
@@ -297,30 +310,27 @@ class MetronomeModule: RCTEventEmitter {
   }
 
   private func updateLiveActivity() {
-    guard let activity = currentActivity else { return }
-    let state = MetronomeAttributes.ContentState(
-      bpm: Int(bpm),
-      isPlaying: isPlaying,
-      timeSignature: "\(beatsPerMeasure)/\(beatDenominator)"
-    )
+    guard let activity = resolveCurrentActivityIfNeeded() else { return }
+    let state = liveActivityState()
     Task {
       let content = ActivityContent(state: state, staleDate: nil)
       await activity.update(content)
     }
   }
 
-  private func endLiveActivity() {
-    guard let activity = currentActivity else { return }
-    let state = MetronomeAttributes.ContentState(
+  private func resolveCurrentActivityIfNeeded() -> Activity<MetronomeAttributes>? {
+    if currentActivity == nil {
+      currentActivity = Activity<MetronomeAttributes>.activities.first
+    }
+    return currentActivity
+  }
+
+  private func liveActivityState() -> MetronomeAttributes.ContentState {
+    MetronomeAttributes.ContentState(
       bpm: Int(bpm),
-      isPlaying: false,
+      isPlaying: isPlaying,
       timeSignature: "\(beatsPerMeasure)/\(beatDenominator)"
     )
-    Task {
-      let content = ActivityContent(state: state, staleDate: nil)
-      await activity.end(content, dismissalPolicy: .immediate)
-    }
-    currentActivity = nil
   }
 
   // MARK: - Event Emission
@@ -385,19 +395,15 @@ class MetronomeModule: RCTEventEmitter {
       case .setTimeSig2_4:
         self.beatDenominator = 4
         self.setTimeSignature(2)
-        self.emitStateChanged()
       case .setTimeSig3_4:
         self.beatDenominator = 4
         self.setTimeSignature(3)
-        self.emitStateChanged()
       case .setTimeSig4_4:
         self.beatDenominator = 4
         self.setTimeSignature(4)
-        self.emitStateChanged()
       case .setTimeSig6_8:
         self.beatDenominator = 8
         self.setTimeSignature(6)
-        self.emitStateChanged()
       }
     }
   }
@@ -444,6 +450,7 @@ class MetronomeModule: RCTEventEmitter {
     // Re-sync state to WebView when app returns to foreground
     // (BPM/time signature may have changed via Live Activity while in background)
     // Small delay to ensure WebView is ready to receive messages
+    clearNowPlayingInfo()
     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
       self?.emitStateChanged()
     }
@@ -458,6 +465,7 @@ class MetronomeModule: RCTEventEmitter {
   }
 
   deinit {
+    clearNowPlayingInfo()
     NotificationCenter.default.removeObserver(self)
     let center = CFNotificationCenterGetDarwinNotifyCenter()
     CFNotificationCenterRemoveEveryObserver(center, Unmanaged.passUnretained(self).toOpaque())
