@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
+import { flushSync } from 'react-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TunerNote } from '@tempo-tune/shared/types';
-import { act } from 'react';
 import { setAudioInputBridge, resetAudioInputBridge } from '../services/audio-input';
 import { createFakeAudioInputBridge } from './test-utils/fake-audio-input-bridge';
 import { renderTestHook } from './test-utils/render-hook';
@@ -16,6 +16,7 @@ const serviceHarness = vi.hoisted(() => {
     stop: ReturnType<typeof vi.fn>;
     dispose: ReturnType<typeof vi.fn>;
     createFrameConsumer: ReturnType<typeof vi.fn>;
+    setReferenceFrequency: ReturnType<typeof vi.fn>;
   }> = [];
 
   const TunerAudioServiceMock = vi.fn(function MockTunerAudioService() {
@@ -87,9 +88,7 @@ describe('useTuner', () => {
 
     const { result, unmount, waitFor } = renderTestHook(() => useTuner());
 
-    await act(async () => {
-      await result.current.start();
-    });
+    await result.current.start();
 
     expect(fakeBridge.bridge.startCapture).toHaveBeenCalledWith({
       deviceId: 'default',
@@ -97,9 +96,12 @@ describe('useTuner', () => {
       enablePitch: true,
       enableRhythm: false,
     });
-    expect(result.current.isListening).toBe(true);
 
-    act(() => {
+    await waitFor(() => {
+      expect(result.current.isListening).toBe(true);
+    });
+
+    flushSync(() => {
       fakeBridge.emitPitch({
         frequency: 440,
         confidence: 0.95,
@@ -117,7 +119,7 @@ describe('useTuner', () => {
       expect(result.current.hasSignal).toBe(true);
     });
 
-    act(() => {
+    flushSync(() => {
       fakeBridge.emitError(new Error('native capture failed'));
     });
 
@@ -138,9 +140,7 @@ describe('useTuner', () => {
     expect(fakeBridge.addFrameConsumer).toHaveBeenCalledTimes(1);
     expect(serviceHarness.TunerAudioServiceMock).toHaveBeenCalledTimes(1);
 
-    await act(async () => {
-      await result.current.start();
-    });
+    await result.current.start();
 
     const serviceInstance = serviceHarness.instances[0];
     expect(serviceInstance.startExternal).toHaveBeenCalledTimes(1);
@@ -151,7 +151,11 @@ describe('useTuner', () => {
       enableRhythm: false,
     });
 
-    act(() => {
+    await waitFor(() => {
+      expect(result.current.isListening).toBe(true);
+    });
+
+    flushSync(() => {
       serviceHarness.emitNote({
         frequency: 440,
         confidence: 0.92,
@@ -168,17 +172,43 @@ describe('useTuner', () => {
       expect(result.current.isListening).toBe(true);
     });
 
-    act(() => {
+    flushSync(() => {
       result.current.stop();
     });
 
     expect(fakeBridge.bridge.stopCapture).toHaveBeenCalledTimes(1);
     expect(serviceInstance.stop).toHaveBeenCalledTimes(1);
-    expect(result.current.isListening).toBe(false);
+
+    await waitFor(() => {
+      expect(result.current.isListening).toBe(false);
+    });
 
     unmount();
 
     expect(fakeBridge.removeFrameConsumer).toHaveBeenCalledTimes(1);
     expect(serviceInstance.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('persists tuner reference frequency through the shared preference path', async () => {
+    const fakeBridge = createFakeAudioInputBridge({ withFrameConsumer: true });
+    setAudioInputBridge(fakeBridge.bridge);
+
+    const { result, waitFor, unmount } = renderTestHook(() => useTuner());
+
+    const serviceInstance = serviceHarness.instances[0];
+    expect(result.current.referenceFrequency).toBe(432);
+
+    flushSync(() => {
+      result.current.setReferenceFrequency(444);
+    });
+
+    await waitFor(() => {
+      expect(result.current.referenceFrequency).toBe(444);
+      expect(window.localStorage.getItem('tempo_tuner_reference_frequency_v1')).toBe('444');
+    });
+
+    expect(serviceInstance.setReferenceFrequency).toHaveBeenCalledWith(444);
+
+    unmount();
   });
 });

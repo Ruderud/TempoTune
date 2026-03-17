@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 import { clamp } from '@tempo-tune/shared/utils';
 import type { YinConfig } from '@tempo-tune/audio/tuner';
 
@@ -50,6 +50,19 @@ export const TUNER_SENSITIVITY_PRESETS: Record<PresetKey, TunerDetectionSettings
 };
 
 const DEFAULT_DETECTION_SETTINGS: TunerDetectionSettings = TUNER_SENSITIVITY_PRESETS.balanced;
+const detectionSettingsSubscribers = new Set<() => void>();
+let cachedDetectionSettingsSnapshot: TunerDetectionSettings | null = null;
+
+function subscribeDetectionSettings(callback: () => void) {
+  detectionSettingsSubscribers.add(callback);
+  return () => {
+    detectionSettingsSubscribers.delete(callback);
+  };
+}
+
+function emitDetectionSettingsChange() {
+  detectionSettingsSubscribers.forEach((callback) => callback());
+}
 
 function sanitizeDetectionSettings(settings: Partial<TunerDetectionSettings>): TunerDetectionSettings {
   return {
@@ -74,23 +87,48 @@ function sanitizeDetectionSettings(settings: Partial<TunerDetectionSettings>): T
   };
 }
 
-function getInitialDetectionSettings(): TunerDetectionSettings {
+function getStoredDetectionSettings(): TunerDetectionSettings {
   if (typeof window === 'undefined') {
-    return { ...DEFAULT_DETECTION_SETTINGS };
+    return DEFAULT_DETECTION_SETTINGS;
   }
 
   try {
     const raw = window.localStorage.getItem(DETECTION_SETTINGS_STORAGE_KEY);
-    if (!raw) return { ...DEFAULT_DETECTION_SETTINGS };
+    if (!raw) return DEFAULT_DETECTION_SETTINGS;
+
     const parsed = JSON.parse(raw) as Partial<TunerDetectionSettings>;
     return sanitizeDetectionSettings(parsed);
   } catch {
-    return { ...DEFAULT_DETECTION_SETTINGS };
+    return DEFAULT_DETECTION_SETTINGS;
   }
+}
+
+function getDetectionSettingsSnapshot(): TunerDetectionSettings {
+  const nextSettings = getStoredDetectionSettings();
+
+  if (
+    cachedDetectionSettingsSnapshot &&
+    cachedDetectionSettingsSnapshot.confidenceGate === nextSettings.confidenceGate &&
+    cachedDetectionSettingsSnapshot.confidenceSmoothingAlpha === nextSettings.confidenceSmoothingAlpha &&
+    cachedDetectionSettingsSnapshot.probabilityThreshold === nextSettings.probabilityThreshold &&
+    cachedDetectionSettingsSnapshot.rmsThreshold === nextSettings.rmsThreshold &&
+    cachedDetectionSettingsSnapshot.detectorSmoothingAlpha === nextSettings.detectorSmoothingAlpha &&
+    cachedDetectionSettingsSnapshot.maxJumpCents === nextSettings.maxJumpCents
+  ) {
+    return cachedDetectionSettingsSnapshot;
+  }
+
+  cachedDetectionSettingsSnapshot = nextSettings;
+  return cachedDetectionSettingsSnapshot;
+}
+
+function getServerDetectionSettingsSnapshot(): TunerDetectionSettings {
+  return DEFAULT_DETECTION_SETTINGS;
 }
 
 export function getSensitivityPreset(settings: TunerDetectionSettings): SensitivityPreset {
   const presetEntries = Object.entries(TUNER_SENSITIVITY_PRESETS) as Array<[PresetKey, TunerDetectionSettings]>;
+
   for (const [presetKey, preset] of presetEntries) {
     if (
       settings.confidenceGate === preset.confidenceGate &&
@@ -128,8 +166,10 @@ export type UseTunerDetectionSettingsReturn = {
 };
 
 export function useTunerDetectionSettings(): UseTunerDetectionSettingsReturn {
-  const [detectionSettings, setDetectionSettingsState] = useState<TunerDetectionSettings>(() =>
-    getInitialDetectionSettings(),
+  const detectionSettings = useSyncExternalStore(
+    subscribeDetectionSettings,
+    getDetectionSettingsSnapshot,
+    getServerDetectionSettingsSnapshot,
   );
   const detectionSettingsRef = useRef<TunerDetectionSettings>(detectionSettings);
 
@@ -137,25 +177,25 @@ export function useTunerDetectionSettings(): UseTunerDetectionSettingsReturn {
     detectionSettingsRef.current = detectionSettings;
   }, [detectionSettings]);
 
-  useEffect(() => {
+  const setDetectionSettings = useCallback((patch: Partial<TunerDetectionSettings>) => {
     if (typeof window === 'undefined') return;
 
-    try {
-      window.localStorage.setItem(
-        DETECTION_SETTINGS_STORAGE_KEY,
-        JSON.stringify(detectionSettings),
-      );
-    } catch {
-      // ignore storage write errors
-    }
-  }, [detectionSettings]);
-
-  const setDetectionSettings = useCallback((patch: Partial<TunerDetectionSettings>) => {
-    setDetectionSettingsState((prev) => sanitizeDetectionSettings({ ...prev, ...patch }));
+    const nextSettings = sanitizeDetectionSettings({
+      ...getStoredDetectionSettings(),
+      ...patch,
+    });
+    window.localStorage.setItem(DETECTION_SETTINGS_STORAGE_KEY, JSON.stringify(nextSettings));
+    emitDetectionSettingsChange();
   }, []);
 
   const applySensitivityPreset = useCallback((preset: PresetKey) => {
-    setDetectionSettingsState({ ...TUNER_SENSITIVITY_PRESETS[preset] });
+    if (typeof window === 'undefined') return;
+
+    window.localStorage.setItem(
+      DETECTION_SETTINGS_STORAGE_KEY,
+      JSON.stringify(TUNER_SENSITIVITY_PRESETS[preset]),
+    );
+    emitDetectionSettingsChange();
   }, []);
 
   const sensitivityPreset = getSensitivityPreset(detectionSettings);
