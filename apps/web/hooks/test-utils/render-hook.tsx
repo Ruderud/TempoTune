@@ -1,6 +1,6 @@
 import React, { useLayoutEffect } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { act } from 'react';
+import { flushSync } from 'react-dom';
 
 if (typeof globalThis !== 'undefined') {
   (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -22,7 +22,7 @@ export function renderTestHook<T>(useHook: () => T) {
     return null;
   }
 
-  act(() => {
+  flushSync(() => {
     root.render(<TestHookHost />);
   });
 
@@ -33,7 +33,7 @@ export function renderTestHook<T>(useHook: () => T) {
       },
     },
     rerender() {
-      act(() => {
+      flushSync(() => {
         root.render(<TestHookHost />);
       });
     },
@@ -53,7 +53,7 @@ export function renderTestHook<T>(useHook: () => T) {
       }
     },
     unmount() {
-      act(() => {
+      flushSync(() => {
         root.unmount();
       });
       container.remove();
