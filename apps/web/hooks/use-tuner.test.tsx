@@ -2,7 +2,6 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TunerNote } from '@tempo-tune/shared/types';
-import { act } from 'react';
 import { setAudioInputBridge, resetAudioInputBridge } from '../services/audio-input';
 import { createFakeAudioInputBridge } from './test-utils/fake-audio-input-bridge';
 import { renderTestHook } from './test-utils/render-hook';
@@ -87,9 +86,7 @@ describe('useTuner', () => {
 
     const { result, unmount, waitFor } = renderTestHook(() => useTuner());
 
-    await act(async () => {
-      await result.current.start();
-    });
+    await result.current.start();
 
     expect(fakeBridge.bridge.startCapture).toHaveBeenCalledWith({
       deviceId: 'default',
@@ -97,18 +94,19 @@ describe('useTuner', () => {
       enablePitch: true,
       enableRhythm: false,
     });
-    expect(result.current.isListening).toBe(true);
 
-    act(() => {
-      fakeBridge.emitPitch({
-        frequency: 440,
-        confidence: 0.95,
-        name: 'A',
-        octave: 4,
-        cents: 0,
-        detectedAtMonotonicMs: 1234,
-        debugSource: 'native',
-      });
+    await waitFor(() => {
+      expect(result.current.isListening).toBe(true);
+    });
+
+    fakeBridge.emitPitch({
+      frequency: 440,
+      confidence: 0.95,
+      name: 'A',
+      octave: 4,
+      cents: 0,
+      detectedAtMonotonicMs: 1234,
+      debugSource: 'native',
     });
 
     await waitFor(() => {
@@ -117,9 +115,7 @@ describe('useTuner', () => {
       expect(result.current.hasSignal).toBe(true);
     });
 
-    act(() => {
-      fakeBridge.emitError(new Error('native capture failed'));
-    });
+    fakeBridge.emitError(new Error('native capture failed'));
 
     await waitFor(() => {
       expect(result.current.error).toBe('native capture failed');
@@ -138,9 +134,7 @@ describe('useTuner', () => {
     expect(fakeBridge.addFrameConsumer).toHaveBeenCalledTimes(1);
     expect(serviceHarness.TunerAudioServiceMock).toHaveBeenCalledTimes(1);
 
-    await act(async () => {
-      await result.current.start();
-    });
+    await result.current.start();
 
     const serviceInstance = serviceHarness.instances[0];
     expect(serviceInstance.startExternal).toHaveBeenCalledTimes(1);
@@ -151,16 +145,18 @@ describe('useTuner', () => {
       enableRhythm: false,
     });
 
-    act(() => {
-      serviceHarness.emitNote({
-        frequency: 440,
-        confidence: 0.92,
-        name: 'A',
-        octave: 4,
-        cents: 0,
-        detectedAtMs: 4321,
-        debugSource: 'web',
-      });
+    await waitFor(() => {
+      expect(result.current.isListening).toBe(true);
+    });
+
+    serviceHarness.emitNote({
+      frequency: 440,
+      confidence: 0.92,
+      name: 'A',
+      octave: 4,
+      cents: 0,
+      detectedAtMs: 4321,
+      debugSource: 'web',
     });
 
     await waitFor(() => {
@@ -168,13 +164,14 @@ describe('useTuner', () => {
       expect(result.current.isListening).toBe(true);
     });
 
-    act(() => {
-      result.current.stop();
-    });
+    result.current.stop();
 
     expect(fakeBridge.bridge.stopCapture).toHaveBeenCalledTimes(1);
     expect(serviceInstance.stop).toHaveBeenCalledTimes(1);
-    expect(result.current.isListening).toBe(false);
+
+    await waitFor(() => {
+      expect(result.current.isListening).toBe(false);
+    });
 
     unmount();
 
