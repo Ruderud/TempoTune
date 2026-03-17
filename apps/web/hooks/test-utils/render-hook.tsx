@@ -1,61 +1,73 @@
-import React, { useLayoutEffect } from 'react';
+import { useLayoutEffect } from 'react';
+import { flushSync } from 'react-dom';
 import { createRoot, type Root } from 'react-dom/client';
-import { act } from 'react';
-
-if (typeof globalThis !== 'undefined') {
-  (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-}
 
 export function renderTestHook<T>(useHook: () => T) {
-  const currentValueRef: { current: T | undefined } = { current: undefined };
   const container = document.createElement('div');
   document.body.appendChild(container);
-  const root: Root = createRoot(container);
 
-  function TestHookHost() {
+  let currentValue: T;
+  let root: Root | null = createRoot(container);
+
+  function HookHarness({ onValue }: { onValue: (value: T) => void }) {
     const value = useHook();
 
     useLayoutEffect(() => {
-      currentValueRef.current = value;
-    }, [value]);
+      onValue(value);
+    }, [onValue, value]);
 
     return null;
   }
 
-  act(() => {
-    root.render(<TestHookHost />);
-  });
+  const render = () => {
+    flushSync(() => {
+      root?.render(
+        <HookHarness
+          onValue={(value) => {
+            currentValue = value;
+          }}
+        />,
+      );
+    });
+  };
+
+  render();
 
   return {
-    result: {
-      get current(): T {
-        return currentValueRef.current as T;
-      },
+    get result() {
+      return {
+        get current() {
+          return currentValue;
+        },
+      };
     },
     rerender() {
-      act(() => {
-        root.render(<TestHookHost />);
-      });
+      render();
     },
     async waitFor(assertion: () => void, timeoutMs = 1000) {
-      const start = Date.now();
+      const deadline = Date.now() + timeoutMs;
+      let lastError: unknown;
 
-      while (true) {
+      while (Date.now() <= deadline) {
         try {
+          render();
           assertion();
           return;
         } catch (error) {
-          if (Date.now() - start >= timeoutMs) {
-            throw error;
-          }
-          await new Promise((resolve) => setTimeout(resolve, 0));
+          lastError = error;
+          await new Promise((resolve) => setTimeout(resolve, 10));
         }
       }
+
+      throw lastError instanceof Error
+        ? lastError
+        : new Error('Timed out waiting for hook assertion');
     },
     unmount() {
-      act(() => {
-        root.unmount();
+      flushSync(() => {
+        root?.unmount();
       });
+      root = null;
       container.remove();
     },
   };
