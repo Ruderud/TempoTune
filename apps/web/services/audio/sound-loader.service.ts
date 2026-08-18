@@ -21,7 +21,11 @@ export async function loadSoundFromFile(file: File): Promise<AudioBuffer> {
   return audioBuffer;
 }
 
-export function playSynthesizedClick(isAccent: boolean, volume = 0.8, scheduledTime?: number): void {
+export function playSynthesizedClick(
+  isAccent: boolean,
+  volume = 0.8,
+  scheduledTime?: number,
+): OscillatorNode {
   const ctx = getAudioContext();
   const oscillator = ctx.createOscillator();
   const gainNode = ctx.createGain();
@@ -40,9 +44,14 @@ export function playSynthesizedClick(isAccent: boolean, volume = 0.8, scheduledT
 
   oscillator.start(startTime);
   oscillator.stop(startTime + 0.05);
+  return oscillator;
 }
 
-export function playAudioBuffer(buffer: AudioBuffer, volume = 0.8, scheduledTime?: number): void {
+export function playAudioBuffer(
+  buffer: AudioBuffer,
+  volume = 0.8,
+  scheduledTime?: number,
+): AudioBufferSourceNode {
   const ctx = getAudioContext();
   const source = ctx.createBufferSource();
   const gainNode = ctx.createGain();
@@ -56,6 +65,7 @@ export function playAudioBuffer(buffer: AudioBuffer, volume = 0.8, scheduledTime
   // Use the provided AudioContext time if given, otherwise play immediately.
   const startTime = scheduledTime !== undefined ? scheduledTime : ctx.currentTime;
   source.start(startTime);
+  return source;
 }
 
 export function clearSoundCache(): void {

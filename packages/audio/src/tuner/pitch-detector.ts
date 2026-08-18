@@ -9,6 +9,8 @@ import {
   YIN_PROBABILITY_THRESHOLD,
   DEFAULT_SAMPLE_RATE,
   DEFAULT_BUFFER_SIZE,
+  TUNER_MAX_FREQUENCY,
+  TUNER_MIN_FREQUENCY,
 } from '@tempo-tune/shared/constants';
 
 const EPSILON = 1e-12;
@@ -18,8 +20,8 @@ const DEFAULT_YIN_CONFIG: YinConfig = {
   probabilityThreshold: YIN_PROBABILITY_THRESHOLD,
   sampleRate: DEFAULT_SAMPLE_RATE,
   bufferSize: DEFAULT_BUFFER_SIZE,
-  minFrequency: 55,
-  maxFrequency: 1400,
+  minFrequency: TUNER_MIN_FREQUENCY,
+  maxFrequency: TUNER_MAX_FREQUENCY,
   rmsThreshold: 0.01,
   differenceStep: 1,
   smoothingAlpha: 0.22,
@@ -48,7 +50,6 @@ export class PitchDetector {
   private config: YinConfig;
   private yinBuffer: Float32Array;
   private workingBuffer: Float32Array;
-  private window: Float32Array;
   private previousFrequency: number | null = null;
   private recentRawFrequencies: number[] = [];
   private silenceFrames = 0;
@@ -57,7 +58,6 @@ export class PitchDetector {
     this.config = this.buildConfig(config);
     this.yinBuffer = new Float32Array(Math.floor(this.config.bufferSize / 2) + 2);
     this.workingBuffer = new Float32Array(this.config.bufferSize);
-    this.window = this.createHannWindow(this.config.bufferSize);
   }
 
   /**
@@ -94,7 +94,12 @@ export class PitchDetector {
       return null;
     }
 
-    const best = scoredCandidates[0];
+    // Standard YIN selects the first threshold minimum. Keep that octave as
+    // the primary choice, while retaining expanded candidates for confidence
+    // diagnostics and continuity handling.
+    const preferredLag = Math.round(baseCandidates[0].lag);
+    const best = scoredCandidates.find((candidate) => Math.abs(candidate.lag - preferredLag) <= 1.5)
+      ?? scoredCandidates[0];
     const confidence = clamp(best.score, 0, 1);
     if (confidence < this.config.probabilityThreshold) {
       return null;
@@ -136,7 +141,6 @@ export class PitchDetector {
     if (prevBufferSize !== this.config.bufferSize) {
       this.yinBuffer = new Float32Array(Math.floor(this.config.bufferSize / 2) + 2);
       this.workingBuffer = new Float32Array(this.config.bufferSize);
-      this.window = this.createHannWindow(this.config.bufferSize);
       this.previousFrequency = null;
       this.recentRawFrequencies = [];
       this.silenceFrames = 0;
@@ -177,20 +181,6 @@ export class PitchDetector {
     return null;
   }
 
-  private createHannWindow(length: number): Float32Array {
-    const out = new Float32Array(length);
-    if (length <= 1) {
-      out[0] = 1;
-      return out;
-    }
-
-    for (let i = 0; i < length; i++) {
-      out[i] = 0.5 * (1 - Math.cos((2 * Math.PI * i) / (length - 1)));
-    }
-
-    return out;
-  }
-
   private prepareWorkingBuffer(audioData: Float32Array): number {
     const n = this.config.bufferSize;
     let sum = 0;
@@ -203,7 +193,7 @@ export class PitchDetector {
     for (let i = 0; i < n; i++) {
       const centered = audioData[i] - mean;
       rmsAcc += centered * centered;
-      this.workingBuffer[i] = centered * this.window[i];
+      this.workingBuffer[i] = centered;
     }
 
     return Math.sqrt(rmsAcc / n);
@@ -256,15 +246,13 @@ export class PitchDetector {
       if (value > this.config.threshold) continue;
       if (value > this.yinBuffer[tau - 1] || value > this.yinBuffer[tau + 1]) continue;
 
-      const refinedLag = this.parabolicInterpolation(tau, maxLag);
       candidates.push({
-        lag: refinedLag,
+        lag: tau,
         cmnd: value,
       });
     }
 
     if (candidates.length > 0) {
-      candidates.sort((a, b) => a.cmnd - b.cmnd);
       return candidates.slice(0, 6);
     }
 
@@ -281,7 +269,7 @@ export class PitchDetector {
     if (bestValue > 0.5) return [];
 
     return [{
-      lag: this.parabolicInterpolation(bestTau, maxLag),
+      lag: bestTau,
       cmnd: bestValue,
     }];
   }
@@ -325,12 +313,16 @@ export class PitchDetector {
   ): PitchCandidateDebug | null {
     if (lag < minLag || lag > maxLag) return null;
 
-    const frequency = this.config.sampleRate / lag;
+    const lagIndex = Math.round(lag);
+    // YIN chooses the octave; normalized autocorrelation refines the integer
+    // lag to remove sample-quantization pitch bias.
+    const refinedLag = this.refineLagWithCorrelation(lagIndex, minLag, maxLag);
+    const frequency = this.config.sampleRate / refinedLag;
     if (frequency < this.config.minFrequency || frequency > this.config.maxFrequency) return null;
 
-    const yinScore = clamp(1 - this.yinBuffer[lag], 0, 1);
-    const periodicity = this.normalizedAutocorrelation(lag);
-    const harmonicScore = this.computeHarmonicScore(lag, maxLag);
+    const yinScore = clamp(1 - this.yinBuffer[lagIndex], 0, 1);
+    const periodicity = this.normalizedAutocorrelation(lagIndex);
+    const harmonicScore = this.computeHarmonicScore(lagIndex, maxLag);
 
     let continuityPenalty = 0;
     if (this.previousFrequency !== null) {
@@ -346,7 +338,7 @@ export class PitchDetector {
 
     return {
       frequency,
-      lag,
+      lag: refinedLag,
       yinScore,
       periodicity,
       harmonicScore,
@@ -374,6 +366,19 @@ export class PitchDetector {
     return clamp(numerator / denominator, 0, 1);
   }
 
+  private refineLagWithCorrelation(lag: number, minLag: number, maxLag: number): number {
+    if (lag <= minLag || lag >= maxLag) return lag;
+
+    const left = this.normalizedAutocorrelation(lag - 1);
+    const center = this.normalizedAutocorrelation(lag);
+    const right = this.normalizedAutocorrelation(lag + 1);
+    const denominator = left - 2 * center + right;
+    if (Math.abs(denominator) < EPSILON) return lag;
+
+    const adjustment = clamp(0.5 * (left - right) / denominator, -1, 1);
+    return lag + adjustment;
+  }
+
   private computeHarmonicScore(baseLag: number, maxLag: number): number {
     let score = this.normalizedAutocorrelation(baseLag);
     let totalWeight = 1;
@@ -387,19 +392,6 @@ export class PitchDetector {
     }
 
     return clamp(score / totalWeight, 0, 1);
-  }
-
-  private parabolicInterpolation(tau: number, maxLag: number): number {
-    if (tau <= 1 || tau >= maxLag - 1) return tau;
-
-    const s0 = this.yinBuffer[tau - 1];
-    const s1 = this.yinBuffer[tau];
-    const s2 = this.yinBuffer[tau + 1];
-    const denominator = 2 * (2 * s1 - s2 - s0);
-    if (Math.abs(denominator) < EPSILON) return tau;
-
-    const adjustment = (s2 - s0) / denominator;
-    return tau + adjustment;
   }
 
   private smoothFrequency(rawFrequency: number): number {

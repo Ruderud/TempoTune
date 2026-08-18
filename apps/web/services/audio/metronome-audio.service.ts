@@ -8,6 +8,8 @@ export class MetronomeAudioService {
   private customAccentSound: AudioBuffer | null = null;
   private customNormalSound: AudioBuffer | null = null;
   private tickCallbacks: Set<(event: MetronomeEvent) => void> = new Set();
+  private pendingTickCallbacks: Set<ReturnType<typeof setTimeout>> = new Set();
+  private pendingAudioSources: Set<AudioScheduledSourceNode> = new Set();
 
   constructor() {
     this.engine = new MetronomeEngine();
@@ -21,6 +23,8 @@ export class MetronomeAudioService {
 
   stop(): void {
     this.engine.stop();
+    this.clearPendingTickCallbacks();
+    this.clearPendingAudioSources();
   }
 
   setTempo(bpm: number): void {
@@ -60,31 +64,68 @@ export class MetronomeAudioService {
 
   dispose(): void {
     this.engine.dispose();
+    this.clearPendingTickCallbacks();
+    this.clearPendingAudioSources();
     this.tickCallbacks.clear();
   }
 
   private handleTick(event: MetronomeEvent): void {
     // 메인 비트에서만 소리 재생 (subdivision 0)
     if (event.subdivision === 0) {
-      // Convert the engine's performance.now() timestamp to AudioContext time.
-      // AudioContext.currentTime and performance.now() share the same epoch, so
-      // the delta gives us precise scheduling even when the callback fires late.
+      // Convert the monotonic performance timestamp to AudioContext time by
+      // sampling both clocks together. Their epochs are unrelated; the delta
+      // is the only value that crosses the clock boundary.
       const ctx = getAudioContext();
       const offsetSec = (event.timestamp - performance.now()) / 1000;
       // Clamp to ctx.currentTime in case the tick is already overdue.
       const audioScheduledTime = Math.max(ctx.currentTime, ctx.currentTime + offsetSec);
 
+      let source: AudioScheduledSourceNode;
       if (event.isAccent && this.customAccentSound) {
-        playAudioBuffer(this.customAccentSound, 0.8, audioScheduledTime);
+        source = playAudioBuffer(this.customAccentSound, 0.8, audioScheduledTime);
       } else if (!event.isAccent && this.customNormalSound) {
-        playAudioBuffer(this.customNormalSound, 0.8, audioScheduledTime);
+        source = playAudioBuffer(this.customNormalSound, 0.8, audioScheduledTime);
       } else {
-        playSynthesizedClick(event.isAccent, 0.8, audioScheduledTime);
+        source = playSynthesizedClick(event.isAccent, 0.8, audioScheduledTime);
       }
+      this.trackAudioSource(source);
     }
 
-    for (const callback of this.tickCallbacks) {
-      callback(event);
+    const callbackDelayMs = event.timestamp - performance.now();
+    if (callbackDelayMs <= 0) {
+      this.emitTickCallbacks(event);
+      return;
     }
+
+    const timerId = setTimeout(() => {
+      this.pendingTickCallbacks.delete(timerId);
+      this.emitTickCallbacks(event);
+    }, callbackDelayMs);
+    this.pendingTickCallbacks.add(timerId);
+  }
+
+  private emitTickCallbacks(event: MetronomeEvent): void {
+    for (const callback of this.tickCallbacks) callback(event);
+  }
+
+  private clearPendingTickCallbacks(): void {
+    for (const timerId of this.pendingTickCallbacks) clearTimeout(timerId);
+    this.pendingTickCallbacks.clear();
+  }
+
+  private trackAudioSource(source: AudioScheduledSourceNode): void {
+    this.pendingAudioSources.add(source);
+    source.addEventListener('ended', () => this.pendingAudioSources.delete(source), { once: true });
+  }
+
+  private clearPendingAudioSources(): void {
+    for (const source of this.pendingAudioSources) {
+      try {
+        source.stop();
+      } catch {
+        // The source may already have reached its scheduled stop time.
+      }
+    }
+    this.pendingAudioSources.clear();
   }
 }

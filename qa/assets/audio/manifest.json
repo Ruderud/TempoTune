@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-14T15:02:00.108Z",
+  "schemaVersion": 2,
   "sampleRate": 44100,
   "samples": [
     {
@@ -9,6 +9,7 @@
       "note": "A",
       "octave": 4,
       "frequency": 440,
+      "signalProfile": "harmonic-reference",
       "wavPath": "/qa-audio/reference_a4_note.wav",
       "mp3Path": "/qa-audio/reference_a4_note.mp3"
     },
@@ -19,8 +20,86 @@
       "note": "E",
       "octave": 2,
       "frequency": 82.41,
+      "signalProfile": "harmonic-reference",
       "wavPath": "/qa-audio/reference_e2_note.wav",
       "mp3Path": "/qa-audio/reference_e2_note.mp3"
+    },
+    {
+      "id": "reference_c2_note",
+      "category": "note",
+      "instrument": "reference",
+      "note": "C",
+      "octave": 2,
+      "frequency": 65.406,
+      "signalProfile": "harmonic-reference",
+      "wavPath": "/qa-audio/reference_c2_note.wav",
+      "mp3Path": "/qa-audio/reference_c2_note.mp3"
+    },
+    {
+      "id": "reference_fs2_note",
+      "category": "note",
+      "instrument": "reference",
+      "note": "F#",
+      "octave": 2,
+      "frequency": 92.499,
+      "signalProfile": "harmonic-reference",
+      "wavPath": "/qa-audio/reference_fs2_note.wav",
+      "mp3Path": "/qa-audio/reference_fs2_note.mp3"
+    },
+    {
+      "id": "reference_c3_note",
+      "category": "note",
+      "instrument": "reference",
+      "note": "C",
+      "octave": 3,
+      "frequency": 130.813,
+      "signalProfile": "harmonic-reference",
+      "wavPath": "/qa-audio/reference_c3_note.wav",
+      "mp3Path": "/qa-audio/reference_c3_note.mp3"
+    },
+    {
+      "id": "reference_a3_note",
+      "category": "note",
+      "instrument": "reference",
+      "note": "A",
+      "octave": 3,
+      "frequency": 220,
+      "signalProfile": "harmonic-reference",
+      "wavPath": "/qa-audio/reference_a3_note.wav",
+      "mp3Path": "/qa-audio/reference_a3_note.mp3"
+    },
+    {
+      "id": "reference_c4_note",
+      "category": "note",
+      "instrument": "reference",
+      "note": "C",
+      "octave": 4,
+      "frequency": 261.626,
+      "signalProfile": "harmonic-reference",
+      "wavPath": "/qa-audio/reference_c4_note.wav",
+      "mp3Path": "/qa-audio/reference_c4_note.mp3"
+    },
+    {
+      "id": "reference_c5_note",
+      "category": "note",
+      "instrument": "reference",
+      "note": "C",
+      "octave": 5,
+      "frequency": 523.251,
+      "signalProfile": "harmonic-reference",
+      "wavPath": "/qa-audio/reference_c5_note.wav",
+      "mp3Path": "/qa-audio/reference_c5_note.mp3"
+    },
+    {
+      "id": "reference_a5_note",
+      "category": "note",
+      "instrument": "reference",
+      "note": "A",
+      "octave": 5,
+      "frequency": 880,
+      "signalProfile": "harmonic-reference",
+      "wavPath": "/qa-audio/reference_a5_note.wav",
+      "mp3Path": "/qa-audio/reference_a5_note.mp3"
     },
     {
       "id": "guitar_open_e2_note",
@@ -29,6 +108,7 @@
       "note": "E",
       "octave": 2,
       "frequency": 82.41,
+      "signalProfile": "instrument-harmonics-with-vibrato-and-noise",
       "wavPath": "/qa-audio/guitar_open_e2_note.wav",
       "mp3Path": "/qa-audio/guitar_open_e2_note.mp3"
     },
@@ -39,6 +119,7 @@
       "note": "A",
       "octave": 2,
       "frequency": 110,
+      "signalProfile": "instrument-harmonics-with-vibrato-and-noise",
       "wavPath": "/qa-audio/guitar_open_a2_note.wav",
       "mp3Path": "/qa-audio/guitar_open_a2_note.mp3"
     },
@@ -49,6 +130,7 @@
       "note": "D",
       "octave": 3,
       "frequency": 146.83,
+      "signalProfile": "instrument-harmonics-with-vibrato-and-noise",
       "wavPath": "/qa-audio/guitar_open_d3_note.wav",
       "mp3Path": "/qa-audio/guitar_open_d3_note.mp3"
     },
@@ -59,6 +141,7 @@
       "note": "G",
       "octave": 3,
       "frequency": 196,
+      "signalProfile": "instrument-harmonics-with-vibrato-and-noise",
       "wavPath": "/qa-audio/guitar_open_g3_note.wav",
       "mp3Path": "/qa-audio/guitar_open_g3_note.mp3"
     },
@@ -69,6 +152,7 @@
       "note": "B",
       "octave": 3,
       "frequency": 246.94,
+      "signalProfile": "instrument-harmonics-with-vibrato-and-noise",
       "wavPath": "/qa-audio/guitar_open_b3_note.wav",
       "mp3Path": "/qa-audio/guitar_open_b3_note.mp3"
     },
@@ -79,6 +163,7 @@
       "note": "E",
       "octave": 4,
       "frequency": 329.63,
+      "signalProfile": "instrument-harmonics-with-vibrato-and-noise",
       "wavPath": "/qa-audio/guitar_open_e4_note.wav",
       "mp3Path": "/qa-audio/guitar_open_e4_note.mp3"
     },
@@ -89,6 +174,7 @@
       "note": "E",
       "octave": 1,
       "frequency": 41.2,
+      "signalProfile": "instrument-harmonics-with-vibrato-and-noise",
       "wavPath": "/qa-audio/bass_open_e1_note.wav",
       "mp3Path": "/qa-audio/bass_open_e1_note.mp3"
     },
@@ -99,6 +185,7 @@
       "note": "A",
       "octave": 1,
       "frequency": 55,
+      "signalProfile": "instrument-harmonics-with-vibrato-and-noise",
       "wavPath": "/qa-audio/bass_open_a1_note.wav",
       "mp3Path": "/qa-audio/bass_open_a1_note.mp3"
     },
@@ -109,6 +196,7 @@
       "note": "D",
       "octave": 2,
       "frequency": 73.42,
+      "signalProfile": "instrument-harmonics-with-vibrato-and-noise",
       "wavPath": "/qa-audio/bass_open_d2_note.wav",
       "mp3Path": "/qa-audio/bass_open_d2_note.mp3"
     },
@@ -119,6 +207,7 @@
       "note": "G",
       "octave": 2,
       "frequency": 98,
+      "signalProfile": "instrument-harmonics-with-vibrato-and-noise",
       "wavPath": "/qa-audio/bass_open_g2_note.wav",
       "mp3Path": "/qa-audio/bass_open_g2_note.mp3"
     },

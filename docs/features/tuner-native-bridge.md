@@ -7,14 +7,16 @@ tests:
   unit:
     - apps/mobile/src/bridge/__tests__/bridge-handler.test.ts
   e2eWeb: []
-  e2eDevice: []
+  e2eDevice:
+    - apps/mobile/appium/specs/tuner-audio-input.smoke.spec.ts
+    - apps/mobile/appium/specs/tuner-permission.smoke.spec.ts
 criticalPaths:
   - apps/mobile/src/bridge/audio-bridge.impl.ts
   - apps/mobile/src/bridge/bridge-handler.service.ts
   - apps/mobile/src/services/native-audio.service.ts
   - apps/mobile/src/services/permission.service.ts
-  - apps/mobile/ios/TempoTune/PitchDetectorModule.swift
-  - apps/mobile/android/app/src/main/java/com/tempotune/PitchDetectorModule.kt
+  - apps/mobile/ios/TempoTune/AudioInputModule.swift
+  - apps/mobile/android/app/src/main/java/com/tempotune/AudioInputModule.kt
   - packages/shared/src/bridge/audio-bridge.interface.ts
   - packages/shared/src/bridge/audio-bridge.types.ts
 manualChecks:
@@ -31,6 +33,6 @@ manualChecks:
 ## Architecture
 
 - `AudioBridgeImpl` — JS 측 오디오 브릿지 구현
-- iOS `PitchDetectorModule.swift` — AVAudioEngine + tap
-- Android `PitchDetectorModule.kt` — AudioRecord 기반
+- iOS `AudioInputModule.swift` — AVAudioEngine + 4096-sample pitch window
+- Android `AudioInputModule.kt` — AudioRecord + 4096-sample pitch window
 - `permission.service` — 마이크 권한 요청/관리

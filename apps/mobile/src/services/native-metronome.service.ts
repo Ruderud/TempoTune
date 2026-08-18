@@ -1,23 +1,21 @@
-import {NativeModules, NativeEventEmitter} from 'react-native';
-
-type MetronomeTickEvent = {
-  beatIndex: number;
-  isAccent: boolean;
-  timestamp: number;
-};
-
-type MetronomeStateEvent = {
-  isPlaying: boolean;
-  bpm: number;
-  beatsPerMeasure?: number;
-};
+import { NativeModules, NativeEventEmitter } from 'react-native';
+import type {
+  NativeMetronomeStateData,
+  NativeMetronomeTickData,
+} from '@tempo-tune/shared/types';
 
 class NativeMetronomeService {
   private emitter: NativeEventEmitter | null = null;
-  private tickSubscription: ReturnType<NativeEventEmitter['addListener']> | null = null;
-  private stateSubscription: ReturnType<NativeEventEmitter['addListener']> | null = null;
-  private onTickCallback: ((data: MetronomeTickEvent) => void) | null = null;
-  private onStateCallback: ((data: MetronomeStateEvent) => void) | null = null;
+  private tickSubscription: ReturnType<
+    NativeEventEmitter['addListener']
+  > | null = null;
+  private stateSubscription: ReturnType<
+    NativeEventEmitter['addListener']
+  > | null = null;
+  private onTickCallback: ((data: NativeMetronomeTickData) => void) | null =
+    null;
+  private onStateCallback: ((data: NativeMetronomeStateData) => void) | null =
+    null;
   private moduleAvailable: boolean;
 
   constructor() {
@@ -38,8 +36,8 @@ class NativeMetronomeService {
     bpm: number,
     beatsPerMeasure: number,
     accentFirst: boolean,
-    onTick: (data: MetronomeTickEvent) => void,
-    onState: (data: MetronomeStateEvent) => void,
+    onTick: (data: NativeMetronomeTickData) => void,
+    onState: (data: NativeMetronomeStateData) => void
   ): void {
     if (!this.moduleAvailable || this.emitter == null) {
       return;
@@ -53,16 +51,16 @@ class NativeMetronomeService {
     try {
       this.tickSubscription = this.emitter.addListener(
         'onMetronomeTick',
-        (event: MetronomeTickEvent) => {
+        (event: NativeMetronomeTickData) => {
           this.onTickCallback?.(event);
-        },
+        }
       );
 
       this.stateSubscription = this.emitter.addListener(
         'onMetronomeStateChanged',
-        (event: MetronomeStateEvent) => {
+        (event: NativeMetronomeStateData) => {
           this.onStateCallback?.(event);
-        },
+        }
       );
 
       NativeModules.MetronomeModule.start(bpm, beatsPerMeasure, accentFirst);

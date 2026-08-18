@@ -5,8 +5,10 @@ status: implemented
 platforms: [web, ios, android]
 tests:
   unit: []
-  e2eWeb: []
-  e2eDevice: []
+  e2eWeb:
+    - apps/web/e2e/navigation.spec.ts
+  e2eDevice:
+    - apps/mobile/appium/specs/webview-load.smoke.spec.ts
 criticalPaths:
   - apps/web/components/common/tab-navigation.component.tsx
   - apps/web/app/(tabs)/layout.tsx
@@ -15,7 +17,7 @@ criticalPaths:
   - apps/web/app/(tabs)/settings/page.tsx
   - apps/web/app/layout.tsx
 manualChecks:
-  - 모바일 하단 탭바 3개 탭 표시 (메트로놈/튜너/설정)
+  - 모바일 하단 탭바 4개 탭 표시 (메트로놈/튜너/박자/설정)
   - 데스크톱 상단 헤더 내비게이션
   - 활성 탭 하이라이트 상태
   - 탭 전환 시 페이지 상태 유지
@@ -24,7 +26,7 @@ manualChecks:
 
 # Tab Navigation
 
-메트로놈, 튜너, 설정 3개 탭으로 구성된 내비게이션.
+메트로놈, 튜너, 박자, 설정 4개 탭으로 구성된 내비게이션.
 
 ## Layout
 

@@ -1,15 +1,19 @@
 import type { TunerNote, TuningPreset, TuningString } from '@tempo-tune/shared/types';
-import { DEFAULT_FFT_SIZE } from '@tempo-tune/shared/constants';
+import {
+  TUNER_ANALYSIS_BUFFER_SIZE,
+  TUNER_MAX_FREQUENCY,
+  TUNER_MIN_FREQUENCY,
+} from '@tempo-tune/shared/constants';
 import { frequencyToNote } from '@tempo-tune/shared/utils';
 import { TunerEngine, type YinConfig } from '@tempo-tune/audio/tuner';
 import { getAudioContext, resumeAudioContext } from './audio-context.service';
 import { isLatencyDebugEnabled } from '../../utils/latency-debug';
 
-const ANALYSIS_FFT_SIZE = Math.max(1024, DEFAULT_FFT_SIZE / 2);
+const ANALYSIS_FFT_SIZE = TUNER_ANALYSIS_BUFFER_SIZE;
 const LATENCY_LOG_THROTTLE_MS = 120;
 const DEFAULT_PITCH_DETECTION_CONFIG: Partial<YinConfig> = {
-  minFrequency: 55,
-  maxFrequency: 1400,
+  minFrequency: TUNER_MIN_FREQUENCY,
+  maxFrequency: TUNER_MAX_FREQUENCY,
   probabilityThreshold: 0.2,
   rmsThreshold: 0.008,
   smoothingAlpha: 0.2,

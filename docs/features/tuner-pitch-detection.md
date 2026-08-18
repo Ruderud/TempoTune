@@ -7,8 +7,11 @@ tests:
   unit:
     - packages/audio/src/tuner/pitch-detector.test.ts
     - packages/audio/src/tuner/tuner-engine.test.ts
-  e2eWeb: []
-  e2eDevice: []
+    - packages/audio/src/tuner/audio-fixtures.test.ts
+  e2eWeb:
+    - apps/web/e2e/tuner-audio-input.spec.ts
+  e2eDevice:
+    - apps/mobile/appium/specs/tuner-audio-input.smoke.spec.ts
 criticalPaths:
   - packages/audio/src/tuner/pitch-detector.ts
   - packages/audio/src/tuner/tuner-engine.ts
@@ -22,6 +25,7 @@ criticalPaths:
   - apps/web/components/tuner/circular-dial.component.tsx
   - packages/shared/src/utils/frequency.util.ts
   - packages/shared/src/constants/tuner.constants.ts
+  - qa/assets/audio/manifest.json
 manualChecks:
   - 마이크 입력에서 정확한 주파수 감지
   - 센트 편차 표시 정확성
@@ -35,8 +39,15 @@ manualChecks:
 
 ## Architecture
 
-- `PitchDetector` — autocorrelation 기반 주파수 추출
+- `PitchDetector` — hybrid YIN 기반 주파수 추출
 - `TunerEngine` — 감지 루프 + 노트 매핑
 - `tuner-audio.service` — Web Audio AnalyserNode 바인딩
 - `use-tuner` hook — React 상태 관리
 - `frequency.util` — Hz → 노트/센트 변환
+
+## Accuracy Contract
+
+- 안정 구간의 유효 분석 창 90% 이상에서 음을 검출하고, 검출 오차 p95는 목표음 대비 5 cents 이내
+- 기본 분석 범위 35–1400Hz, 분석 창 4096 samples
+- bass·guitar·reference 19개 합성 WAV를 마이크 입력 회귀 자산으로 사용
+- 실제 악기와 기기별 마이크 편차는 출시 전 수동 검증

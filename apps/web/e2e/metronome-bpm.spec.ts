@@ -68,4 +68,14 @@ test.describe('Metronome BPM Controls', () => {
     await playStop.click();
     await expect(playStop).toContainText('시작');
   });
+
+  test('loopback IP origin hydrates interactive controls', async ({ page }) => {
+    await page.goto('http://127.0.0.1:3000/metronome');
+
+    const slider = page.getByTestId('bpm-slider').first();
+    await expect(slider).toHaveValue('120');
+
+    await page.getByTestId('bpm-increment').first().click();
+    await expect(slider).toHaveValue('121');
+  });
 });

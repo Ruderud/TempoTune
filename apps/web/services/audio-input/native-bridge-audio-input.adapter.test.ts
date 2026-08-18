@@ -67,4 +67,37 @@ describe('createNativeBridgeAudioInputAdapter', () => {
       offsetMs: 0,
     });
   });
+
+  it('ignores native events whose required payload is missing', () => {
+    let nativeListener: ((data: unknown) => void) | null = null;
+    addNativeMessageListenerMock.mockImplementation((callback) => {
+      nativeListener = callback;
+      return () => {};
+    });
+
+    const adapter = createNativeBridgeAudioInputAdapter();
+    const sessionState = vi.fn();
+    const pitch = vi.fn();
+    const rhythm = vi.fn();
+    const route = vi.fn();
+    const error = vi.fn();
+    adapter.onSessionStateChanged(sessionState);
+    adapter.onPitchDetected(pitch);
+    adapter.onRhythmHitDetected(rhythm);
+    adapter.onRouteChanged(route);
+    adapter.onError(error);
+
+    expect(() => {
+      nativeListener?.({type: 'AUDIO_INPUT_STATE_CHANGED'});
+      nativeListener?.({type: 'PITCH_DETECTED'});
+      nativeListener?.({type: 'RHYTHM_HIT_DETECTED'});
+      nativeListener?.({type: 'AUDIO_INPUT_ROUTE_CHANGED'});
+      nativeListener?.({type: 'ERROR'});
+    }).not.toThrow();
+    expect(sessionState).not.toHaveBeenCalled();
+    expect(pitch).not.toHaveBeenCalled();
+    expect(rhythm).not.toHaveBeenCalled();
+    expect(route).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
+  });
 });

@@ -264,6 +264,7 @@ dependencies {
 
     // MediaSession for lock screen / hardware button transport controls
     implementation "androidx.media:media:1.7.0"
+    testImplementation "junit:junit:4.13.2"
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

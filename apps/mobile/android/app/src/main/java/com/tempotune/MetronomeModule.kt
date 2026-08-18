@@ -263,16 +263,16 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
         val buffer = ShortArray(chunkFrames)
         var sampleTime: Long = 0
         var beatCounter: Int = 0
-        var nextBeatAt: Long = 0 // absolute sample position of current beat
+        val beatClock = MetronomeSampleClock()
         val toneLen = accentTone.size
 
         try {
             while (isPlaying && track.state == AudioTrack.STATE_INITIALIZED) {
-                val spb = (sampleRate * 60.0 / bpm).toLong()
+                val spb = sampleRate * 60.0 / bpm
                 val bpMeasure = beatsPerMeasure
                 val accent = accentFirst
 
-                if (spb <= 0) {
+                if (!spb.isFinite() || spb <= 0.0) {
                     buffer.fill(0)
                     track.write(buffer, 0, chunkFrames)
                     sampleTime += chunkFrames
@@ -287,12 +287,12 @@ class MetronomeModule(private val reactContext: ReactApplicationContext) :
                     val cs = sampleTime + i
 
                     // Advance beats while current sample is past the next beat boundary
-                    while (cs >= nextBeatAt + spb) {
-                        nextBeatAt += spb
+                    while (cs >= beatClock.nextBeatSample(spb)) {
+                        beatClock.advance(spb)
                         beatCounter++
                     }
 
-                    val posInTone = (cs - nextBeatAt).toInt()
+                    val posInTone = (cs - beatClock.currentBeatSample).toInt()
                     if (posInTone in 0 until toneLen) {
                         val beatIdx = beatCounter % bpMeasure
                         val isAcc = accent && beatIdx == 0

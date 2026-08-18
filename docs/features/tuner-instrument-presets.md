@@ -31,7 +31,6 @@ manualChecks:
 - Guitar Standard (E A D G B E)
 - Guitar Drop D (D A D G B E)
 - Bass Standard (E A D G)
-- Bass Drop D (D A D G)
 
 ## Modes
 

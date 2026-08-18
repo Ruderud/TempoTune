@@ -29,113 +29,94 @@ describe('MetronomeEngine beat timing', () => {
     vi.advanceTimersByTime(ms);
   }
 
-  it('첫 번째~두 번째 박자 간격과 이후 박자 간격이 동일해야 한다', () => {
-    // 120 BPM = 500ms per beat
-    const expectedInterval = 500;
-
-    engine.start();
-
-    // 2000ms(4 beats worth) 동안 시뮬레이션 - 1ms 단위로 진행
-    for (let i = 0; i < 2000; i++) {
-      advanceTime(1);
-    }
-
-    // 메인 비트만 필터링 (subdivision === 0)
-    const mainBeats = events.filter((e) => e.event.subdivision === 0);
-
-    console.log('=== Beat Timing Analysis ===');
-    console.log(`BPM: 120, Expected interval: ${expectedInterval}ms\n`);
-
-    console.log('--- Event timestamps (engine scheduled times) ---');
-    for (let i = 0; i < mainBeats.length; i++) {
-      console.log(
-        `Beat ${mainBeats[i].event.beatIndex}: timestamp=${mainBeats[i].event.timestamp.toFixed(1)}ms, callback fired at=${mainBeats[i].callbackTime}ms`,
-      );
-    }
-
-    // 콜백이 실제로 호출된 시점 기준 간격 분석
-    console.log('\n--- Callback timing intervals (what UI actually sees) ---');
-    const callbackIntervals: number[] = [];
-    for (let i = 1; i < mainBeats.length; i++) {
-      const interval = mainBeats[i].callbackTime - mainBeats[i - 1].callbackTime;
-      callbackIntervals.push(interval);
-      console.log(`Beat ${i - 1} → ${i}: ${interval}ms`);
-    }
-
-    // 엔진이 스케줄한 timestamp 기준 간격 분석
-    console.log('\n--- Scheduled timestamp intervals (engine internal) ---');
-    const scheduledIntervals: number[] = [];
-    for (let i = 1; i < mainBeats.length; i++) {
-      const interval = mainBeats[i].event.timestamp - mainBeats[i - 1].event.timestamp;
-      scheduledIntervals.push(interval);
-      console.log(`Beat ${i - 1} → ${i}: ${interval.toFixed(1)}ms`);
-    }
-
-    // 검증: 콜백 간격이 모두 동일해야 함
-    console.log('\n--- Verification ---');
-    const firstCallbackInterval = callbackIntervals[0];
-    const restCallbackIntervals = callbackIntervals.slice(1);
-
-    if (restCallbackIntervals.length > 0) {
-      const avgRest =
-        restCallbackIntervals.reduce((a, b) => a + b, 0) / restCallbackIntervals.length;
-      const diff = Math.abs(firstCallbackInterval - avgRest);
-      console.log(`First interval: ${firstCallbackInterval}ms`);
-      console.log(`Average subsequent intervals: ${avgRest}ms`);
-      console.log(`Difference: ${diff}ms`);
-
-      // 25ms 이상 차이나면 타이밍 문제
-      expect(diff).toBeLessThan(25);
-    }
-  });
-
-  it('스케줄된 timestamp 간격은 정확히 beatInterval이어야 한다', () => {
-    const expectedInterval = 500; // 120 BPM
-
-    engine.start();
-
-    for (let i = 0; i < 2500; i++) {
-      advanceTime(1);
-    }
-
-    const mainBeats = events.filter((e) => e.event.subdivision === 0);
-
-    for (let i = 1; i < mainBeats.length; i++) {
-      const interval = mainBeats[i].event.timestamp - mainBeats[i - 1].event.timestamp;
-      expect(interval).toBeCloseTo(expectedInterval, 1);
-    }
-  });
-
-  it('60 BPM에서 콜백 간격 일관성 테스트', () => {
+  it.each([60, 120, 293])('%i BPM의 예약 timestamp 간격이 정확해야 한다', (bpm) => {
     engine.dispose();
-    engine = new MetronomeEngine({ bpm: 60, subdivision: 1 });
+    engine = new MetronomeEngine({ bpm, subdivision: 1 });
     events = [];
     engine.onTick((event: MetronomeEvent) => {
       events.push({ event, callbackTime: mockNow });
     });
 
-    const expectedInterval = 1000; // 60 BPM = 1000ms
-
     engine.start();
-
-    for (let i = 0; i < 4000; i++) {
-      advanceTime(1);
-    }
+    for (let elapsed = 0; elapsed < 5_000; elapsed += 25) advanceTime(25);
 
     const mainBeats = events.filter((e) => e.event.subdivision === 0);
-    const callbackIntervals: number[] = [];
+    const expectedInterval = 60_000 / bpm;
     for (let i = 1; i < mainBeats.length; i++) {
-      callbackIntervals.push(mainBeats[i].callbackTime - mainBeats[i - 1].callbackTime);
+      const actualInterval = mainBeats[i].event.timestamp - mainBeats[i - 1].event.timestamp;
+      expect(actualInterval).toBeCloseTo(expectedInterval, 9);
     }
+  });
 
-    console.log('\n=== 60 BPM Callback Intervals ===');
-    callbackIntervals.forEach((interval, i) => {
-      console.log(`Beat ${i} → ${i + 1}: ${interval}ms (expected: ${expectedInterval}ms)`);
+  it('123 BPM으로 6시간 진행해도 예약 timestamp의 누적 위상 오차가 없어야 한다', () => {
+    engine.dispose();
+    engine = new MetronomeEngine({ bpm: 123, subdivision: 1 });
+    events = [];
+    engine.onTick((event: MetronomeEvent) => {
+      events.push({ event, callbackTime: mockNow });
     });
 
-    // 모든 콜백 간격이 허용 오차 내에 있어야 함
-    for (const interval of callbackIntervals) {
-      expect(Math.abs(interval - expectedInterval)).toBeLessThan(50);
+    engine.start();
+    const processTick = (engine as unknown as { processTick: () => void }).processTick.bind(engine);
+    const sixHoursMs = 6 * 60 * 60 * 1000;
+    while (mockNow < sixHoursMs) {
+      mockNow += 100;
+      processTick();
     }
+
+    const firstTimestamp = events[0].event.timestamp;
+    const interval = 60_000 / 123;
+    const lastIndex = events.length - 1;
+    const idealLastTimestamp = firstTimestamp + lastIndex * interval;
+    expect(Math.abs(events[lastIndex].event.timestamp - idealLastTimestamp)).toBeLessThan(0.001);
+  });
+
+  it('lookahead 구간의 beat를 미래 timestamp로 예약해야 한다', () => {
+    engine.start();
+    for (let elapsed = 0; elapsed < 425; elapsed += 25) advanceTime(25);
+
+    expect(events.some(({ event, callbackTime }) => event.timestamp > callbackTime)).toBe(true);
+  });
+
+  it('긴 scheduler stall 뒤에도 기존 beat phase를 보존해야 한다', () => {
+    engine.dispose();
+    engine = new MetronomeEngine({ bpm: 293, subdivision: 1 });
+    events = [];
+    engine.onTick((event: MetronomeEvent) => events.push({ event, callbackTime: mockNow }));
+    engine.start();
+
+    const processTick = (engine as unknown as { processTick: () => void }).processTick.bind(engine);
+    mockNow = 25;
+    processTick();
+    const phaseAnchor = events[0].event.timestamp;
+    mockNow += 10_000;
+    processTick();
+
+    const interval = 60_000 / 293;
+    for (const { event } of events) {
+      const phase = (event.timestamp - phaseAnchor) / interval;
+      expect(Math.abs(phase - Math.round(phase))).toBeLessThan(1e-9);
+    }
+  });
+
+  it('큰 누락 tick 수의 transport 이동을 한 번의 계산으로 처리해야 한다', () => {
+    engine.dispose();
+    engine = new MetronomeEngine({
+      bpm: 120,
+      subdivision: 4,
+      timeSignature: [4, 4],
+    });
+
+    const skippedTicks = 1_000_000_003;
+    const advanceTransport = (
+      engine as unknown as { advanceTransport: (tickCount: number) => void }
+    ).advanceTransport.bind(engine);
+
+    advanceTransport(skippedTicks);
+
+    expect((engine as unknown as { currentSubdivision: number }).currentSubdivision).toBe(
+      skippedTicks % 4,
+    );
+    expect(engine.getCurrentBeat()).toBe(Math.floor(skippedTicks / 4) % 4);
   });
 });

@@ -8,10 +8,17 @@ import type {
   AudioInputDevice,
   AudioCaptureConfig,
   AudioSessionState,
+  BridgeErrorMessage,
+  BridgeEvent,
+  BridgeResponseEnvelope,
+  MicPermissionResponseData,
   PitchDetectionEvent,
   RhythmHitEvent,
 } from '@tempo-tune/shared/types';
-import { postMessageToNative, addNativeMessageListener } from '../bridge/bridge-adapter';
+import {
+  postMessageToNative,
+  addNativeMessageListener,
+} from '../bridge/bridge-adapter';
 
 /**
  * Web-side adapter for native bridge communication.
@@ -27,20 +34,19 @@ export function createNativeBridgeAudioInputAdapter(): AudioInputPlatformAdapter
 
   // Listen for native events
   const removeListener = addNativeMessageListener((data) => {
-    const msg = data as { type: string; data?: unknown; error?: string };
+    const msg = data as BridgeEvent | BridgeErrorMessage;
 
     if (msg.type === 'AUDIO_INPUT_STATE_CHANGED' && msg.data) {
-      for (const cb of sessionStateCallbacks) cb(msg.data as AudioSessionState);
+      for (const cb of sessionStateCallbacks) cb(msg.data);
     }
     if (msg.type === 'PITCH_DETECTED' && msg.data) {
       for (const cb of pitchCallbacks) cb(msg.data as PitchDetectionEvent);
     }
     if (msg.type === 'RHYTHM_HIT_DETECTED' && msg.data) {
-      for (const cb of rhythmCallbacks) cb(msg.data as RhythmHitEvent);
+      for (const cb of rhythmCallbacks) cb(msg.data);
     }
     if (msg.type === 'AUDIO_INPUT_ROUTE_CHANGED' && msg.data) {
-      const payload = msg.data as { devices: AudioInputDevice[] };
-      for (const cb of routeCallbacks) cb(payload.devices);
+      for (const cb of routeCallbacks) cb(msg.data.devices);
     }
     if (msg.type === 'ERROR' && msg.error) {
       for (const cb of errorCallbacks) cb(new Error(msg.error));
@@ -52,7 +58,7 @@ export function createNativeBridgeAudioInputAdapter(): AudioInputPlatformAdapter
       return new Promise((resolve, reject) => {
         postMessageToNative({ type: 'REQUEST_MIC_PERMISSION' });
         const cleanup = addNativeMessageListener((data) => {
-          const msg = data as { type: string; success: boolean; data?: { status: AudioPermissionStatus }; error?: string };
+          const msg = data as BridgeResponseEnvelope<MicPermissionResponseData>;
           if (msg.type === 'MIC_PERMISSION_RESPONSE') {
             cleanup();
             if (!msg.success) {
@@ -73,7 +79,7 @@ export function createNativeBridgeAudioInputAdapter(): AudioInputPlatformAdapter
       return new Promise((resolve) => {
         postMessageToNative({ type: 'LIST_AUDIO_INPUT_DEVICES' });
         const cleanup = addNativeMessageListener((data) => {
-          const msg = data as { type: string; data?: { devices: AudioInputDevice[] } };
+          const msg = data as BridgeEvent<'AUDIO_INPUT_DEVICES_RESPONSE'>;
           if (msg.type === 'AUDIO_INPUT_DEVICES_RESPONSE') {
             cleanup();
             resolve(msg.data?.devices ?? []);
@@ -86,7 +92,8 @@ export function createNativeBridgeAudioInputAdapter(): AudioInputPlatformAdapter
       return new Promise((resolve) => {
         postMessageToNative({ type: 'GET_SELECTED_AUDIO_INPUT_DEVICE' });
         const cleanup = addNativeMessageListener((data) => {
-          const msg = data as { type: string; data?: { device: AudioInputDevice | null } };
+          const msg =
+            data as BridgeEvent<'SELECTED_AUDIO_INPUT_DEVICE_RESPONSE'>;
           if (msg.type === 'SELECTED_AUDIO_INPUT_DEVICE_RESPONSE') {
             cleanup();
             resolve(msg.data?.device ?? null);
@@ -96,7 +103,10 @@ export function createNativeBridgeAudioInputAdapter(): AudioInputPlatformAdapter
     },
 
     async selectInputDevice(deviceId: string): Promise<void> {
-      postMessageToNative({ type: 'SELECT_AUDIO_INPUT_DEVICE', data: { deviceId } });
+      postMessageToNative({
+        type: 'SELECT_AUDIO_INPUT_DEVICE',
+        data: { deviceId },
+      });
     },
 
     async startCapture(config: AudioCaptureConfig): Promise<void> {
@@ -113,29 +123,45 @@ export function createNativeBridgeAudioInputAdapter(): AudioInputPlatformAdapter
 
     // No frame consumer — analysis happens natively
 
-    onSessionStateChanged(callback: (state: AudioSessionState) => void): () => void {
+    onSessionStateChanged(
+      callback: (state: AudioSessionState) => void
+    ): () => void {
       sessionStateCallbacks.add(callback);
-      return () => { sessionStateCallbacks.delete(callback); };
+      return () => {
+        sessionStateCallbacks.delete(callback);
+      };
     },
 
-    onPitchDetected(callback: (event: PitchDetectionEvent) => void): () => void {
+    onPitchDetected(
+      callback: (event: PitchDetectionEvent) => void
+    ): () => void {
       pitchCallbacks.add(callback);
-      return () => { pitchCallbacks.delete(callback); };
+      return () => {
+        pitchCallbacks.delete(callback);
+      };
     },
 
     onRhythmHitDetected(callback: (event: RhythmHitEvent) => void): () => void {
       rhythmCallbacks.add(callback);
-      return () => { rhythmCallbacks.delete(callback); };
+      return () => {
+        rhythmCallbacks.delete(callback);
+      };
     },
 
-    onRouteChanged(callback: (devices: AudioInputDevice[]) => void): () => void {
+    onRouteChanged(
+      callback: (devices: AudioInputDevice[]) => void
+    ): () => void {
       routeCallbacks.add(callback);
-      return () => { routeCallbacks.delete(callback); };
+      return () => {
+        routeCallbacks.delete(callback);
+      };
     },
 
     onError(callback: (error: Error) => void): () => void {
       errorCallbacks.add(callback);
-      return () => { errorCallbacks.delete(callback); };
+      return () => {
+        errorCallbacks.delete(callback);
+      };
     },
 
     dispose(): void {

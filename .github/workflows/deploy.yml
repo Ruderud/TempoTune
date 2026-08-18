@@ -10,6 +10,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   affected:
     name: Detect affected projects
@@ -22,7 +25,7 @@ jobs:
       any: ${{ steps.check.outputs.any }}
       base-sha: ${{ steps.base.outputs.sha }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -91,7 +94,7 @@ jobs:
     if: needs.affected.outputs.any == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -118,7 +121,7 @@ jobs:
     if: needs.affected.outputs.any == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -133,7 +136,7 @@ jobs:
     if: needs.affected.outputs.audio == 'true' || needs.affected.outputs.shared == 'true' || needs.affected.outputs.mobile == 'true' || needs.affected.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -148,18 +151,18 @@ jobs:
     if: needs.affected.outputs.mobile == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - uses: ./.github/actions/setup
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
 
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
 
       - name: Install Android Appium driver
         run: pnpm qa:setup:device:android-emu
@@ -173,7 +176,7 @@ jobs:
     if: needs.affected.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -188,7 +191,7 @@ jobs:
     if: needs.affected.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -201,7 +204,7 @@ jobs:
         run: pnpm exec nx run web:e2e
 
       - name: Upload Playwright report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
@@ -214,7 +217,7 @@ jobs:
     if: needs.affected.outputs.any == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -228,7 +231,16 @@ jobs:
 
   deploy-web:
     name: Deploy Web
-    needs: [affected, type-check, lint, test, ui-guardrails, e2e-web, regression-report]
+    needs:
+      [
+        affected,
+        type-check,
+        lint,
+        test,
+        ui-guardrails,
+        e2e-web,
+        regression-report,
+      ]
     if: |
       always() &&
       github.event_name == 'push' &&
@@ -244,9 +256,8 @@ jobs:
     environment: github-action
     permissions:
       contents: read
-      deployments: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 

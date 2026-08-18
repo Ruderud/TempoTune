@@ -99,17 +99,20 @@ export class MetronomeEngine {
     const subdivisionInterval = bpmToMs(this.config.bpm) / this.config.subdivision;
 
     // If the gap is larger than 3 beat intervals (e.g. tab was backgrounded),
-    // reset scheduling from now instead of catching up.
+    // skip inaudible ticks while keeping the original beat phase.
     const maxGapMs = subdivisionInterval * 3;
     if (now - this.nextTickTime > maxGapMs) {
-      this.nextTickTime = now;
+      const skippedTicks = Math.floor((now - this.nextTickTime) / subdivisionInterval);
+      this.nextTickTime += skippedTicks * subdivisionInterval;
+      this.advanceTransport(skippedTicks);
     }
 
     // Cap burst recovery: process at most 3 ticks per scheduling cycle.
     const MAX_TICKS_PER_CYCLE = 3;
     let ticksThisCycle = 0;
 
-    while (this.nextTickTime <= now && ticksThisCycle < MAX_TICKS_PER_CYCLE) {
+    const scheduleUntil = now + this.scheduler.getScheduleAheadMs();
+    while (this.nextTickTime <= scheduleUntil && ticksThisCycle < MAX_TICKS_PER_CYCLE) {
       const isMainBeat = this.currentSubdivision === 0;
       const isAccent = isMainBeat && this.currentBeat === 0 && this.config.accentFirst;
 
@@ -122,15 +125,19 @@ export class MetronomeEngine {
 
       this.emitTick(event);
 
-      this.currentSubdivision++;
-      if (this.currentSubdivision >= this.config.subdivision) {
-        this.currentSubdivision = 0;
-        this.currentBeat = (this.currentBeat + 1) % this.config.timeSignature[0];
-      }
+      this.advanceTransport(1);
 
       this.nextTickTime += subdivisionInterval;
       ticksThisCycle++;
     }
+  }
+
+  private advanceTransport(tickCount: number): void {
+    const totalSubdivisions = this.currentSubdivision + tickCount;
+    const beatsAdvanced = Math.floor(totalSubdivisions / this.config.subdivision);
+
+    this.currentSubdivision = totalSubdivisions % this.config.subdivision;
+    this.currentBeat = (this.currentBeat + beatsAdvanced) % this.config.timeSignature[0];
   }
 
   private emitTick(event: MetronomeEvent): void {

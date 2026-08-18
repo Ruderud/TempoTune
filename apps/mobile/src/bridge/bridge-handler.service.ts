@@ -1,6 +1,14 @@
-import type {BridgeMessage, BridgeMessageType, BridgeResponse} from '@tempo-tune/shared/types';
+import type {
+  BridgeCommandPayload,
+  BridgeCommandType,
+  BridgeMessage,
+  BridgeMessageType,
+  BridgeNativeToWebMessage,
+  BridgeResponse,
+  BridgeResponseEnvelope,
+} from '@tempo-tune/shared/types';
 import type WebView from 'react-native-webview';
-import type {RefObject} from 'react';
+import type { RefObject } from 'react';
 
 type MessageHandler = (data: unknown) => Promise<BridgeResponse>;
 const IS_DEV = typeof __DEV__ !== 'undefined' && __DEV__;
@@ -18,8 +26,11 @@ export class BridgeHandler {
     this.webViewRef = webViewRef;
   }
 
-  registerHandler(type: string, handler: MessageHandler): void {
-    this.handlers.set(type, handler);
+  registerHandler<K extends BridgeCommandType>(
+    type: K,
+    handler: (data: BridgeCommandPayload<K>) => Promise<BridgeResponse>
+  ): void {
+    this.handlers.set(type, handler as unknown as MessageHandler);
   }
 
   async handleMessage(rawData: string): Promise<void> {
@@ -33,19 +44,23 @@ export class BridgeHandler {
 
       const response = await handler(message.data);
       const responseType = RESPONSE_TYPE[message.type] ?? message.type;
-      this.sendToWebView({
+      const envelope: BridgeResponseEnvelope = {
         type: responseType,
         ...response,
         requestId: message.requestId,
-      });
+      };
+      this.sendToWebView(envelope);
     } catch (error) {
       if (IS_DEV) {
-        console.warn('[BridgeHandler.handleMessage] failed to process message', error);
+        console.warn(
+          '[BridgeHandler.handleMessage] failed to process message',
+          error
+        );
       }
     }
   }
 
-  sendToWebView(data: unknown): void {
+  sendToWebView(data: BridgeNativeToWebMessage): void {
     const script = `
       window.postMessage(${JSON.stringify(JSON.stringify(data))}, '*');
       true;
