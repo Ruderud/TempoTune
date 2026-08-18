@@ -6,6 +6,9 @@ import type {
 import {
   A4_FREQUENCY,
   ALL_TUNING_PRESETS,
+  TUNER_ANALYSIS_BUFFER_SIZE,
+  TUNER_MAX_FREQUENCY,
+  TUNER_MIN_FREQUENCY,
 } from '@tempo-tune/shared/constants';
 import { frequencyToNote, centsFromPitch } from '@tempo-tune/shared/utils';
 import type {
@@ -23,10 +26,10 @@ export class TunerEngine {
   constructor(config?: Partial<TunerEngineConfig>) {
     this.config = {
       sampleRate: config?.sampleRate ?? 44100,
-      bufferSize: config?.bufferSize ?? 4096,
+      bufferSize: config?.bufferSize ?? TUNER_ANALYSIS_BUFFER_SIZE,
       referenceFrequency: config?.referenceFrequency ?? A4_FREQUENCY,
-      minFrequency: config?.minFrequency ?? 55,
-      maxFrequency: config?.maxFrequency ?? 1400,
+      minFrequency: config?.minFrequency ?? TUNER_MIN_FREQUENCY,
+      maxFrequency: config?.maxFrequency ?? TUNER_MAX_FREQUENCY,
     };
     this.pitchDetector = new PitchDetector({
       sampleRate: this.config.sampleRate,

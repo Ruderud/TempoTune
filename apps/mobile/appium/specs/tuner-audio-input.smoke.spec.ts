@@ -42,7 +42,7 @@ describe('Tuner Audio Input', () => {
     await installBridgeProbe(driver);
   });
 
-  it('detects an E2 tuner sample through the native capture path', async () => {
+  it('detects representative bass, guitar, and reference notes through the native capture path', async () => {
     const tunerTab = await driver.$('[data-testid="tab-tuner"]');
     await tunerTab.waitForDisplayed({ timeout: 10000 });
     await tunerTab.click();
@@ -50,38 +50,47 @@ describe('Tuner Audio Input', () => {
     let playStop = await driver.$('[data-testid="tuner-play-stop"]');
     await playStop.waitForDisplayed({ timeout: 10000 });
 
-    await clearBridgeEvents(driver);
-    await setQaAudioSampleSource(driver, 'reference_e2_note', {loop: true});
-    await playStop.click();
+    const fixtures = [
+      {id: 'bass_open_e1_note', name: 'E', octave: 1, frequency: 41.2},
+      {id: 'guitar_open_a2_note', name: 'A', octave: 2, frequency: 110},
+      {id: 'guitar_open_d3_note', name: 'D', octave: 3, frequency: 146.83},
+      {id: 'reference_c5_note', name: 'C', octave: 5, frequency: 523.251},
+      {id: 'guitar_open_e2_note', name: 'E', octave: 2, frequency: 82.41},
+    ];
 
-    await driver.waitUntil(
-      async () => (await playStop.getText()).includes('중지'),
-      {
-        timeout: 10000,
-        timeoutMsg: 'Tuner did not enter the listening state in time',
-      },
-    );
+    for (const fixture of fixtures) {
+      if ((await playStop.getText()).includes('중지')) {
+        await playStop.click();
+        await driver.waitUntil(async () => !(await playStop.getText()).includes('중지'), {timeout: 10000});
+      }
 
-    await waitForBridgeEvent(driver, 'PITCH_DETECTED', 1, 15000);
-    await waitForBridgeEventMatching(
-      driver,
-      'PITCH_DETECTED',
-      (event) => {
-        const payload = event.data as
-          | {name?: string; octave?: number; frequency?: number}
-          | undefined;
-        if (!payload) return false;
+      await clearBridgeEvents(driver);
+      await setQaAudioSampleSource(driver, fixture.id, {loop: true});
+      await playStop.click();
+      await driver.waitUntil(
+        async () => (await playStop.getText()).includes('중지'),
+        {
+          timeout: 10000,
+          timeoutMsg: `Tuner did not start for ${fixture.id}`,
+        },
+      );
 
-        return (
-          payload.name === 'E' &&
-          payload.octave === 2 &&
-          typeof payload.frequency === 'number' &&
-          payload.frequency >= 81 &&
-          payload.frequency <= 85
-        );
-      },
-      20000,
-    );
+      await waitForBridgeEvent(driver, 'PITCH_DETECTED', 1, 15000);
+      await waitForBridgeEventMatching(
+        driver,
+        'PITCH_DETECTED',
+        (event) => {
+          const payload = event.data as
+            | {name?: string; octave?: number; frequency?: number}
+            | undefined;
+          if (!payload || typeof payload.frequency !== 'number') return false;
+
+          const errorCents = Math.abs(1200 * Math.log2(payload.frequency / fixture.frequency));
+          return payload.name === fixture.name && payload.octave === fixture.octave && errorCents <= 5;
+        },
+        20000,
+      );
+    }
 
     await switchToNative(driver);
     await waitForNativeTunerReadout(driver, 20000);

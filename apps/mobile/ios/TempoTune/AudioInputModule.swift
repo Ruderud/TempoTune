@@ -9,6 +9,7 @@ class AudioInputModule: RCTEventEmitter {
   private var isCapturing = false
   private var sampleRate: Double = 44100
   private let bufferSize: AVAudioFrameCount = 2048
+  private let pitchWindowSize = 4096
   private var hasListeners = false
   private var selectedInputPort: AVAudioSessionPortDescription?
   private var enablePitchDetection = true
@@ -18,6 +19,7 @@ class AudioInputModule: RCTEventEmitter {
   private var lastRhythmOnsetAtMs: Double = 0
   private var fluxHistory: [Float] = []
   private var previousEnergy: [Float]?
+  private var pitchWindow: [Float] = []
 
   private let rhythmRmsThreshold: Float = 0.02
   private let rhythmFluxThresholdMultiplier: Float = 1.5
@@ -144,6 +146,7 @@ class AudioInputModule: RCTEventEmitter {
     enablePitchDetection = config["enablePitch"] as? Bool ?? true
     enableRhythmDetection = config["enableRhythm"] as? Bool ?? false
     resetRhythmDetector()
+    resetPitchWindow()
 
     if let qaSampleSource {
       startQaSampleCapture(sampleSource: qaSampleSource)
@@ -215,6 +218,7 @@ class AudioInputModule: RCTEventEmitter {
     audioEngine?.stop()
     audioEngine = nil
     resetRhythmDetector()
+    resetPitchWindow()
 
     emitStateChanged("idle")
   }
@@ -223,6 +227,9 @@ class AudioInputModule: RCTEventEmitter {
 
   private let yinThreshold: Float = 0.15
   private let yinProbabilityThreshold: Float = 0.1
+  private let tunerMinFrequency = 35.0
+  private let tunerMaxFrequency = 1400.0
+  private let yinDifferenceStep = 2
   private let referenceFrequency: Double = 440.0
   private var detectionSequence: UInt64 = 0
   private let noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
@@ -240,14 +247,21 @@ class AudioInputModule: RCTEventEmitter {
   private func processPitchDetection(_ buffer: AVAudioPCMBuffer, time: AVAudioTime) {
     guard let channelData = buffer.floatChannelData?[0] else { return }
     let frameCount = Int(buffer.frameLength)
-    guard frameCount >= Int(bufferSize) else { return }
+    guard frameCount > 0 else { return }
 
-    let audioData = Array(UnsafeBufferPointer(start: channelData, count: Int(bufferSize)))
-    guard let result = yinDetect(audioData) else { return }
+    // AVAudioEngine's tap buffer size is advisory. Consume every delivered
+    // frame so rolling pitch windows remain contiguous when frameLength differs.
+    let audioData = Array(UnsafeBufferPointer(start: channelData, count: frameCount))
+    processPitchDetection(audioData)
+  }
+
+  private func processPitchDetection(_ audioData: [Float]) {
+    guard enablePitchDetection else { return }
+    guard let analysisWindow = appendPitchSamples(audioData) else { return }
+    guard let result = yinDetect(analysisWindow) else { return }
 
     let monotonicMs = Self.monotonicNowMs()
     detectionSequence += 1
-
     let note = frequencyToNote(result.frequency)
 
     guard hasListeners else { return }
@@ -263,25 +277,21 @@ class AudioInputModule: RCTEventEmitter {
     ])
   }
 
-  private func processPitchDetection(_ audioData: [Float]) {
-    guard enablePitchDetection else { return }
-    guard let result = yinDetect(audioData) else { return }
+  private func appendPitchSamples(_ samples: [Float]) -> [Float]? {
+    if samples.count >= pitchWindowSize {
+      pitchWindow = Array(samples.suffix(pitchWindowSize))
+      return pitchWindow
+    }
 
-    let monotonicMs = Self.monotonicNowMs()
-    detectionSequence += 1
-    let note = frequencyToNote(result.frequency)
+    pitchWindow.append(contentsOf: samples)
+    if pitchWindow.count > pitchWindowSize {
+      pitchWindow.removeFirst(pitchWindow.count - pitchWindowSize)
+    }
+    return pitchWindow.count == pitchWindowSize ? pitchWindow : nil
+  }
 
-    guard hasListeners else { return }
-    sendEvent(withName: "onPitchDetected", body: [
-      "frequency": result.frequency,
-      "confidence": result.probability,
-      "name": note.name,
-      "octave": note.octave,
-      "cents": note.cents,
-      "detectedAtMonotonicMs": monotonicMs,
-      "debugSeq": detectionSequence,
-      "debugSource": "native",
-    ])
+  private func resetPitchWindow() {
+    pitchWindow.removeAll(keepingCapacity: true)
   }
 
   private func processRhythmDetection(_ buffer: AVAudioPCMBuffer) {
@@ -405,6 +415,7 @@ class AudioInputModule: RCTEventEmitter {
       if cursor >= sample.samples.count, loop {
         cursor = 0
         resetRhythmDetector()
+        resetPitchWindow()
       }
 
       var frame = [Float](repeating: 0, count: Int(bufferSize))
@@ -585,28 +596,39 @@ class AudioInputModule: RCTEventEmitter {
   }
 
   private func yinDetect(_ audioData: [Float]) -> PitchResult? {
-    let halfBuffer = audioData.count / 2
-    var yinBuffer = [Float](repeating: 0, count: halfBuffer)
+    let minLag = max(2, Int(floor(sampleRate / tunerMaxFrequency)))
+    let maxLag = min(
+      (audioData.count / 2) - 1,
+      Int(ceil(sampleRate / tunerMinFrequency))
+    )
+    guard maxLag > minLag else { return nil }
 
-    for tau in 0..<halfBuffer {
-      for i in 0..<halfBuffer {
+    var yinBuffer = [Float](repeating: 0, count: maxLag + 2)
+    let comparisonLength = audioData.count - (maxLag + 1)
+
+    for tau in 0...(maxLag + 1) {
+      var i = 0
+      while i < comparisonLength {
         let delta = audioData[i] - audioData[i + tau]
         yinBuffer[tau] += delta * delta
+        i += yinDifferenceStep
       }
     }
 
     yinBuffer[0] = 1
     var runningSum: Float = 0
-    for tau in 1..<halfBuffer {
+    for tau in 1...(maxLag + 1) {
       runningSum += yinBuffer[tau]
-      yinBuffer[tau] = (yinBuffer[tau] * Float(tau)) / runningSum
+      yinBuffer[tau] = runningSum > 0
+        ? (yinBuffer[tau] * Float(tau)) / runningSum
+        : 1
     }
 
     var tauEstimate = -1
-    for tau in 2..<halfBuffer {
+    for tau in minLag...maxLag {
       if yinBuffer[tau] < yinThreshold {
         var t = tau
-        while t + 1 < halfBuffer && yinBuffer[t + 1] < yinBuffer[t] {
+        while t + 1 <= maxLag && yinBuffer[t + 1] < yinBuffer[t] {
           t += 1
         }
         tauEstimate = t
@@ -617,11 +639,14 @@ class AudioInputModule: RCTEventEmitter {
     guard tauEstimate != -1 else { return nil }
 
     let betterTau: Double
-    if tauEstimate > 0 && tauEstimate < halfBuffer - 1 {
+    if tauEstimate > minLag && tauEstimate < maxLag {
       let s0 = Double(yinBuffer[tauEstimate - 1])
       let s1 = Double(yinBuffer[tauEstimate])
       let s2 = Double(yinBuffer[tauEstimate + 1])
-      let adjustment = (s2 - s0) / (2 * (2 * s1 - s2 - s0))
+      let denominator = 2 * (2 * s1 - s2 - s0)
+      let adjustment = abs(denominator) > Double.ulpOfOne
+        ? (s2 - s0) / denominator
+        : 0
       betterTau = Double(tauEstimate) + adjustment
     } else {
       betterTau = Double(tauEstimate)
@@ -631,7 +656,7 @@ class AudioInputModule: RCTEventEmitter {
     let probability = 1.0 - Double(yinBuffer[tauEstimate])
 
     guard probability >= Double(yinProbabilityThreshold) else { return nil }
-    guard frequency >= 20 && frequency <= 5000 else { return nil }
+    guard frequency >= tunerMinFrequency && frequency <= tunerMaxFrequency else { return nil }
 
     return PitchResult(frequency: frequency, probability: probability)
   }

@@ -96,6 +96,7 @@ describe('useTuner', () => {
       channelIndex: 0,
       enablePitch: true,
       enableRhythm: false,
+      bufferSize: 4096,
     });
     expect(result.current.isListening).toBe(true);
 
@@ -149,6 +150,7 @@ describe('useTuner', () => {
       channelIndex: 0,
       enablePitch: true,
       enableRhythm: false,
+      bufferSize: 4096,
     });
 
     act(() => {

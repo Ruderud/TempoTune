@@ -2,7 +2,11 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { TunerNote, TuningPreset, TuningString } from '@tempo-tune/shared/types';
-import { A4_FREQUENCY, ALL_TUNING_PRESETS } from '@tempo-tune/shared/constants';
+import {
+  A4_FREQUENCY,
+  ALL_TUNING_PRESETS,
+  TUNER_ANALYSIS_BUFFER_SIZE,
+} from '@tempo-tune/shared/constants';
 import { TunerAudioService } from '../services/audio';
 import type { AudioInputBridge } from '@tempo-tune/audio-input';
 import { getAudioInputBridge } from '../services/audio-input';
@@ -343,6 +347,7 @@ export function useTuner() {
           channelIndex: 0,
           enablePitch: true,
           enableRhythm: false,
+          bufferSize: TUNER_ANALYSIS_BUFFER_SIZE,
         });
       }
       setIsListening(true);

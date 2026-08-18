@@ -16,6 +16,13 @@ const BIT_RATE_KBPS = 128;
 const noteSamples = [
   {id: 'reference_a4_note', note: 'A', octave: 4, frequency: 440.0, instrument: 'reference'},
   {id: 'reference_e2_note', note: 'E', octave: 2, frequency: 82.41, instrument: 'reference'},
+  {id: 'reference_c2_note', note: 'C', octave: 2, frequency: 65.406, instrument: 'reference'},
+  {id: 'reference_fs2_note', note: 'F#', octave: 2, frequency: 92.499, instrument: 'reference'},
+  {id: 'reference_c3_note', note: 'C', octave: 3, frequency: 130.813, instrument: 'reference'},
+  {id: 'reference_a3_note', note: 'A', octave: 3, frequency: 220.0, instrument: 'reference'},
+  {id: 'reference_c4_note', note: 'C', octave: 4, frequency: 261.626, instrument: 'reference'},
+  {id: 'reference_c5_note', note: 'C', octave: 5, frequency: 523.251, instrument: 'reference'},
+  {id: 'reference_a5_note', note: 'A', octave: 5, frequency: 880.0, instrument: 'reference'},
   {id: 'guitar_open_e2_note', note: 'E', octave: 2, frequency: 82.41, instrument: 'guitar'},
   {id: 'guitar_open_a2_note', note: 'A', octave: 2, frequency: 110.0, instrument: 'guitar'},
   {id: 'guitar_open_d3_note', note: 'D', octave: 3, frequency: 146.83, instrument: 'guitar'},
@@ -50,7 +57,7 @@ const rhythmSamples = [
 mkdirSync(OUTPUT_DIR, {recursive: true});
 
 const manifest = {
-  generatedAt: new Date().toISOString(),
+  schemaVersion: 2,
   sampleRate: SAMPLE_RATE,
   samples: [],
 };
@@ -65,6 +72,7 @@ for (const sample of noteSamples) {
     note: sample.note,
     octave: sample.octave,
     frequency: sample.frequency,
+    signalProfile: sample.instrument === 'reference' ? 'harmonic-reference' : 'instrument-harmonics-with-vibrato-and-noise',
     wavPath: `/qa-audio/${sample.id}.wav`,
     mp3Path: `/qa-audio/${sample.id}.mp3`,
   });
@@ -94,6 +102,7 @@ function generateNoteSample(frequency, instrument = 'reference') {
   const durationSeconds = 2.4;
   const totalSamples = Math.round(durationSeconds * SAMPLE_RATE);
   const out = new Float32Array(totalSamples);
+  let fundamentalPhase = 0;
 
   for (let i = 0; i < totalSamples; i += 1) {
     const t = i / SAMPLE_RATE;
@@ -107,12 +116,17 @@ function generateNoteSample(frequency, instrument = 'reference') {
       continue;
     }
 
-    const shimmer = 1 + 0.0025 * Math.sin(2 * Math.PI * 5.2 * t);
-    const fundamental = Math.sin(2 * Math.PI * frequency * shimmer * t);
+    // Integrate instantaneous frequency into phase. Multiplying frequency by
+    // time here would bias the generated pitch and make the fixture itself
+    // progressively sharp.
+    const vibratoRatio = 1 + 0.0015 * Math.sin(2 * Math.PI * 5.2 * t);
+    fundamentalPhase += 2 * Math.PI * frequency * vibratoRatio / SAMPLE_RATE;
+    const fundamental = Math.sin(fundamentalPhase);
     const harmonic2 = 0.34 * Math.sin(2 * Math.PI * frequency * 2 * t + 0.15);
     const harmonic3 = 0.16 * Math.sin(2 * Math.PI * frequency * 3 * t + 0.31);
     const harmonic4 = 0.08 * Math.sin(2 * Math.PI * frequency * 4 * t + 0.52);
-    const body = (0.72 * fundamental) + harmonic2 + harmonic3 + harmonic4;
+    const microphoneNoise = 0.006 * deterministicNoise(Math.round(frequency), i);
+    const body = (0.72 * fundamental) + harmonic2 + harmonic3 + harmonic4 + microphoneNoise;
 
     out[i] = clampSample(body * 0.78 * envelope);
   }

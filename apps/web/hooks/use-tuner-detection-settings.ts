@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { clamp } from '@tempo-tune/shared/utils';
 import type { YinConfig } from '@tempo-tune/audio/tuner';
+import { TUNER_MAX_FREQUENCY, TUNER_MIN_FREQUENCY } from '@tempo-tune/shared/constants';
 
 export type SensitivityPreset = 'stable' | 'balanced' | 'fast' | 'custom';
 type PresetKey = Exclude<SensitivityPreset, 'custom'>;
@@ -18,8 +19,6 @@ export type TunerDetectionSettings = {
 
 const DETECTION_SETTINGS_STORAGE_KEY = 'tempo_tuner_detection_settings_v1';
 
-const DETECTOR_MIN_FREQUENCY = 55;
-const DETECTOR_MAX_FREQUENCY = 1400;
 const DETECTOR_MEDIAN_WINDOW_SIZE = 5;
 
 export const TUNER_SENSITIVITY_PRESETS: Record<PresetKey, TunerDetectionSettings> = {
@@ -109,8 +108,8 @@ export function getSensitivityPreset(settings: TunerDetectionSettings): Sensitiv
 
 export function toPitchDetectionConfig(settings: TunerDetectionSettings): Partial<YinConfig> {
   return {
-    minFrequency: DETECTOR_MIN_FREQUENCY,
-    maxFrequency: DETECTOR_MAX_FREQUENCY,
+    minFrequency: TUNER_MIN_FREQUENCY,
+    maxFrequency: TUNER_MAX_FREQUENCY,
     probabilityThreshold: settings.probabilityThreshold,
     rmsThreshold: settings.rmsThreshold,
     smoothingAlpha: settings.detectorSmoothingAlpha,

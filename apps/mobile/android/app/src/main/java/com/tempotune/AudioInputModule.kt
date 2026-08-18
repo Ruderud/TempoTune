@@ -38,8 +38,12 @@ class AudioInputModule(private val reactContext: ReactApplicationContext) :
         private const val TAG = "AudioInputModule"
         private const val SAMPLE_RATE = 44100
         private const val BUFFER_SIZE = 2048
+        private const val PITCH_WINDOW_SIZE = 4096
         private const val YIN_THRESHOLD = 0.15f
         private const val YIN_PROBABILITY_THRESHOLD = 0.1f
+        private const val TUNER_MIN_FREQUENCY = 35.0
+        private const val TUNER_MAX_FREQUENCY = 1400.0
+        private const val YIN_DIFFERENCE_STEP = 2
         private const val REFERENCE_FREQUENCY = 440.0
         private const val RHYTHM_RMS_THRESHOLD = 0.02f
         private const val RHYTHM_FLUX_THRESHOLD_MULTIPLIER = 1.5f
@@ -62,6 +66,8 @@ class AudioInputModule(private val reactContext: ReactApplicationContext) :
     private var lastRhythmOnsetAtMs = 0.0
     private var fluxHistory = ArrayDeque<Float>()
     private var previousEnergy: FloatArray? = null
+    private val pitchWindow = FloatArray(PITCH_WINDOW_SIZE)
+    private var pitchWindowFill = 0
 
     private data class QaSampleSource(val url: String, val loop: Boolean)
     private data class WavSample(
@@ -191,6 +197,7 @@ class AudioInputModule(private val reactContext: ReactApplicationContext) :
         enablePitchDetection = if (config.hasKey("enablePitch")) config.getBoolean("enablePitch") else true
         enableRhythmDetection = if (config.hasKey("enableRhythm")) config.getBoolean("enableRhythm") else false
         resetRhythmDetector()
+        resetPitchWindow()
 
         qaSampleSource?.let { sampleSource ->
             startQaSampleCapture(sampleSource)
@@ -287,6 +294,7 @@ class AudioInputModule(private val reactContext: ReactApplicationContext) :
         }
         audioRecord = null
         resetRhythmDetector()
+        resetPitchWindow()
 
         emitStateChanged("idle")
     }
@@ -295,13 +303,22 @@ class AudioInputModule(private val reactContext: ReactApplicationContext) :
 
     private fun processAudioLoop(record: AudioRecord) {
         val buffer = FloatArray(BUFFER_SIZE)
+        var bufferFill = 0
 
         try {
             while (isCapturing && record.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
-                val read = record.read(buffer, 0, BUFFER_SIZE, AudioRecord.READ_BLOCKING)
-                if (read <= 0 || read < BUFFER_SIZE) continue
+                val read = record.read(
+                    buffer,
+                    bufferFill,
+                    BUFFER_SIZE - bufferFill,
+                    AudioRecord.READ_BLOCKING,
+                )
+                if (read <= 0) continue
+                bufferFill += read
+                if (bufferFill < BUFFER_SIZE) continue
 
                 processDetectionFrame(buffer)
+                bufferFill = 0
             }
         } catch (e: Exception) {
             Log.e(TAG, "Audio processing error: ${e.message}")
@@ -346,6 +363,7 @@ class AudioInputModule(private val reactContext: ReactApplicationContext) :
                 if (loop) {
                     cursor = 0
                     resetRhythmDetector()
+                    resetPitchWindow()
                 }
             }
 
@@ -366,7 +384,7 @@ class AudioInputModule(private val reactContext: ReactApplicationContext) :
 
     private fun processDetectionFrame(buffer: FloatArray) {
         if (enablePitchDetection) {
-            val result = yinDetect(buffer)
+            val result = appendPitchSamples(buffer)?.let(::yinDetect)
             if (result != null) {
                 emitPitchDetected(result)
             }
@@ -375,6 +393,41 @@ class AudioInputModule(private val reactContext: ReactApplicationContext) :
         if (enableRhythmDetection) {
             detectRhythmHit(buffer)
         }
+    }
+
+    private fun appendPitchSamples(samples: FloatArray): FloatArray? {
+        if (samples.size >= PITCH_WINDOW_SIZE) {
+            System.arraycopy(
+                samples,
+                samples.size - PITCH_WINDOW_SIZE,
+                pitchWindow,
+                0,
+                PITCH_WINDOW_SIZE,
+            )
+            pitchWindowFill = PITCH_WINDOW_SIZE
+            return pitchWindow
+        }
+
+        if (pitchWindowFill < PITCH_WINDOW_SIZE) {
+            val copyLength = minOf(samples.size, PITCH_WINDOW_SIZE - pitchWindowFill)
+            System.arraycopy(samples, 0, pitchWindow, pitchWindowFill, copyLength)
+            pitchWindowFill += copyLength
+            if (copyLength < samples.size) {
+                val remainder = samples.size - copyLength
+                System.arraycopy(pitchWindow, remainder, pitchWindow, 0, PITCH_WINDOW_SIZE - remainder)
+                System.arraycopy(samples, copyLength, pitchWindow, PITCH_WINDOW_SIZE - remainder, remainder)
+            }
+        } else {
+            System.arraycopy(pitchWindow, samples.size, pitchWindow, 0, PITCH_WINDOW_SIZE - samples.size)
+            System.arraycopy(samples, 0, pitchWindow, PITCH_WINDOW_SIZE - samples.size, samples.size)
+        }
+
+        return if (pitchWindowFill == PITCH_WINDOW_SIZE) pitchWindow else null
+    }
+
+    private fun resetPitchWindow() {
+        pitchWindow.fill(0f)
+        pitchWindowFill = 0
     }
 
     private fun emitPitchDetected(result: PitchResult) {
@@ -688,28 +741,37 @@ class AudioInputModule(private val reactContext: ReactApplicationContext) :
     private data class NoteInfo(val name: String, val octave: Int, val cents: Int)
 
     private fun yinDetect(audioData: FloatArray): PitchResult? {
-        val halfBuffer = audioData.size / 2
-        val yinBuffer = FloatArray(halfBuffer)
+        val minLag = maxOf(2, kotlin.math.floor(SAMPLE_RATE / TUNER_MAX_FREQUENCY).toInt())
+        val maxLag = minOf(
+            (audioData.size / 2) - 1,
+            kotlin.math.ceil(SAMPLE_RATE / TUNER_MIN_FREQUENCY).toInt(),
+        )
+        if (maxLag <= minLag) return null
 
-        for (tau in 0 until halfBuffer) {
-            for (i in 0 until halfBuffer) {
+        val yinBuffer = FloatArray(maxLag + 2)
+        val comparisonLength = audioData.size - (maxLag + 1)
+
+        for (tau in 0..(maxLag + 1)) {
+            var i = 0
+            while (i < comparisonLength) {
                 val delta = audioData[i] - audioData[i + tau]
                 yinBuffer[tau] += delta * delta
+                i += YIN_DIFFERENCE_STEP
             }
         }
 
         yinBuffer[0] = 1f
         var runningSum = 0f
-        for (tau in 1 until halfBuffer) {
+        for (tau in 1..(maxLag + 1)) {
             runningSum += yinBuffer[tau]
-            yinBuffer[tau] = (yinBuffer[tau] * tau) / runningSum
+            yinBuffer[tau] = if (runningSum > 0f) (yinBuffer[tau] * tau) / runningSum else 1f
         }
 
         var tauEstimate = -1
-        for (tau in 2 until halfBuffer) {
+        for (tau in minLag..maxLag) {
             if (yinBuffer[tau] < YIN_THRESHOLD) {
                 var t = tau
-                while (t + 1 < halfBuffer && yinBuffer[t + 1] < yinBuffer[t]) {
+                while (t + 1 <= maxLag && yinBuffer[t + 1] < yinBuffer[t]) {
                     t++
                 }
                 tauEstimate = t
@@ -719,11 +781,16 @@ class AudioInputModule(private val reactContext: ReactApplicationContext) :
 
         if (tauEstimate == -1) return null
 
-        val betterTau: Double = if (tauEstimate > 0 && tauEstimate < halfBuffer - 1) {
+        val betterTau: Double = if (tauEstimate > minLag && tauEstimate < maxLag) {
             val s0 = yinBuffer[tauEstimate - 1].toDouble()
             val s1 = yinBuffer[tauEstimate].toDouble()
             val s2 = yinBuffer[tauEstimate + 1].toDouble()
-            val adjustment = (s2 - s0) / (2 * (2 * s1 - s2 - s0))
+            val denominator = 2 * (2 * s1 - s2 - s0)
+            val adjustment = if (abs(denominator) > Double.MIN_VALUE) {
+                (s2 - s0) / denominator
+            } else {
+                0.0
+            }
             tauEstimate.toDouble() + adjustment
         } else {
             tauEstimate.toDouble()
@@ -733,7 +800,7 @@ class AudioInputModule(private val reactContext: ReactApplicationContext) :
         val probability = 1.0 - yinBuffer[tauEstimate].toDouble()
 
         if (probability < YIN_PROBABILITY_THRESHOLD) return null
-        if (frequency < 20 || frequency > 5000) return null
+        if (frequency < TUNER_MIN_FREQUENCY || frequency > TUNER_MAX_FREQUENCY) return null
 
         return PitchResult(frequency, probability)
     }
