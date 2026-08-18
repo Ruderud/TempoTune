@@ -36,19 +36,19 @@ export function createNativeBridgeAudioInputAdapter(): AudioInputPlatformAdapter
   const removeListener = addNativeMessageListener((data) => {
     const msg = data as BridgeEvent | BridgeErrorMessage;
 
-    if (msg.type === 'AUDIO_INPUT_STATE_CHANGED') {
+    if (msg.type === 'AUDIO_INPUT_STATE_CHANGED' && msg.data) {
       for (const cb of sessionStateCallbacks) cb(msg.data);
     }
-    if (msg.type === 'PITCH_DETECTED') {
+    if (msg.type === 'PITCH_DETECTED' && msg.data) {
       for (const cb of pitchCallbacks) cb(msg.data as PitchDetectionEvent);
     }
-    if (msg.type === 'RHYTHM_HIT_DETECTED') {
+    if (msg.type === 'RHYTHM_HIT_DETECTED' && msg.data) {
       for (const cb of rhythmCallbacks) cb(msg.data);
     }
-    if (msg.type === 'AUDIO_INPUT_ROUTE_CHANGED') {
+    if (msg.type === 'AUDIO_INPUT_ROUTE_CHANGED' && msg.data) {
       for (const cb of routeCallbacks) cb(msg.data.devices);
     }
-    if (msg.type === 'ERROR') {
+    if (msg.type === 'ERROR' && msg.error) {
       for (const cb of errorCallbacks) cb(new Error(msg.error));
     }
   });
