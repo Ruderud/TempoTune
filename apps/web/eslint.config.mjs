@@ -5,6 +5,7 @@ const config = defineConfig([
   {
     ignores: [
       '.next/**',
+      '.open-next/**',
       'playwright-report/**',
       'test-results/**',
       'blob-report/**',

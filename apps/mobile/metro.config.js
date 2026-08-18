@@ -1,4 +1,4 @@
-const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const path = require('path');
 
 /**
@@ -20,9 +20,14 @@ const config = {
     ],
     extraNodeModules: {
       react: path.resolve(projectRoot, 'node_modules/react'),
-      'react/jsx-runtime': path.resolve(projectRoot, 'node_modules/react/jsx-runtime.js'),
-      'react/jsx-dev-runtime': path.resolve(projectRoot, 'node_modules/react/jsx-dev-runtime.js'),
-      'react-test-renderer': path.resolve(projectRoot, 'node_modules/react-test-renderer'),
+      'react/jsx-runtime': path.resolve(
+        projectRoot,
+        'node_modules/react/jsx-runtime.js'
+      ),
+      'react/jsx-dev-runtime': path.resolve(
+        projectRoot,
+        'node_modules/react/jsx-dev-runtime.js'
+      ),
     },
   },
 };
