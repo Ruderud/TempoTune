@@ -65,11 +65,12 @@ test.describe('Tab Navigation', () => {
     await expect(page.getByTestId('metronome-play-stop').first()).toBeVisible();
   });
 
-  test('all three tabs are visible in mobile nav', async ({ page }) => {
+  test('all four tabs are visible in mobile nav', async ({ page }) => {
     await page.goto('/metronome');
     const nav = page.getByTestId('tab-bar-mobile');
     await expect(nav.getByTestId('tab-metronome')).toBeVisible();
     await expect(nav.getByTestId('tab-tuner')).toBeVisible();
+    await expect(nav.getByTestId('tab-rhythm')).toBeVisible();
     await expect(nav.getByTestId('tab-settings')).toBeVisible();
   });
 });
