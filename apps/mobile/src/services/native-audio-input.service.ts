@@ -1,9 +1,11 @@
-import {NativeModules, NativeEventEmitter} from 'react-native';
+import { NativeModules, NativeEventEmitter } from 'react-native';
 import type {
   AudioInputDevice,
   AudioSessionState,
   PitchDetectionEvent,
   AudioCaptureConfig,
+  BridgeAnalyzerConfig,
+  QaAudioSampleSource,
   RhythmHitEvent,
 } from '@tempo-tune/shared/types';
 
@@ -36,13 +38,13 @@ class NativeAudioInputService {
   listInputDevices(): Promise<AudioInputDevice[]> {
     if (!this.moduleAvailable) return Promise.resolve([]);
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const sub = this.emitter!.addListener(
         'onAudioInputDevicesResponse',
         (event: DevicesResponseEvent) => {
           sub.remove();
           resolve(event.devices ?? []);
-        },
+        }
       );
       NativeModules.AudioInputModule.listInputDevices();
     });
@@ -51,13 +53,13 @@ class NativeAudioInputService {
   getSelectedInputDevice(): Promise<AudioInputDevice | null> {
     if (!this.moduleAvailable) return Promise.resolve(null);
 
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       const sub = this.emitter!.addListener(
         'onSelectedAudioInputDeviceResponse',
         (event: SelectedDeviceResponseEvent) => {
           sub.remove();
           resolve(event.device ?? null);
-        },
+        }
       );
       NativeModules.AudioInputModule.getSelectedInputDevice();
     });
@@ -73,12 +75,12 @@ class NativeAudioInputService {
     NativeModules.AudioInputModule.startCapture(config);
   }
 
-  configureAnalyzers(config: {enablePitch: boolean; enableRhythm: boolean}): void {
+  configureAnalyzers(config: BridgeAnalyzerConfig): void {
     if (!this.moduleAvailable) return;
     NativeModules.AudioInputModule.configureAnalyzers(config);
   }
 
-  setQaSampleSource(config: {url: string; loop?: boolean}): void {
+  setQaSampleSource(config: QaAudioSampleSource): void {
     if (!this.moduleAvailable) return;
     NativeModules.AudioInputModule.setQaSampleSource(config);
   }
@@ -93,41 +95,30 @@ class NativeAudioInputService {
     NativeModules.AudioInputModule.stopCapture();
   }
 
-  onStateChanged(
-    callback: (state: AudioSessionState) => void,
-  ): () => void {
+  onStateChanged(callback: (state: AudioSessionState) => void): () => void {
     if (!this.emitter) return () => {};
-    const sub = this.emitter.addListener(
-      'onAudioInputStateChanged',
-      callback,
-    );
+    const sub = this.emitter.addListener('onAudioInputStateChanged', callback);
     return () => sub.remove();
   }
 
-  onPitchDetected(
-    callback: (event: PitchDetectionEvent) => void,
-  ): () => void {
+  onPitchDetected(callback: (event: PitchDetectionEvent) => void): () => void {
     if (!this.emitter) return () => {};
     const sub = this.emitter.addListener('onPitchDetected', callback);
     return () => sub.remove();
   }
 
-  onRouteChanged(
-    callback: (devices: AudioInputDevice[]) => void,
-  ): () => void {
+  onRouteChanged(callback: (devices: AudioInputDevice[]) => void): () => void {
     if (!this.emitter) return () => {};
     const sub = this.emitter.addListener(
       'onAudioInputRouteChanged',
       (event: DevicesResponseEvent) => {
         callback(event.devices ?? []);
-      },
+      }
     );
     return () => sub.remove();
   }
 
-  onRhythmDetected(
-    callback: (event: RhythmHitEvent) => void,
-  ): () => void {
+  onRhythmDetected(callback: (event: RhythmHitEvent) => void): () => void {
     if (!this.emitter) return () => {};
     const sub = this.emitter.addListener('onRhythmHitDetected', callback);
     return () => sub.remove();
@@ -137,9 +128,9 @@ class NativeAudioInputService {
     if (!this.emitter) return () => {};
     const sub = this.emitter.addListener(
       'onAudioInputError',
-      (event: {message: string}) => {
+      (event: { message: string }) => {
         callback(event.message);
-      },
+      }
     );
     return () => sub.remove();
   }

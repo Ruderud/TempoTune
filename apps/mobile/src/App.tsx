@@ -9,9 +9,7 @@ import {
   useColorScheme,
 } from 'react-native';
 import WebView from 'react-native-webview';
-import type {
-  WebViewMessageEvent,
-} from 'react-native-webview';
+import type { WebViewMessageEvent } from 'react-native-webview';
 import {
   BridgeHandler,
   handleRequestMicPermission,
@@ -40,9 +38,8 @@ import {
 
 const DEBUG_TUNER_LATENCY = __DEV__;
 const RUNTIME_CHANNEL = APP_RUNTIME_CHANNEL as AppRuntimeChannel;
-const NATIVE_DISTRIBUTION_CHANNEL = (
-  NativeModules.AppRuntimeInfoModule?.distributionChannel ?? 'unknown'
-) as NativeDistributionChannel;
+const NATIVE_DISTRIBUTION_CHANNEL = (NativeModules.AppRuntimeInfoModule
+  ?.distributionChannel ?? 'unknown') as NativeDistributionChannel;
 const WEBVIEW_RUNTIME = createMobileWebViewRuntime({
   isDevMode: __DEV__,
   runtimeChannel: RUNTIME_CHANNEL,
@@ -57,7 +54,10 @@ const WEBVIEW_RUNTIME = createMobileWebViewRuntime({
   nativeDistributionChannel: NATIVE_DISTRIBUTION_CHANNEL,
 });
 const APP_ENTRY_PATH = WEBVIEW_RUNTIME.appEntryPath;
-const WEB_URL = buildNativeAppBootstrapUrl(WEBVIEW_RUNTIME.webUrl, APP_ENTRY_PATH);
+const WEB_URL = buildNativeAppBootstrapUrl(
+  WEBVIEW_RUNTIME.webUrl,
+  APP_ENTRY_PATH
+);
 const WEBVIEW_DEBUGGING_ENABLED = WEBVIEW_RUNTIME.webviewDebuggingEnabled;
 const SHOW_QA_DEBUG_BANNER = WEBVIEW_RUNTIME.showQaDebugBanner;
 const SHOULD_LOG_WEBVIEW_EVENTS = WEBVIEW_RUNTIME.shouldLogWebviewEvents;
@@ -185,11 +185,7 @@ function App(): React.JSX.Element {
 
     // Native metronome handlers
     bridge.registerHandler('START_NATIVE_METRONOME', async (data) => {
-      const { bpm, beatsPerMeasure, accentFirst } = data as {
-        bpm: number;
-        beatsPerMeasure: number;
-        accentFirst: boolean;
-      };
+      const { bpm, beatsPerMeasure, accentFirst } = data;
       nativeMetronomeService.start(
         bpm,
         beatsPerMeasure,
@@ -216,13 +212,13 @@ function App(): React.JSX.Element {
     });
 
     bridge.registerHandler('SET_METRONOME_BPM', async (data) => {
-      const { bpm } = data as { bpm: number };
+      const { bpm } = data;
       nativeMetronomeService.setBpm(bpm);
       return { success: true };
     });
 
     bridge.registerHandler('SET_METRONOME_TIME_SIG', async (data) => {
-      const { beatsPerMeasure } = data as { beatsPerMeasure: number };
+      const { beatsPerMeasure } = data;
       nativeMetronomeService.setTimeSignature(beatsPerMeasure);
       return { success: true };
     });
@@ -247,14 +243,13 @@ function App(): React.JSX.Element {
     });
 
     bridge.registerHandler('SELECT_AUDIO_INPUT_DEVICE', async (data) => {
-      const { deviceId } = data as { deviceId: string };
+      const { deviceId } = data;
       nativeAudioInputService.selectInputDevice(deviceId);
       return { success: true };
     });
 
     bridge.registerHandler('START_AUDIO_CAPTURE', async (data) => {
-      const config = data as import('@tempo-tune/shared/types').AudioCaptureConfig;
-      nativeAudioInputService.startCapture(config);
+      nativeAudioInputService.startCapture(data);
       return { success: true };
     });
 
@@ -264,14 +259,12 @@ function App(): React.JSX.Element {
     });
 
     bridge.registerHandler('CONFIGURE_AUDIO_ANALYZERS', async (data) => {
-      const config = data as { enablePitch: boolean; enableRhythm: boolean };
-      nativeAudioInputService.configureAnalyzers(config);
+      nativeAudioInputService.configureAnalyzers(data);
       return { success: true };
     });
 
     bridge.registerHandler('SET_QA_AUDIO_SAMPLE_SOURCE', async (data) => {
-      const config = data as { url: string; loop?: boolean };
-      nativeAudioInputService.setQaSampleSource(config);
+      nativeAudioInputService.setQaSampleSource(data);
       return { success: true };
     });
 
@@ -289,13 +282,20 @@ function App(): React.JSX.Element {
       bridge.sendToWebView({ type: 'PITCH_DETECTED', data: event });
     });
 
-    const unsubInputRhythm = nativeAudioInputService.onRhythmDetected((event) => {
-      bridge.sendToWebView({ type: 'RHYTHM_HIT_DETECTED', data: event });
-    });
+    const unsubInputRhythm = nativeAudioInputService.onRhythmDetected(
+      (event) => {
+        bridge.sendToWebView({ type: 'RHYTHM_HIT_DETECTED', data: event });
+      }
+    );
 
-    const unsubInputRoute = nativeAudioInputService.onRouteChanged((devices) => {
-      bridge.sendToWebView({ type: 'AUDIO_INPUT_ROUTE_CHANGED', data: { devices } });
-    });
+    const unsubInputRoute = nativeAudioInputService.onRouteChanged(
+      (devices) => {
+        bridge.sendToWebView({
+          type: 'AUDIO_INPUT_ROUTE_CHANGED',
+          data: { devices },
+        });
+      }
+    );
 
     const unsubInputError = nativeAudioInputService.onError((errorMessage) => {
       bridge.sendToWebView({ type: 'ERROR', error: errorMessage });
@@ -344,15 +344,12 @@ function App(): React.JSX.Element {
   const handleShouldStartLoadWithRequest = () => true;
 
   return (
-    <View
-      style={[
-        styles.container,
-        { backgroundColor: shellBackgroundColor },
-      ]}
-    >
+    <View style={[styles.container, { backgroundColor: shellBackgroundColor }]}>
       <StatusBar
         backgroundColor={shellBackgroundColor}
-        barStyle={nativeShellTheme === 'dark' ? 'light-content' : 'dark-content'}
+        barStyle={
+          nativeShellTheme === 'dark' ? 'light-content' : 'dark-content'
+        }
       />
       <WebView
         ref={webViewRef}
@@ -361,10 +358,7 @@ function App(): React.JSX.Element {
         onMessage={handleMessage}
         onShouldStartLoadWithRequest={handleShouldStartLoadWithRequest}
         testID="app-webview"
-        style={[
-          styles.webview,
-          { backgroundColor: shellBackgroundColor },
-        ]}
+        style={[styles.webview, { backgroundColor: shellBackgroundColor }]}
         webviewDebuggingEnabled={WEBVIEW_DEBUGGING_ENABLED}
         allowsInlineMediaPlayback
         automaticallyAdjustContentInsets={false}

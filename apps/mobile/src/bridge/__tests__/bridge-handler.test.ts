@@ -15,7 +15,7 @@ function makeWebViewRef(injectJavaScript = vi.fn()) {
 function makeBridgeMessage(
   type: string,
   data?: unknown,
-  requestId?: string,
+  requestId?: string
 ): string {
   return JSON.stringify({ type, data, requestId });
 }
@@ -33,19 +33,21 @@ describe('BridgeHandler.sendToWebView', () => {
     const ref = makeWebViewRef(inject);
     const handler = new BridgeHandler(ref as never);
 
-    handler.sendToWebView({ type: 'PING' });
+    handler.sendToWebView({ type: 'ERROR', error: 'test error' });
 
     expect(inject).toHaveBeenCalledTimes(1);
     const script: string = inject.mock.calls[0][0];
     expect(script).toContain('window.postMessage');
-    expect(script).toContain('PING');
+    expect(script).toContain('test error');
   });
 
   it('does nothing when webViewRef.current is null', () => {
     const ref = { current: null } as RefObject<null>;
     const handler = new BridgeHandler(ref as never);
     // Should not throw
-    expect(() => handler.sendToWebView({ type: 'PING' })).not.toThrow();
+    expect(() =>
+      handler.sendToWebView({ type: 'ERROR', error: 'test error' })
+    ).not.toThrow();
   });
 });
 
@@ -77,7 +79,7 @@ describe('BridgeHandler.handleMessage', () => {
     }));
 
     await handler.handleMessage(
-      makeBridgeMessage('REQUEST_MIC_PERMISSION', undefined, 'req-1'),
+      makeBridgeMessage('REQUEST_MIC_PERMISSION', undefined, 'req-1')
     );
 
     expect(inject).toHaveBeenCalledTimes(1);
@@ -125,7 +127,7 @@ describe('BridgeHandler.handleMessage', () => {
 
     handler.registerHandler('START_LISTENING', async () => ({ success: true }));
     await handler.handleMessage(
-      makeBridgeMessage('START_LISTENING', undefined, 'abc-123'),
+      makeBridgeMessage('START_LISTENING', undefined, 'abc-123')
     );
 
     const script: string = inject.mock.calls[0][0];

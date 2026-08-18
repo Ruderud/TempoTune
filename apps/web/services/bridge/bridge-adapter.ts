@@ -1,3 +1,5 @@
+import type { BridgeCommand } from '@tempo-tune/shared/types';
+
 export function isNativeEnvironment(): boolean {
   if (typeof window === 'undefined') {
     return false;
@@ -13,17 +15,23 @@ export function isNativeEnvironment(): boolean {
   );
 }
 
-export function postMessageToNative<T>(message: T): void {
+export function postMessageToNative(message: BridgeCommand): void {
   if (isNativeEnvironment()) {
-    (window as unknown as { ReactNativeWebView: { postMessage: (msg: string) => void } })
-      .ReactNativeWebView.postMessage(JSON.stringify(message));
+    (
+      window as unknown as {
+        ReactNativeWebView: { postMessage: (msg: string) => void };
+      }
+    ).ReactNativeWebView.postMessage(JSON.stringify(message));
   }
 }
 
-export function addNativeMessageListener(callback: (data: unknown) => void): () => void {
+export function addNativeMessageListener(
+  callback: (data: unknown) => void
+): () => void {
   const handler = (event: MessageEvent) => {
     try {
-      const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+      const data =
+        typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
       callback(data);
     } catch {
       // JSON parse 실패 시 무시
