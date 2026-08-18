@@ -6,7 +6,6 @@ platforms: [ios, android]
 tests:
   unit:
     - apps/mobile/src/bridge/__tests__/bridge-handler.test.ts
-    - apps/web/services/bridge/__tests__/audio-bridge.client.test.ts
   e2eWeb: []
   e2eDevice: []
 criticalPaths:
@@ -17,7 +16,6 @@ criticalPaths:
   - apps/mobile/src/bridge/bridge-handler.service.ts
   - apps/mobile/src/bridge/index.ts
   - apps/web/services/bridge/bridge-adapter.ts
-  - apps/web/services/bridge/audio-bridge.client.ts
   - packages/shared/src/types/bridge.types.ts
 manualChecks:
   - Web ↔ Native 메시지 라운드트립 정상 동작
