@@ -32,6 +32,10 @@ export class MetronomeScheduler {
     return this.timerId !== null;
   }
 
+  getScheduleAheadMs(): number {
+    return this.config.scheduleAheadMs;
+  }
+
   private schedule(): void {
     this.timerId = setTimeout(() => {
       if (this.callback) {

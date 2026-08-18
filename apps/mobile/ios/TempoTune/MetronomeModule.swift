@@ -8,6 +8,24 @@ import React
 @objc(MetronomeModule)
 class MetronomeModule: RCTEventEmitter {
 
+  private struct SampleClock {
+    private var exactBeatSample: Double = 0
+
+    var currentBeatSample: Int64 { Int64(exactBeatSample.rounded()) }
+
+    func nextBeatSample(samplesPerBeat: Double) -> Int64 {
+      Int64((exactBeatSample + samplesPerBeat).rounded())
+    }
+
+    mutating func advance(samplesPerBeat: Double) {
+      exactBeatSample += samplesPerBeat
+    }
+
+    mutating func reset() {
+      exactBeatSample = 0
+    }
+  }
+
   // MARK: - Singleton (for App Intents access)
 
   static var instance: MetronomeModule?
@@ -29,8 +47,8 @@ class MetronomeModule: RCTEventEmitter {
   private let sampleRate: Double = 44100
   private let toneDuration: Double = 0.05 // 50ms sine wave
   private var sampleTime: Int64 = 0
-  private var samplesPerBeat: Int64 = 0
-  private var nextBeatAt: Int64 = 0
+  private var samplesPerBeat: Double = 0
+  private var beatClock = SampleClock()
   private var beatCounter: Int = 0
 
   // Pre-rendered tone buffers
@@ -81,9 +99,9 @@ class MetronomeModule: RCTEventEmitter {
     self.accentFirst = accentFirst
     self.currentBeat = 0
     self.sampleTime = 0
-    self.nextBeatAt = 0
+    self.beatClock.reset()
     self.beatCounter = 0
-    self.samplesPerBeat = Int64(sampleRate * 60.0 / bpm)
+    self.samplesPerBeat = sampleRate * 60.0 / bpm
 
     preRenderTones()
     setupAudioSession()
@@ -108,7 +126,7 @@ class MetronomeModule: RCTEventEmitter {
 
   @objc func setBpm(_ bpm: Double) {
     self.bpm = bpm
-    self.samplesPerBeat = Int64(sampleRate * 60.0 / bpm)
+    self.samplesPerBeat = sampleRate * 60.0 / bpm
     updateLiveActivity()
     emitStateChanged()
   }
@@ -182,7 +200,7 @@ class MetronomeModule: RCTEventEmitter {
       let accent = self.accentFirst
       let toneLen = self.accentTone.count
 
-      guard spb > 0, toneLen > 0 else {
+      guard spb.isFinite, spb > 0, toneLen > 0 else {
         for i in 0..<frames { data[i] = 0.0 }
         return noErr
       }
@@ -195,12 +213,12 @@ class MetronomeModule: RCTEventEmitter {
         let cs = self.sampleTime + Int64(i)
 
         // Advance beats while current sample is past the next beat boundary
-        while cs >= self.nextBeatAt + spb {
-          self.nextBeatAt += spb
+        while cs >= self.beatClock.nextBeatSample(samplesPerBeat: spb) {
+          self.beatClock.advance(samplesPerBeat: spb)
           self.beatCounter += 1
         }
 
-        let posInTone = Int(cs - self.nextBeatAt)
+        let posInTone = Int(cs - self.beatClock.currentBeatSample)
         if posInTone >= 0 && posInTone < toneLen {
           let beatIdx = self.beatCounter % bpMeasure
           let isAcc = accent && beatIdx == 0
