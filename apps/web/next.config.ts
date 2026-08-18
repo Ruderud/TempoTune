@@ -56,6 +56,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Next.js dev assets and HMR default to the hostname used to start the
+  // server (`localhost`). Local mobile/device checks also use the loopback IP.
+  allowedDevOrigins: ['127.0.0.1'],
   async headers() {
     return [
       {
