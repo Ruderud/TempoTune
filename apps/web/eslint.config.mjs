@@ -1,7 +1,9 @@
 import { defineConfig } from 'eslint/config';
 import nextConfig from 'eslint-config-next';
+import {moduleBoundaryConfig} from '../../eslint.base.config.mjs';
 
 const config = defineConfig([
+  ...moduleBoundaryConfig,
   {
     ignores: [
       '.next/**',
