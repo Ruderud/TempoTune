@@ -41,7 +41,7 @@ test.describe('Theme Mode', () => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.goto('/landing');
     await expect(
-      page.getByRole('heading', { name: /음악의 완벽한 템포,?\s*TempoTune/i })
+      page.getByRole('heading', { name: /박자와 음정에,?\s*바로 집중하세요/i })
     ).toBeVisible();
 
     await page.evaluate(() => {

@@ -7,7 +7,7 @@ test.describe('Tab Navigation', () => {
     await page.goto('/');
     await expect(page).toHaveURL(/\/$/);
     await expect(
-      page.getByRole('heading', { name: /음악의 완벽한 템포,?\s*TempoTune/i })
+      page.getByRole('heading', { name: /박자와 음정에,?\s*바로 집중하세요/i })
     ).toBeVisible();
   });
 
@@ -38,8 +38,35 @@ test.describe('Tab Navigation', () => {
     await page.goto('/landing');
     await expect(page).toHaveURL(/\/landing$/);
     await expect(
-      page.getByRole('heading', { name: /음악의 완벽한 템포,?\s*TempoTune/i })
+      page.getByRole('heading', { name: /박자와 음정에,?\s*바로 집중하세요/i })
     ).toBeVisible();
+  });
+
+  test('landing exposes only real product routes and verified proof points', async ({
+    page,
+  }) => {
+    await page.goto('/landing');
+
+    await expect(
+      page.getByRole('link', { name: '메트로놈 열기' }).first()
+    ).toHaveAttribute('href', '/metronome');
+    await expect(
+      page.getByRole('link', { name: '튜너 열기' }).first()
+    ).toHaveAttribute('href', '/tuner');
+    await expect(page.getByText('35–1400 Hz')).toBeVisible();
+    await expect(page.getByText('±5 cents')).toBeVisible();
+    await expect(page.getByText('전 세계 100만 명')).toHaveCount(0);
+    await expect(page.getByText('클라우드 동기화')).toHaveCount(0);
+    await expect(page.getByText('App Store')).toHaveCount(0);
+
+    const layout = await page.evaluate(() => ({
+      scrollHeight: document.documentElement.scrollHeight,
+      viewportHeight: window.innerHeight,
+      scrollWidth: document.documentElement.scrollWidth,
+      viewportWidth: document.documentElement.clientWidth,
+    }));
+    expect(layout.scrollHeight).toBeGreaterThan(layout.viewportHeight);
+    expect(layout.scrollWidth).toBe(layout.viewportWidth);
   });
 
   test('navigate to tuner tab', async ({ page }) => {

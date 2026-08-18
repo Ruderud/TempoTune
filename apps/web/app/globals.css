@@ -88,6 +88,13 @@
       color 0.25s ease,
       border-color 0.25s ease;
   }
+
+  html:has([data-landing-page='true']),
+  body:has([data-landing-page='true']) {
+    height: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
 }
 
 /* ── Components: custom utility classes ── */

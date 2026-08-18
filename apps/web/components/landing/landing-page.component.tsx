@@ -1,453 +1,346 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import {
-  Cloud,
+  Activity,
+  ArrowRight,
+  AudioLines,
+  Check,
   Clock3,
-  Download,
-  Facebook,
-  Globe,
-  Instagram,
-  Laptop,
-  Languages,
-  Monitor,
-  Music2,
-  Smartphone,
-  TabletSmartphone,
-  Waves,
-  Youtube,
+  Gauge,
+  Play,
+  SlidersHorizontal,
+  Timer,
   type LucideIcon,
 } from 'lucide-react';
 import { Icon } from '../common/icon.component';
-import {
-  APP_NAME,
-  APP_VERSION,
-  COPYRIGHT_YEAR,
-  LEGAL_ENTITY,
-} from '../../constants/app';
+import { ThemeModeMenu } from '../common/theme-mode-menu.component';
+import { APP_NAME, COPYRIGHT_YEAR, LEGAL_ENTITY } from '../../constants/app';
+import styles from './landing-page.module.css';
 
-const platformBadges: Array<{
-  label: string;
-  icon: LucideIcon;
-  hiddenOnMobile?: boolean;
-}> = [
-  { label: 'iOS Mobile', icon: Smartphone },
-  { label: 'Android App', icon: TabletSmartphone },
-  { label: 'Windows Native', icon: Monitor },
-  { label: 'macOS Silicon', icon: Laptop, hiddenOnMobile: true },
-  { label: 'Cloud Web', icon: Globe, hiddenOnMobile: true },
+const proofPoints = [
+  { value: '6시간', label: '메트로놈 누적 오차 회귀', detail: '< 0.001 ms' },
+  {
+    value: '35–1400 Hz',
+    label: '튜너 기본 분석 범위',
+    detail: '저음부터 고음까지',
+  },
+  { value: '±5 cents', label: '화면의 인 튠 기준', detail: '자동 회귀 계약' },
 ];
 
-const featureCards: Array<{
+const tools: Array<{
   title: string;
   description: string;
+  href: string;
   icon: LucideIcon;
+  eyebrow: string;
 }> = [
   {
-    title: '정밀 튜너',
-    description:
-      '0.1센트 단위의 초정밀 피치 분석 엔진을 탑재했습니다. 어떤 환경에서도 빠르고 정확한 튜닝이 가능합니다.',
-    icon: Waves,
+    title: '메트로놈',
+    description: '30–300 BPM, 박자표와 강박을 조절하고 탭으로 템포를 찾습니다.',
+    href: '/metronome',
+    icon: Timer,
+    eyebrow: 'TEMPO',
   },
   {
-    title: '프로 메트로놈',
+    title: '튜너',
     description:
-      '단순 비트를 넘어 복합 박자와 리듬 시각화 기능을 제공합니다. 곡의 감정적 템포를 완벽하게 제어하세요.',
-    icon: Clock3,
+      '마이크 입력을 분석해 음명, 옥타브, cents 편차를 실시간으로 표시합니다.',
+    href: '/tuner',
+    icon: AudioLines,
+    eyebrow: 'PITCH',
   },
   {
-    title: '하이브리드 앱',
+    title: '리듬 연습',
     description:
-      '모바일에서 연습하던 세팅 그대로 데스크톱에서 이어가세요. 클라우드 동기화로 어디서든 음악에 집중할 수 있습니다.',
-    icon: Cloud,
+      '연주한 박을 메트로놈과 비교해 빠름, 정확, 늦음으로 나눠 보여줍니다.',
+    href: '/rhythm',
+    icon: Activity,
+    eyebrow: 'RHYTHM',
+  },
+  {
+    title: '설정',
+    description: '시스템, 라이트, 다크 테마를 선택하고 연습 환경을 정리합니다.',
+    href: '/settings',
+    icon: SlidersHorizontal,
+    eyebrow: 'SETUP',
   },
 ];
 
-const socialLinks: Array<{ label: string; icon: LucideIcon }> = [
-  { label: 'Facebook', icon: Facebook },
-  { label: 'Instagram', icon: Instagram },
-  { label: 'YouTube', icon: Youtube },
-];
+function BrandMark({ compact = false }: { compact?: boolean }) {
+  return (
+    <span className={styles.brand}>
+      <Image
+        src="/icon-192.png"
+        alt=""
+        width={compact ? 34 : 40}
+        height={compact ? 34 : 40}
+        className={styles.brandIcon}
+        priority={!compact}
+      />
+      <span className={compact ? styles.brandNameCompact : styles.brandName}>
+        {APP_NAME}
+      </span>
+    </span>
+  );
+}
+
+function ProductPreview() {
+  return (
+    <div
+      className={styles.previewShell}
+      aria-label="TempoTune 제품 화면 미리보기"
+    >
+      <div className={styles.previewTopbar}>
+        <span className={styles.previewBrand}>
+          <span className={styles.liveDot} />
+          PRACTICE CONSOLE
+        </span>
+        <span className={styles.previewStatus}>AUDIO READY</span>
+      </div>
+      <div className={styles.previewGrid}>
+        <section
+          className={styles.metronomePanel}
+          aria-label="메트로놈 미리보기"
+        >
+          <div className={styles.panelHeader}>
+            <span>METRONOME</span>
+            <span>4 / 4</span>
+          </div>
+          <div className={styles.bpmReadout}>
+            <span className={styles.bpmValue}>120</span>
+            <span className={styles.bpmUnit}>BPM</span>
+          </div>
+          <div className={styles.beatTrack} aria-hidden="true">
+            <span className={styles.beatActive} />
+            <span />
+            <span />
+            <span />
+          </div>
+          <div className={styles.tempoScale} aria-hidden="true">
+            {Array.from({ length: 21 }, (_, index) => (
+              <span
+                key={index}
+                className={index === 10 ? styles.tempoTickActive : undefined}
+              />
+            ))}
+          </div>
+          <div className={styles.previewControlRow}>
+            <span className={styles.previewMode}>QUARTER NOTE</span>
+            <span className={styles.playDisc}>
+              <Icon icon={Play} size={20} className={styles.playIcon} />
+            </span>
+          </div>
+        </section>
+        <section className={styles.tunerPanel} aria-label="튜너 미리보기">
+          <div className={styles.panelHeader}>
+            <span>TUNER</span>
+            <span className={styles.inTune}>
+              <Icon icon={Check} size={12} /> IN TUNE
+            </span>
+          </div>
+          <div className={styles.tunerReadout}>
+            <span className={styles.noteValue}>A</span>
+            <span className={styles.noteOctave}>4</span>
+          </div>
+          <div className={styles.gauge} aria-hidden="true">
+            <div className={styles.gaugeArc} />
+            <div className={styles.gaugeNeedle} />
+            <span className={styles.gaugeCenter} />
+          </div>
+          <div className={styles.gaugeLabels}>
+            <span>−50</span>
+            <strong>0</strong>
+            <span>+50</span>
+          </div>
+          <div className={styles.frequency}>
+            440.0 <span>Hz</span>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
 
 export function LandingPage() {
   return (
-    <div className="h-screen overflow-x-hidden overflow-y-auto bg-background-dark scroll-smooth">
-      <nav className="fixed top-0 left-0 right-0 z-50 glass-nav">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 bg-primary rounded-lg flex items-center justify-center glow-primary">
-              <Icon
-                icon={Music2}
-                size={22}
-                className="text-background-dark sm:h-6 sm:w-6"
-              />
-            </div>
-            <span className="text-xl sm:text-2xl font-bold tracking-tight text-text-strong">
-              {APP_NAME}
-            </span>
-          </div>
-
-          <div className="hidden md:flex items-center gap-10">
-            <a
-              className="text-sm font-medium hover:text-primary transition-colors"
-              href="#features"
-            >
-              기능
-            </a>
-            <button
-              type="button"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              가격
-            </button>
-            <button
-              type="button"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              라이브러리
-            </button>
-            <button
-              type="button"
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              커뮤니티
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3 sm:gap-4">
-            <button
-              type="button"
-              className="hidden sm:block px-5 sm:px-6 py-2.5 rounded-lg border border-primary/30 text-primary text-sm font-semibold hover:bg-primary/10 transition-all"
-            >
-              로그인
-            </button>
-            <Link
-              href="/metronome"
-              className="px-5 sm:px-6 py-2.5 rounded-lg bg-primary text-background-dark text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20"
-            >
-              시작하기
+    <div className={styles.page} data-landing-page="true">
+      <header className={styles.header}>
+        <div className={styles.headerInner}>
+          <Link href="/landing" aria-label="TempoTune 홈">
+            <BrandMark />
+          </Link>
+          <nav className={styles.headerNav} aria-label="랜딩 페이지">
+            <a href="#tools">도구</a>
+            <a href="#accuracy">정확도</a>
+          </nav>
+          <div className={styles.headerActions}>
+            <ThemeModeMenu />
+            <Link href="/metronome" className={styles.headerCta}>
+              웹 앱 열기
+              <Icon icon={ArrowRight} size={16} />
             </Link>
           </div>
         </div>
-      </nav>
+      </header>
 
-      <section className="relative pt-28 sm:pt-40 pb-16 sm:pb-24 overflow-hidden">
-        <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--color-primary) 15%, transparent) 0%, transparent 70%)',
-          }}
-        />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          <div className="relative z-10">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-6 sm:mb-8">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-              <span className="text-xs font-bold text-primary uppercase tracking-widest">
-                Studio Release {APP_VERSION}
-              </span>
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold leading-[1.15] text-text-strong mb-6 sm:mb-8">
-              음악의 완벽한 템포, <br />
-              <span>{APP_NAME}</span>
-            </h1>
-            <div className="mb-6 h-px w-24 bg-primary/50" />
-            <p className="text-lg sm:text-xl text-text-secondary mb-8 sm:mb-10 leading-relaxed max-w-xl">
-              전문 연주자와 작곡가를 위한 고정밀 튜닝 엔진과 스마트 메트로놈.
-              소수점 단위의 정밀함으로 당신의 연주를 완벽하게 서포트합니다.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Link
-                href="/metronome"
-                className="flex items-center justify-center gap-3 px-8 py-4 bg-primary text-background-dark rounded-xl font-bold text-base sm:text-lg hover:brightness-110 transition-all group"
-              >
-                <Icon
-                  icon={Download}
-                  size={22}
-                  className="text-background-dark"
-                />
-                앱 다운로드
-              </Link>
-              <Link
-                href="/metronome"
-                className="flex items-center justify-center gap-3 px-8 py-4 bg-card-soft text-text-strong rounded-xl font-bold text-base sm:text-lg hover:bg-card-strong transition-all border border-border-subtle"
-              >
-                <Icon icon={Globe} size={22} className="text-text-strong" />
-                웹에서 시작
-              </Link>
-            </div>
-            <div className="mt-8 sm:mt-12 flex items-center gap-6 sm:gap-8 text-text-secondary/70">
-              <div className="flex items-center gap-2">
-                <Icon icon={Smartphone} size={20} className="sm:h-6 sm:w-6" />
-                <span className="text-xs font-medium">App Store</span>
+      <main>
+        <section className={styles.hero}>
+          <div className={styles.heroGlow} aria-hidden="true" />
+          <div className={styles.heroInner}>
+            <div className={styles.heroCopy}>
+              <p className={styles.eyebrow}>
+                <span />
+                PRECISION PRACTICE TOOLS
+              </p>
+              <h1>
+                박자와 음정에,
+                <br />
+                <span>바로 집중하세요.</span>
+              </h1>
+              <p className={styles.heroDescription}>
+                메트로놈, 튜너, 리듬 연습을 한곳에 담았습니다. 설치 없이 웹에서
+                열고, 연주에 필요한 기준을 빠르게 맞춰보세요.
+              </p>
+              <div className={styles.heroActions}>
+                <Link href="/metronome" className={styles.primaryCta}>
+                  <Icon icon={Timer} size={20} />
+                  메트로놈 열기
+                  <Icon icon={ArrowRight} size={18} />
+                </Link>
+                <Link href="/tuner" className={styles.secondaryCta}>
+                  <Icon icon={AudioLines} size={20} />
+                  튜너 열기
+                </Link>
               </div>
-              <div className="flex items-center gap-2">
-                <Icon
-                  icon={TabletSmartphone}
-                  size={20}
-                  className="sm:h-6 sm:w-6"
-                />
-                <span className="text-xs font-medium">Google Play</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Icon icon={Monitor} size={20} className="sm:h-6 sm:w-6" />
-                <span className="text-xs font-medium">macOS / Win</span>
-              </div>
+              <p className={styles.heroNote}>
+                <Icon icon={Clock3} size={16} />
+                웹과 iOS·Android 하이브리드 환경에서 같은 핵심 도구를
+                제공합니다.
+              </p>
             </div>
+            <ProductPreview />
           </div>
-          <div className="relative hidden sm:block">
-            <div className="absolute -inset-10 bg-primary/12 blur-[100px] rounded-full" />
-            <div className="relative rounded-2xl overflow-hidden border border-border-subtle shadow-2xl">
-              <div className="w-full aspect-[4/3] bg-gradient-to-br from-surface via-card-soft to-background-dark flex items-center justify-center">
-                <div className="text-center">
-                  <Icon
-                    icon={Waves}
-                    size={96}
-                    strokeWidth={1.75}
-                    className="mx-auto mb-4 text-primary/50"
-                  />
-                  <div className="text-primary text-sm font-bold tracking-widest uppercase mb-2">
-                    Live Pitch Analysis
-                  </div>
-                  <div className="text-text-secondary text-xs">440.0 Hz</div>
-                </div>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-background-dark/80 via-transparent to-transparent" />
-              <div className="absolute bottom-6 left-6 right-6 p-6 rounded-xl glass-card">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs font-bold text-primary tracking-widest uppercase">
-                    Live Pitch Analysis
-                  </span>
-                  <span className="text-xs text-text-secondary">440.0 Hz</span>
-                </div>
-                <div className="h-12 flex items-end gap-1">
-                  <div className="flex-1 bg-primary/20 h-4 rounded-t-sm" />
-                  <div className="flex-1 bg-primary/40 h-8 rounded-t-sm" />
-                  <div className="flex-1 bg-primary/60 h-12 rounded-t-sm" />
-                  <div className="flex-1 bg-primary h-10 rounded-t-sm" />
-                  <div className="flex-1 bg-primary/80 h-6 rounded-t-sm" />
-                  <div className="flex-1 bg-primary/50 h-9 rounded-t-sm" />
-                  <div className="flex-1 bg-primary/30 h-5 rounded-t-sm" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="py-8 sm:py-12 border-y border-border-subtle bg-card-soft/70">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-12 lg:gap-24">
-            {platformBadges.map((badge) => (
-              <div
-                key={badge.label}
-                className={`flex items-center gap-3 text-text-secondary ${badge.hiddenOnMobile ? 'hidden sm:flex' : ''}`}
-              >
-                <Icon icon={badge.icon} size={28} className="sm:h-8 sm:w-8" />
-                <span className="font-medium tracking-tight text-sm">
-                  {badge.label}
-                </span>
+        <section className={styles.proofRail} aria-label="정확도 검증 기준">
+          <div className={styles.proofInner}>
+            {proofPoints.map((point) => (
+              <div className={styles.proofItem} key={point.value}>
+                <strong>{point.value}</strong>
+                <span>{point.label}</span>
+                <small>{point.detail}</small>
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section id="features" className="py-20 sm:py-32 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="text-center mb-12 sm:mb-20">
-            <h2 className="text-primary font-bold tracking-widest uppercase text-sm mb-4">
-              핵심 기능
-            </h2>
-            <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-text-strong mb-4 sm:mb-6">
-              프로를 위한 완벽한 도구
-            </h3>
-            <p className="text-text-secondary max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
-              {APP_NAME}은 단순한 도구를 넘어 연주자의 감각을 극대화하는
-              파트너입니다.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
-            {featureCards.map((feature) => (
-              <div
-                key={feature.title}
-                className="p-8 sm:p-10 rounded-2xl bg-card-soft border border-border-subtle hover:border-primary/35 transition-all group"
-              >
-                <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center mb-6 sm:mb-8 group-hover:bg-primary transition-colors">
-                  <Icon
-                    icon={feature.icon}
-                    size={30}
-                    className="text-primary group-hover:text-background-dark"
-                  />
-                </div>
-                <h4 className="text-xl sm:text-2xl font-bold text-text-strong mb-3 sm:mb-4">
-                  {feature.title}
-                </h4>
-                <p className="text-text-secondary leading-relaxed text-sm sm:text-base">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-16 sm:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden min-h-[280px] sm:aspect-[21/9] flex items-center bg-gradient-to-br from-surface to-background-dark border border-border-subtle">
-            <div className="absolute inset-0 bg-gradient-to-r from-background-dark/80 via-background-dark/40 to-transparent" />
-            <div className="relative z-10 px-8 sm:px-12 md:px-24 py-10 sm:py-0">
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-text-strong mb-4 sm:mb-6">
-                당신의 소리를
-                <br />더 선명하게.
-              </h2>
-              <p className="text-base sm:text-lg text-text-secondary max-w-md mb-6 sm:mb-8">
-                전 세계 100만 명 이상의 뮤지션이 선택한 {APP_NAME}과 함께 최상의
-                퍼포먼스를 완성하세요.
-              </p>
-              <Link
-                href="/metronome"
-                className="inline-block px-8 py-3 bg-primary text-background-dark rounded-lg font-bold hover:scale-105 transition-transform"
-              >
-                무료로 시작하기
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <footer className="bg-background-dark border-t border-border-subtle pt-12 sm:pt-20 pb-8 sm:pb-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8 sm:gap-12 mb-12 sm:mb-20">
-            <div className="col-span-2 lg:col-span-2">
-              <div className="flex items-center gap-2 mb-4 sm:mb-6">
-                <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-                  <Icon
-                    icon={Music2}
-                    size={20}
-                    className="text-background-dark"
-                  />
-                </div>
-                <span className="text-xl font-bold text-text-strong">
-                  {APP_NAME}
-                </span>
-              </div>
-              <p className="text-text-muted max-w-xs leading-relaxed text-sm">
-                우리는 기술을 통해 음악적 정밀함을 재정의합니다. 모든 뮤지션이
-                완벽한 템포를 찾을 수 있도록 끊임없이 혁신합니다.
-              </p>
-            </div>
-            <div>
-              <h5 className="text-text-strong font-bold mb-4 sm:mb-6 text-sm">
-                제품
-              </h5>
-              <ul className="space-y-3 sm:space-y-4 text-text-muted text-sm">
-                <li>
-                  <a
-                    className="hover:text-primary transition-colors"
-                    href="#features"
-                  >
-                    주요 기능
-                  </a>
-                </li>
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/tuner"
-                  >
-                    튜너 엔진
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/metronome"
-                  >
-                    메트로놈 설정
-                  </Link>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    className="hover:text-primary transition-colors"
-                  >
-                    업데이트 소식
-                  </button>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="text-text-strong font-bold mb-4 sm:mb-6 text-sm">
-                지원
-              </h5>
-              <ul className="space-y-3 sm:space-y-4 text-text-muted text-sm">
-                <li>
-                  <button
-                    type="button"
-                    className="hover:text-primary transition-colors"
-                  >
-                    고객 센터
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    className="hover:text-primary transition-colors"
-                  >
-                    이용 약관
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    className="hover:text-primary transition-colors"
-                  >
-                    개인정보 처리방침
-                  </button>
-                </li>
-                <li>
-                  <button
-                    type="button"
-                    className="hover:text-primary transition-colors"
-                  >
-                    자주 묻는 질문
-                  </button>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="text-text-strong font-bold mb-4 sm:mb-6 text-sm">
-                소셜
-              </h5>
-              <div className="flex gap-3 sm:gap-4">
-                {socialLinks.map((social) => (
-                  <button
-                    key={social.label}
-                    type="button"
-                    className="w-10 h-10 rounded-full bg-card-soft border border-border-subtle flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-all"
-                    aria-label={social.label}
-                  >
-                    <Icon icon={social.icon} size={18} />
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col md:flex-row justify-between items-center pt-8 sm:pt-10 border-t border-border-subtle text-text-muted text-sm gap-4">
+        <section id="tools" className={styles.toolsSection}>
+          <div className={styles.sectionHeading}>
+            <p className={styles.eyebrow}>FOUR FOCUSED TOOLS</p>
+            <h2>연습 흐름을 끊지 않는 네 가지 도구</h2>
             <p>
-              &copy; {COPYRIGHT_YEAR} {LEGAL_ENTITY}. All rights reserved.
+              필요한 기능으로 바로 이동하고, 익숙한 한 화면 안에서 연습을
+              이어갑니다.
             </p>
-            <div className="flex gap-6 sm:gap-8 items-center">
-              <span className="flex items-center gap-1 text-xs">
-                <Icon icon={Languages} size={14} />
-                한국어 (KR)
-              </span>
-              <button
-                type="button"
-                className="hover:text-text-strong text-xs transition-colors"
+          </div>
+          <div className={styles.toolGrid}>
+            {tools.map((tool, index) => (
+              <Link
+                href={tool.href}
+                className={styles.toolCard}
+                key={tool.title}
               >
-                Status
-              </button>
+                <div className={styles.toolCardTop}>
+                  <span className={styles.toolIcon}>
+                    <Icon icon={tool.icon} size={27} />
+                  </span>
+                  <span className={styles.toolIndex}>0{index + 1}</span>
+                </div>
+                <p className={styles.toolEyebrow}>{tool.eyebrow}</p>
+                <h3>{tool.title}</h3>
+                <p>{tool.description}</p>
+                <span className={styles.toolLink}>
+                  도구 열기 <Icon icon={ArrowRight} size={17} />
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section id="accuracy" className={styles.accuracySection}>
+          <div className={styles.accuracyInner}>
+            <div className={styles.accuracyCopy}>
+              <p className={styles.eyebrow}>MEASURED, NOT ASSUMED</p>
+              <h2>오래 쓸수록 드러나는 오차까지 검사합니다.</h2>
+              <p>
+                메트로놈은 매 박자를 시작 시점의 절대 위치에서 계산해 작은
+                반올림 오차가 쌓이지 않게 합니다. 튜너는 저음 분석 창을 충분히
+                확보하고, 단음 WAV 회귀로 음명과 cents 편차를 확인합니다.
+              </p>
+              <Link href="/metronome" className={styles.textLink}>
+                정확한 박자로 연습 시작
+                <Icon icon={ArrowRight} size={18} />
+              </Link>
+            </div>
+            <div className={styles.accuracyCards}>
+              <article className={styles.accuracyCard}>
+                <span className={styles.accuracyIcon}>
+                  <Icon icon={Gauge} size={24} />
+                </span>
+                <p>METRONOME CLOCK</p>
+                <strong>&lt; 0.001 ms</strong>
+                <span>123 BPM을 6시간 재생한 회귀 기준의 누적 위상 오차</span>
+              </article>
+              <article className={styles.accuracyCard}>
+                <span className={styles.accuracyIcon}>
+                  <Icon icon={AudioLines} size={24} />
+                </span>
+                <p>TUNER WINDOW</p>
+                <strong>4096 samples</strong>
+                <span>35Hz 저음까지 안정적으로 분석하기 위한 기본 분석 창</span>
+              </article>
             </div>
           </div>
+        </section>
+
+        <section className={styles.finalCtaSection}>
+          <div className={styles.finalCta}>
+            <div>
+              <p className={styles.eyebrow}>READY WHEN YOU ARE</p>
+              <h2>기준을 맞추고, 바로 연주하세요.</h2>
+              <p>
+                가입이나 설치 없이 TempoTune의 핵심 도구를 웹에서 시작할 수
+                있습니다.
+              </p>
+            </div>
+            <div className={styles.finalActions}>
+              <Link href="/metronome" className={styles.primaryCta}>
+                메트로놈 열기
+                <Icon icon={ArrowRight} size={18} />
+              </Link>
+              <Link href="/tuner" className={styles.secondaryCta}>
+                튜너 열기
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer className={styles.footer}>
+        <div className={styles.footerInner}>
+          <div>
+            <BrandMark compact />
+            <p>박자와 음정을 위한 정밀 연습 도구.</p>
+          </div>
+          <nav aria-label="제품 링크">
+            <Link href="/metronome">메트로놈</Link>
+            <Link href="/tuner">튜너</Link>
+            <Link href="/rhythm">리듬 연습</Link>
+            <Link href="/settings">설정</Link>
+          </nav>
+          <p className={styles.copyright}>
+            &copy; {COPYRIGHT_YEAR} {LEGAL_ENTITY}
+          </p>
         </div>
       </footer>
     </div>

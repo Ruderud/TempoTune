@@ -9,8 +9,9 @@ import {
 } from '../lib/last-app-route';
 
 export const metadata: Metadata = {
-  title: 'TempoTune - 음악의 완벽한 템포',
-  description: '전문 연주자와 작곡가를 위한 고정밀 튜닝 엔진과 스마트 메트로놈',
+  title: 'TempoTune - 박자와 음정을 위한 연습 도구',
+  description:
+    '메트로놈, 튜너, 리듬 연습을 웹과 모바일에서 사용하는 음악 연습 도구',
 };
 
 export default async function Home({
