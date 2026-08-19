@@ -3,7 +3,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TunerNote } from '@tempo-tune/shared/types';
 import { act } from 'react';
-import { setAudioInputBridge, resetAudioInputBridge } from '../services/audio-input';
+import {
+  setAudioInputBridge,
+  resetAudioInputBridge,
+} from '../services/audio-input';
 import { createFakeAudioInputBridge } from './test-utils/fake-audio-input-bridge';
 import { renderTestHook } from './test-utils/render-hook';
 
@@ -16,6 +19,7 @@ const serviceHarness = vi.hoisted(() => {
     stop: ReturnType<typeof vi.fn>;
     dispose: ReturnType<typeof vi.fn>;
     createFrameConsumer: ReturnType<typeof vi.fn>;
+    setReferenceFrequency: ReturnType<typeof vi.fn>;
   }> = [];
 
   const TunerAudioServiceMock = vi.fn(function MockTunerAudioService() {
@@ -182,5 +186,29 @@ describe('useTuner', () => {
 
     expect(fakeBridge.removeFrameConsumer).toHaveBeenCalledTimes(1);
     expect(serviceInstance.dispose).toHaveBeenCalledTimes(1);
+  });
+
+  it('restores and persists the reference frequency through the tuner service', () => {
+    window.localStorage.setItem('tempo_tuner_reference_frequency_v1', '444');
+    const fakeBridge = createFakeAudioInputBridge({ withFrameConsumer: true });
+    setAudioInputBridge(fakeBridge.bridge);
+
+    const { result, unmount } = renderTestHook(() => useTuner());
+    const serviceInstance = serviceHarness.instances[0];
+
+    expect(result.current.referenceFrequency).toBe(444);
+    expect(serviceInstance.setReferenceFrequency).toHaveBeenCalledWith(444);
+
+    act(() => {
+      result.current.setReferenceFrequency(999);
+    });
+
+    expect(result.current.referenceFrequency).toBe(446);
+    expect(serviceInstance.setReferenceFrequency).toHaveBeenLastCalledWith(446);
+    expect(
+      window.localStorage.getItem('tempo_tuner_reference_frequency_v1')
+    ).toBe('446');
+
+    unmount();
   });
 });

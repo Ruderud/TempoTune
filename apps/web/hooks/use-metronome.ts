@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { MetronomeEvent, TimeSignature } from '@tempo-tune/shared/types';
-import { DEFAULT_BPM, DEFAULT_TIME_SIGNATURE } from '@tempo-tune/shared/constants';
 import { MetronomeAudioService } from '../services/audio';
 import {
   isNativeEnvironment,
@@ -10,14 +9,28 @@ import {
   onNativeMetronomeTick,
   onNativeMetronomeState,
 } from '../services/audio/native-metronome-bridge';
+import {
+  normalizeMetronomeBpm,
+  normalizeMetronomeTimeSignature,
+  useMetronomePreferences,
+} from './use-metronome-preferences';
 
 export function useMetronome() {
-  const [bpm, setBpmState] = useState(DEFAULT_BPM);
-  const [timeSignature, setTimeSignatureState] = useState<TimeSignature>(DEFAULT_TIME_SIGNATURE);
+  const {
+    bpm,
+    timeSignature,
+    setBpm: setStoredBpm,
+    setTimeSignature: setStoredTimeSignature,
+  } = useMetronomePreferences();
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentBeat, setCurrentBeat] = useState(0);
   const serviceRef = useRef<MetronomeAudioService | null>(null);
   const isNativeRef = useRef(false);
+  const timeSignatureRef = useRef(timeSignature);
+
+  useEffect(() => {
+    timeSignatureRef.current = timeSignature;
+  }, [timeSignature]);
 
   useEffect(() => {
     isNativeRef.current = isNativeEnvironment();
@@ -31,11 +44,9 @@ export function useMetronome() {
       const unsubState = onNativeMetronomeState((data) => {
         // Sync state from lock screen / Dynamic Island controls
         setIsPlaying(data.isPlaying);
-        setBpmState(data.bpm);
+        setStoredBpm(data.bpm);
         if (data.beatsPerMeasure != null) {
-          setTimeSignatureState((prev) =>
-            prev[0] === data.beatsPerMeasure ? prev : [data.beatsPerMeasure!, prev[1]],
-          );
+          setStoredTimeSignature([data.beatsPerMeasure, timeSignatureRef.current[1]]);
         }
       });
 
@@ -57,7 +68,13 @@ export function useMetronome() {
       unsubscribe();
       serviceRef.current?.dispose();
     };
-  }, []);
+  }, [setStoredBpm, setStoredTimeSignature]);
+
+  useEffect(() => {
+    if (isNativeRef.current) return;
+    serviceRef.current?.setTempo(bpm);
+    serviceRef.current?.setTimeSignature(timeSignature);
+  }, [bpm, timeSignature]);
 
   const start = useCallback(async () => {
     if (isNativeRef.current) {
@@ -83,22 +100,26 @@ export function useMetronome() {
   }, []);
 
   const setBpm = useCallback((newBpm: number) => {
-    setBpmState(newBpm);
+    const normalizedBpm = normalizeMetronomeBpm(newBpm);
+    setStoredBpm(normalizedBpm);
     if (isNativeRef.current) {
-      sendNativeMetronomeCommand('SET_METRONOME_BPM', { bpm: newBpm });
+      sendNativeMetronomeCommand('SET_METRONOME_BPM', { bpm: normalizedBpm });
     } else {
-      serviceRef.current?.setTempo(newBpm);
+      serviceRef.current?.setTempo(normalizedBpm);
     }
-  }, []);
+  }, [setStoredBpm]);
 
   const setTimeSignature = useCallback((ts: TimeSignature) => {
-    setTimeSignatureState(ts);
+    const normalizedTimeSignature = normalizeMetronomeTimeSignature(ts);
+    setStoredTimeSignature(normalizedTimeSignature);
     if (isNativeRef.current) {
-      sendNativeMetronomeCommand('SET_METRONOME_TIME_SIG', { beatsPerMeasure: ts[0] });
+      sendNativeMetronomeCommand('SET_METRONOME_TIME_SIG', {
+        beatsPerMeasure: normalizedTimeSignature[0],
+      });
     } else {
-      serviceRef.current?.setTimeSignature(ts);
+      serviceRef.current?.setTimeSignature(normalizedTimeSignature);
     }
-  }, []);
+  }, [setStoredTimeSignature]);
 
   const loadCustomSound = useCallback(async (file: File, type: 'accent' | 'normal') => {
     // Custom sounds only supported on web path

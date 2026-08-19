@@ -3,7 +3,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import type { TunerNote, TuningPreset, TuningString } from '@tempo-tune/shared/types';
 import {
-  A4_FREQUENCY,
   ALL_TUNING_PRESETS,
   TUNER_ANALYSIS_BUFFER_SIZE,
 } from '@tempo-tune/shared/constants';
@@ -16,6 +15,7 @@ import { useTunerDetectionSettings, toPitchDetectionConfig } from './use-tuner-d
 import { useTunerHistory } from './use-tuner-history';
 import { useTunerSignalState } from './use-tuner-signal-state';
 import { isLatencyDebugEnabled } from '../utils/latency-debug';
+import { useTunerReferenceFrequency } from './use-tuner-reference-frequency';
 
 type TuningMode = 'auto' | 'manual';
 
@@ -43,8 +43,12 @@ export function useTuner() {
   const [targetString, setTargetStringState] = useState<TuningString | null>(null);
   const [tuningMode, setTuningModeState] = useState<TuningMode>('auto');
   const [currentPreset, setCurrentPresetState] = useState<TuningPreset>(ALL_TUNING_PRESETS[0]);
-  const [referenceFrequency, setReferenceFrequencyState] = useState(A4_FREQUENCY);
   const [error, setError] = useState<string | null>(null);
+
+  const {
+    referenceFrequency,
+    setReferenceFrequency: setStoredReferenceFrequency,
+  } = useTunerReferenceFrequency();
 
   const serviceRef = useRef<TunerAudioService | null>(null);
   const bridgeRef = useRef<AudioInputBridge | null>(null);
@@ -53,6 +57,7 @@ export function useTuner() {
   const closestStringRef = useRef<TuningString | null>(null);
   const detectedNoteRef = useRef<TunerNote | null>(null);
   const tuningModeRef = useRef<TuningMode>('auto');
+  const referenceFrequencyRef = useRef(referenceFrequency);
   const latencyDebugEnabledRef = useRef(false);
   const lastLatencyLogAtRef = useRef(0);
 
@@ -101,6 +106,12 @@ export function useTuner() {
   useEffect(() => {
     tuningModeRef.current = tuningMode;
   }, [tuningMode]);
+
+  useEffect(() => {
+    referenceFrequencyRef.current = referenceFrequency;
+    engineRef.current?.setReferenceFrequency(referenceFrequency);
+    serviceRef.current?.setReferenceFrequency(referenceFrequency);
+  }, [referenceFrequency]);
 
   useEffect(() => {
     latencyDebugEnabledRef.current = isLatencyDebugEnabled();
@@ -279,7 +290,7 @@ export function useTuner() {
     const bridge = getAudioInputBridge();
     const engine = new TunerEngine();
     engine.setPreset(ALL_TUNING_PRESETS[0]);
-    engine.setReferenceFrequency(A4_FREQUENCY);
+    engine.setReferenceFrequency(referenceFrequencyRef.current);
     engine.setPitchDetectionConfig(pitchConfig);
     bridgeRef.current = bridge;
     engineRef.current = engine;
@@ -310,7 +321,7 @@ export function useTuner() {
     if (bridge.addFrameConsumer) {
       const tunerService = new TunerAudioService();
       tunerService.setPreset(ALL_TUNING_PRESETS[0]);
-      tunerService.setReferenceFrequency(A4_FREQUENCY);
+      tunerService.setReferenceFrequency(referenceFrequencyRef.current);
       tunerService.setPitchDetectionConfig(pitchConfig);
       serviceRef.current = tunerService;
 
@@ -429,10 +440,8 @@ export function useTuner() {
   }, [clearHistory, clearSignalState, getCentsFromTarget, graphCursorCentsRef, latestSmoothedCentsRef, setCentsFromTarget]);
 
   const setReferenceFrequency = useCallback((freq: number) => {
-    setReferenceFrequencyState(freq);
-    engineRef.current?.setReferenceFrequency(freq);
-    serviceRef.current?.setReferenceFrequency(freq);
-  }, []);
+    setStoredReferenceFrequency(freq);
+  }, [setStoredReferenceFrequency]);
 
   const setTargetString = useCallback((target: TuningString) => {
     setTuningModeState('manual');

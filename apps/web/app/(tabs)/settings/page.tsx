@@ -1,5 +1,6 @@
 'use client';
 
+import type { CSSProperties } from 'react';
 import {
   ChevronRight,
   Clock3,
@@ -18,7 +19,20 @@ import {
   COPYRIGHT_YEAR,
   LEGAL_ENTITY,
 } from '../../../constants/app';
+import {
+  COMMON_TIME_SIGNATURES,
+  MAX_BPM,
+  MIN_BPM,
+} from '@tempo-tune/shared/constants';
+import { useMetronomePreferences } from '../../../hooks/use-metronome-preferences';
 import { useThemePreference } from '../../../hooks/use-theme-preference';
+import { useTunerDetectionSettings } from '../../../hooks/use-tuner-detection-settings';
+import { useTunerLayout } from '../../../hooks/use-tuner-layout';
+import {
+  MAX_REFERENCE_FREQUENCY,
+  MIN_REFERENCE_FREQUENCY,
+  useTunerReferenceFrequency,
+} from '../../../hooks/use-tuner-reference-frequency';
 import type { ThemePreference } from '../../../lib/theme';
 
 const themeOptions: Array<{
@@ -35,8 +49,39 @@ const themeOptions: Array<{
   { value: 'dark', label: '다크', description: '저조도 환경에 맞춥니다.' },
 ];
 
+const sensitivityOptions = [
+  { value: 'stable', label: '안정형' },
+  { value: 'balanced', label: '균형형' },
+  { value: 'fast', label: '빠른 응답' },
+] as const;
+
+const headstockOptions = [
+  { value: 'three-plus-three', label: '3+3' },
+  { value: 'six-inline', label: '6-인라인' },
+] as const;
+
+function getSliderStyle(
+  value: number,
+  min: number,
+  max: number
+): CSSProperties {
+  return {
+    '--slider-progress': `${((value - min) / (max - min)) * 100}%`,
+  } as CSSProperties;
+}
+
 export default function SettingsPage() {
   const { preference, resolvedTheme, setPreference } = useThemePreference();
+  const { referenceFrequency, setReferenceFrequency } =
+    useTunerReferenceFrequency();
+  const {
+    detectionSettings,
+    sensitivityPreset,
+    setDetectionSettings,
+    applySensitivityPreset,
+  } = useTunerDetectionSettings();
+  const { headstockLayout, setHeadstockLayout } = useTunerLayout();
+  const metronome = useMetronomePreferences();
   const studioPalette = [
     {
       label: '틸 포커스',
@@ -105,39 +150,223 @@ export default function SettingsPage() {
             <div className="w-[34px]" />
           </div>
 
-          {/* Tuner Settings — TODO: connect to tuner engine */}
           <section>
             <h2 className="px-1 mb-1 text-xs font-semibold uppercase tracking-widest text-primary/60">
               튜너 설정
             </h2>
-            <div className="glass-card rounded-xl p-4 flex items-center gap-3 text-text-muted">
-              <Icon
-                icon={Info}
-                size={16}
-                className="shrink-0 text-primary/40"
-              />
-              <span className="text-xs">
-                {/* TODO: A4 기준 주파수·민감도·노이즈 게이트 설정은 튜너 엔진 연동 후 활성화됩니다. */}
-                튜너 설정은 준비 중입니다.
-              </span>
+            <div className="glass-card rounded-xl p-4 space-y-4">
+              <div>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-text-strong">
+                      A4 기준 주파수
+                    </p>
+                    <p className="mt-1 text-xs text-text-muted">
+                      튜너가 기준으로 삼을 A4 음높이입니다.
+                    </p>
+                  </div>
+                  <span className="text-sm font-semibold tabular-nums text-primary">
+                    {referenceFrequency} Hz
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={MIN_REFERENCE_FREQUENCY}
+                  max={MAX_REFERENCE_FREQUENCY}
+                  step={1}
+                  value={referenceFrequency}
+                  onChange={(event) =>
+                    setReferenceFrequency(Number(event.target.value))
+                  }
+                  className="slider mt-2 min-h-11 w-full cursor-pointer appearance-none rounded-full"
+                  style={getSliderStyle(
+                    referenceFrequency,
+                    MIN_REFERENCE_FREQUENCY,
+                    MAX_REFERENCE_FREQUENCY
+                  )}
+                  aria-label="A4 기준 주파수"
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs font-semibold text-text-primary">
+                  감지 반응
+                </p>
+                <div className="grid grid-cols-3 gap-2">
+                  {sensitivityOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => applySensitivityPreset(option.value)}
+                      aria-pressed={sensitivityPreset === option.value}
+                      className={`min-h-11 rounded-xl border px-3 text-xs font-semibold transition-all ${
+                        sensitivityPreset === option.value
+                          ? 'border-primary bg-primary text-background-dark'
+                          : 'border-border-subtle bg-card-soft text-text-primary hover:border-primary/30'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="rounded-xl border border-border-subtle bg-card-soft p-3">
+                  <span className="flex items-center justify-between gap-3 text-xs text-text-muted">
+                    신뢰도 게이트
+                    <strong className="tabular-nums text-primary">
+                      {detectionSettings.confidenceGate.toFixed(2)}
+                    </strong>
+                  </span>
+                  <input
+                    type="range"
+                    min={0.1}
+                    max={0.75}
+                    step={0.01}
+                    value={detectionSettings.confidenceGate}
+                    onChange={(event) =>
+                      setDetectionSettings({
+                        confidenceGate: Number(event.target.value),
+                      })
+                    }
+                    className="slider mt-2 min-h-11 w-full cursor-pointer appearance-none rounded-full"
+                    style={getSliderStyle(
+                      detectionSettings.confidenceGate,
+                      0.1,
+                      0.75
+                    )}
+                  />
+                </label>
+                <label className="rounded-xl border border-border-subtle bg-card-soft p-3">
+                  <span className="flex items-center justify-between gap-3 text-xs text-text-muted">
+                    입력 노이즈 게이트
+                    <strong className="tabular-nums text-primary">
+                      {detectionSettings.rmsThreshold.toFixed(3)}
+                    </strong>
+                  </span>
+                  <input
+                    type="range"
+                    min={0.001}
+                    max={0.05}
+                    step={0.001}
+                    value={detectionSettings.rmsThreshold}
+                    onChange={(event) =>
+                      setDetectionSettings({
+                        rmsThreshold: Number(event.target.value),
+                      })
+                    }
+                    className="slider mt-2 min-h-11 w-full cursor-pointer appearance-none rounded-full"
+                    style={getSliderStyle(
+                      detectionSettings.rmsThreshold,
+                      0.001,
+                      0.05
+                    )}
+                  />
+                </label>
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs font-semibold text-text-primary">
+                  헤드스톡 배치
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {headstockOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setHeadstockLayout(option.value)}
+                      aria-pressed={headstockLayout === option.value}
+                      className={`min-h-11 rounded-xl border px-3 text-xs font-semibold transition-all ${
+                        headstockLayout === option.value
+                          ? 'border-primary bg-primary/15 text-primary'
+                          : 'border-border-subtle bg-card-soft text-text-primary hover:border-primary/30'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </section>
 
-          {/* Metronome Settings — TODO: connect to metronome engine */}
           <section>
             <h2 className="px-1 mb-1.5 text-xs font-semibold uppercase tracking-widest text-primary/60">
               메트로놈 옵션
             </h2>
-            <div className="glass-card rounded-xl p-4 flex items-center gap-3 text-text-muted">
-              <Icon
-                icon={Info}
-                size={16}
-                className="shrink-0 text-primary/40"
-              />
-              <span className="text-xs">
-                {/* TODO: 시각적 플래시·백그라운드 재생 설정은 메트로놈 엔진 연동 후 활성화됩니다. */}
-                메트로놈 옵션은 준비 중입니다.
-              </span>
+            <div className="glass-card rounded-xl p-4 space-y-4">
+              <div>
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-text-strong">
+                      기본 BPM
+                    </p>
+                    <p className="mt-1 text-xs text-text-muted">
+                      다음 세션에도 유지할 기본 템포입니다.
+                    </p>
+                  </div>
+                  <span className="text-sm font-semibold tabular-nums text-primary">
+                    {metronome.bpm}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={MIN_BPM}
+                  max={MAX_BPM}
+                  step={1}
+                  value={metronome.bpm}
+                  onChange={(event) =>
+                    metronome.setBpm(Number(event.target.value))
+                  }
+                  className="slider mt-2 min-h-11 w-full cursor-pointer appearance-none rounded-full"
+                  style={getSliderStyle(metronome.bpm, MIN_BPM, MAX_BPM)}
+                  aria-label="기본 BPM"
+                />
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs font-semibold text-text-primary">
+                  기본 박자표
+                </p>
+                <div className="grid grid-cols-4 gap-2">
+                  {COMMON_TIME_SIGNATURES.map((timeSignature) => {
+                    const active =
+                      metronome.timeSignature[0] === timeSignature[0] &&
+                      metronome.timeSignature[1] === timeSignature[1];
+
+                    return (
+                      <button
+                        key={`${timeSignature[0]}/${timeSignature[1]}`}
+                        type="button"
+                        onClick={() =>
+                          metronome.setTimeSignature(timeSignature)
+                        }
+                        aria-pressed={active}
+                        className={`min-h-11 rounded-xl border px-2 text-xs font-semibold transition-all ${
+                          active
+                            ? 'border-primary bg-primary text-background-dark'
+                            : 'border-border-subtle bg-card-soft text-text-primary hover:border-primary/30'
+                        }`}
+                      >
+                        {timeSignature[0]}/{timeSignature[1]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 rounded-xl border border-border-subtle bg-card-soft p-3 text-text-muted">
+                <Icon
+                  icon={Info}
+                  size={16}
+                  className="mt-0.5 shrink-0 text-primary/40"
+                />
+                <span className="text-xs leading-relaxed">
+                  사운드 프리셋과 시각 효과는 실제 동작이 준비된 뒤 별도
+                  옵션으로 추가됩니다.
+                </span>
+              </div>
             </div>
           </section>
 
