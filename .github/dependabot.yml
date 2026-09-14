@@ -4,16 +4,28 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
       time: '09:00'
       timezone: Asia/Seoul
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
+    cooldown:
+      semver-major-days: 30
+      semver-minor-days: 7
+      semver-patch-days: 3
     # Remove these temporary guards after the React Native migration lands.
     ignore:
       - dependency-name: react
         update-types:
           - version-update:semver-minor
+          - version-update:semver-major
+      - dependency-name: react-dom
+        update-types:
+          - version-update:semver-minor
+          - version-update:semver-major
+      - dependency-name: '@types/react*'
+        update-types:
+          - version-update:semver-minor
+          - version-update:semver-major
       - dependency-name: react-native
         update-types:
           - version-update:semver-minor
@@ -23,7 +35,47 @@ updates:
       - dependency-name: '@react-native-community/cli*'
         update-types:
           - version-update:semver-major
+      - dependency-name: '@types/node'
+        update-types:
+          - version-update:semver-major
     groups:
+      nx-toolchain:
+        patterns:
+          - nx
+          - '@nx/*'
+      lint-and-types:
+        patterns:
+          - eslint
+          - 'eslint-plugin-*'
+          - '@eslint/*'
+          - typescript
+          - typescript-eslint
+          - '@typescript-eslint/*'
+      web-runtime:
+        patterns:
+          - next
+          - eslint-config-next
+          - '@opennextjs/*'
+          - wrangler
+          - '@sentry/*'
+          - tailwindcss
+          - '@tailwindcss/*'
+      mobile-toolchain:
+        patterns:
+          - '@babel/*'
+          - 'metro*'
+          - appium
+          - 'appium-*'
+          - '@wdio/*'
+          - webdriverio
+          - 'react-native-*'
+      test-tooling:
+        patterns:
+          - vitest
+          - '@vitest/*'
+          - jsdom
+          - '@testing-library/*'
+          - '@playwright/*'
       production-minor-patches:
         dependency-type: production
         update-types:
@@ -38,8 +90,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
-      day: monday
+      interval: monthly
       time: '09:00'
       timezone: Asia/Seoul
     groups:
