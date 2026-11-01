@@ -16,7 +16,7 @@
     "version:inject": "node scripts/inject-version.js"
   },
   "dependencies": {
-    "react": "19.1.9",
+    "react": "19.1.10",
     "react-native": "0.81.6",
     "react-native-webview": "^13.12.3"
   },
